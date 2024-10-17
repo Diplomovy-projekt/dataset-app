@@ -1,9 +1,4 @@
-FROM php:8.2-fpm-alpine
-
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -16,7 +11,11 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     netcat-openbsd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -31,14 +30,20 @@ WORKDIR /var/www/
 # Copy existing application directory contents
 COPY . .
 
-# Copy entrypoint script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
 # Install Laravel dependencies
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install
+RUN npm install
+RUN npm run build
+# Clear cache and generate key
+RUN php artisan key:generate
 
+# Copy entrypoint script
+COPY ./docker/app/app-entrypoint.sh /usr/local/bin/app-entrypoint.sh
+RUN chmod +x /usr/local/bin/app-entrypoint.sh
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 # Expose port 9000
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/app-entrypoint.sh"]

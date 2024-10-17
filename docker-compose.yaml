@@ -1,8 +1,4 @@
-
-version: "3.7"
-
 services:
-
 ####################################################################################################
 # app
 ####################################################################################################
@@ -19,6 +15,7 @@ services:
     volumes:
       - ./:/var/www
       - ~/.ssh:/root/.ssh
+      #- ./docker/app/app-entrypoint.sh:/usr/local/bin/app-entrypoint.sh
     depends_on:
       - db
     networks:
@@ -41,9 +38,9 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
-      - ./docker-compose/mysql/data:/var/lib/mysql
-      - ./docker-compose/mysql/logs:/var/log/mysql
-      - ./docker-compose/mysql/ql:/docker-entrypoint-initdb.d
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/logs:/var/log/mysql
+      - ./docker/mysql/ql:/docker-entrypoint-initdb.d
     networks:
       - laravel
 ####################################################################################################
@@ -53,16 +50,16 @@ services:
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
+    depends_on:
+      - app
     container_name: nginx-lar
     restart: unless-stopped
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./:/var/www
-      - ./docker-compose/nginx:/etc/nginx/conf.d
-      - ./docker-compose/nginx/ssl:/etc/nginx/conf.d/ssl
-      - ./docker-compose/nginx/phpmyadmin.conf:/etc/nginx/conf.d/phpmyadmin.conf
+      # - ./docker/app/nginx-entrypoint.sh:/usr/local/bin/nginx-entrypoint.sh
     networks:
       - laravel
 
@@ -71,9 +68,9 @@ services:
 ####################################################################################################
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: phpmyadmin-rifive-laravel
+    container_name: phpmyadmin-lar
     ports:
-        - 8080:80
+        - "8080:80"
     links:
         - db
     restart: unless-stopped
@@ -81,7 +78,9 @@ services:
         PMA_HOST: db
         #PMA_USER: ${DB_USERNAME}
         #PMA_PASSWORD: ${DB_PASSWORD}
-        PMA_PORT: 3306
         PMA_ARBITRARY: 1
     networks:
         - laravel
+networks:
+  laravel:
+    driver: bridge
