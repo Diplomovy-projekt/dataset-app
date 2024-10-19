@@ -18,6 +18,8 @@ services:
       #- ./docker/app/app-entrypoint.sh:/usr/local/bin/app-entrypoint.sh
     depends_on:
       - db
+    ports:
+      - "5173:5173"  # Expose Vite dev server
     networks:
       - laravel
 
@@ -71,6 +73,8 @@ services:
     container_name: phpmyadmin-lar
     ports:
         - "8080:80"
+    links:
+        - db
     restart: unless-stopped
     environment:
         PMA_HOST: db
