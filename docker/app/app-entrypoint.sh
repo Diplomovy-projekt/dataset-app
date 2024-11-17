@@ -15,10 +15,6 @@ set -e
 
 # Start PHP-FPM
 echo "Starting PHP-FPM..."
-php-fpm &
-
-# Start Vite (npm run dev)
-echo "Starting Vite development server..."
-npm run dev  # Run npm run dev in the background
+php-fpm
 # Keep container running
 exec "$@"
