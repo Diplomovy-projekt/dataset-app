@@ -11,9 +11,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     netcat-openbsd \
-    && curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 
 
 
@@ -32,8 +31,6 @@ COPY . .
 
 # Install Laravel dependencies
 RUN composer install
-RUN npm install
-RUN npm run build
 # Clear cache and generate key
 RUN php artisan key:generate
 
