@@ -2,18 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dataset extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
-        'name',
+        'display_name',
+        'unique_name',
         'description',
         'num_images',
         'total_size',
+        'annotation_technique',
         'is_public'
     ];
 
@@ -28,7 +33,7 @@ class Dataset extends Model
 
     public function classes(): HasMany
     {
-        return $this->hasMany(Category::class);
+        return $this->hasMany(AnnotationCategory::class);
     }
 
     public function images(): HasMany

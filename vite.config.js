@@ -6,7 +6,7 @@ export default defineConfig({
         host: '0.0.0.0',
         hmr: {
             clientPort: 5173,
-            host: 'laravel.localhost',
+            host: 'dataset-app.test',
             protocol: 'ws'
         },
         port: 5173,

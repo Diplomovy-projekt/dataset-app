@@ -13,11 +13,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call([
+            // Seed Property Types and Values first (independent)
+            PropertyTypeSeeder::class,
+            PropertyValueSeeder::class,
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            // Seed Categories and Formats (dependent on Property Values if needed)
+            //AnnotationCategorySeeder::class, // Seed categories (Language, Century, etc.)
+            AnnotationFormatSeeder::class,  // Seed annotation formats (after categories)
+
+            // Seed Datasets (depends on Property Values and Categories)
+            //DatasetSeeder::class,
+
+            // Seed Annotation Data (depends on Categories and Formats)
+            //AnnotationDataSeeder::class,
+
+            // Seed Images (depends on Datasets and Annotations)
+            //ImageSeeder::class,
+
+            // Seed Users last (can depend on other data)
+            UserSeeder::class,
         ]);
     }
+
 }

@@ -7,7 +7,8 @@ export default {
 		'./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
 		 './storage/framework/views/*.php',
 		 './resources/views/**/*.blade.php',
-		 "./vendor/robsontenorio/mary/src/View/Components/**/*.php"
+		 "./vendor/robsontenorio/mary/src/View/Components/**/*.php",
+        "./resources/**/*.js",
 	],
 
     theme: {
@@ -15,11 +16,13 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            color:{
+                'hcportal-primary': '#1E293B'
+            }
         },
     },
 
     plugins: [
-		forms,
 		require("daisyui")
 	],
 };

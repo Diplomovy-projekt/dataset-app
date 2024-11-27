@@ -15,10 +15,12 @@ return new class extends Migration
         Schema::create('datasets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('name');
+            $table->string('display_name');
+            $table->string('unique_name')->unique();
             $table->text('description');
             $table->integer('num_images');
             $table->integer('total_size');
+            $table->string('annotation_technique');
             $table->boolean('is_public')->default(false);
             $table->timestamps();
         });

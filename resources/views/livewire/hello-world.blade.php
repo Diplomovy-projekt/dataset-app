@@ -1,4 +1,5 @@
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <?php echo __DIR__; echo $_SERVER['SERVER_NAME'];phpinfo(); ?>
     <!-- Counter Card -->
     <div class="card w-full max-w-md bg-white shadow-lg rounded-lg p-4 sm:p-6">
         <h1 class="text-xl font-semibold text-center mb-4">Livewire Counter</h1>
