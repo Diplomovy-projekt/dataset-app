@@ -22,18 +22,18 @@ class YoloImportHandler implements ImportHandlerInterface
         $this->importer = new YoloImporter();
     }
 
-    public function findStructureErrors(string $datasetPath): array
+    public function findStructureErrors(string $folderName): array
     {
-        return $this->zipValidator->validate($datasetPath);
+        return $this->zipValidator->validate($folderName);
     }
 
-    public function findAnnotationIssues(string $datasetPath): array
+    public function findAnnotationIssues(string $folderName, string $annotationTechnique): array
     {
-        return $this->annotationValidator->validate($datasetPath);
+        return $this->annotationValidator->validate($folderName, $annotationTechnique);
     }
 
-    public function parseDataset(string $datasetPath, $annotationTechnique): array
+    public function parseDataset(string $folderName, $annotationTechnique): array
     {
-        return $this->importer->parse($datasetPath, $annotationTechnique);
+        return $this->importer->parse($folderName, $annotationTechnique);
     }
 }

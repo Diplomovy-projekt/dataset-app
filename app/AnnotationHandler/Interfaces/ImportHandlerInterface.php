@@ -6,9 +6,9 @@ use App\Utils\Response;
 
 interface ImportHandlerInterface
 {
-    public function findStructureErrors(string $datasetPath): array;
+    public function findStructureErrors(string $folderName): array;
 
-    public function findAnnotationIssues(string $datasetPath): array;
+    public function findAnnotationIssues(string $folderName, string $annotationTechnique): array;
 
-    public function parseDataset(string $datasetPath, string $annotationTechnique): array;
+    public function parseDataset(string $folderName, string $annotationTechnique): array;
 }

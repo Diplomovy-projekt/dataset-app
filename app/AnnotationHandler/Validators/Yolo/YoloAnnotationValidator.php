@@ -3,6 +3,8 @@
 namespace App\AnnotationHandler\Validators\Yolo;
 
 use App\AnnotationHandler\traits\Yolo\YoloFormatTrait;
+use App\Utils\AppConstants;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,13 +12,9 @@ class YoloAnnotationValidator
 {
     use YoloFormatTrait;
 
-    public function validate(string $datasetPath, string $format = 'polygon'): array
+    public function validate(string $fileName, string $annotationTechnique): array
     {
-        if (!in_array($format, ['bbox', 'polygon'])) {
-            throw new \InvalidArgumentException('Format must be either "bbox" or "polygon"');
-        }
-
-        $annotationsPath = $datasetPath . '/' . self::LABELS_FOLDER;
+        $annotationsPath = AppConstants::LIVEWIRE_TMP_PATH . $fileName .'/'. self::LABELS_FOLDER;
         $labels = collect(Storage::files($annotationsPath));
         $errors = [];
 
@@ -39,14 +37,14 @@ class YoloAnnotationValidator
                     $parts = preg_split('/\s+/', trim($line));
 
                     // Validate based on format
-                    if ($format === 'bbox') {
+                    if ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
                         // Bounding box must have exactly 5 parts
                         if (count($parts) !== 5) {
                             $errors[$prettyLabelFile][] = "Line {$lineNumber}: Bounding box format requires exactly 5 values " .
                                 "(class_id, x_center, y_center, width, height). Got " . count($parts);
                             continue;
                         }
-                    } else { // polygon
+                    } else {
                         // Polygon must have odd number of parts (class_id + coordinate pairs)
                         if (count($parts) < 7 || (count($parts) - 1) % 2 !== 0) {
                             $errors[$prettyLabelFile][] = "Line {$lineNumber}: Polygon format requires uneven number of numbers(including class_id) and at least 3 coordinates. Got " . count($parts) . " values";

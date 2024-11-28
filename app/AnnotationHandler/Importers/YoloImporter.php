@@ -5,6 +5,7 @@ namespace App\AnnotationHandler\Importers;
 use App\AnnotationHandler\ImportHandlers\Yolo\YoloImportHandler;
 use App\AnnotationHandler\Interfaces\ImporterInterface;
 use App\AnnotationHandler\traits\Yolo\YoloFormatTrait;
+use App\Utils\AppConstants;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Yaml\Yaml;
@@ -12,9 +13,10 @@ use Symfony\Component\Yaml\Yaml;
 class YoloImporter
 {
     use YoloFormatTrait;
-    public function parse(string $datasetPath, $annotationTechnique): array
+    public function parse(string $folderName, $annotationTechnique): array
     {
         // Define folder paths
+        $datasetPath = AppConstants::LIVEWIRE_TMP_PATH . $folderName;
         $imageFolder = $datasetPath . '/' . self::IMAGE_FOLDER;
         $annotationFolder = $datasetPath . '/' . self::LABELS_FOLDER;
 
@@ -40,7 +42,7 @@ class YoloImporter
 
             // Get the image's dimensions
             $imageFileName = pathinfo($imageFile, PATHINFO_FILENAME);
-            $absolutePath = storage_path('app/private/' . $imageFile);
+            $absolutePath = storage_path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
 
             $imageData[] = [
@@ -60,7 +62,7 @@ class YoloImporter
 
                 // Extract class ID and normalized bounding box or polygon points
                 $classId = $data[0];
-                if ($annotationTechnique === 'Bounding Box') {
+                if ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
                     $centerX = $data[1];
                     $centerY = $data[2];
                     $width = $data[3];
@@ -74,7 +76,7 @@ class YoloImporter
                         'height' => $height,
                         'segmentation' => null, // Not applicable for YOLO bbox
                     ];
-                } elseif ($annotationTechnique === 'Polygon') {
+                } elseif ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['POLYGON']) {
                     // Extract polygon points and initialize arrays
                     $polygonPoints = array_slice($data, 1);
                     $normalizedPoints = [];
@@ -104,7 +106,7 @@ class YoloImporter
             }
             $imageData[$index]['annotations'] = $annotationData;
         }
-        $categories = $this->getCategories($datasetPath);
+        $categories = $this->getCategories($folderName);
 
         if ($imageData && $annotationData && $categories) {
             return [
@@ -115,11 +117,12 @@ class YoloImporter
         return [];
     }
 
-    private function getCategories($datasetPath): array
+    private function getCategories($folderName): array
     {
-        $dataFilePath = $datasetPath . '/' . self::DATA_YAML;
+
+        $dataFilePath = AppConstants::LIVEWIRE_TMP_PATH . $folderName . '/' . self::DATA_YAML;
         if (!Storage::exists($dataFilePath)) {
-            throw new \Exception("The file does not exist at path: $dataFilePath");
+            return [];
         }
         // Read and parse the YAML file
         $dataContent = Storage::get($dataFilePath);

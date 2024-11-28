@@ -36,6 +36,12 @@ return [
             'serve' => true,
             'throw' => false,
         ],
+        'storage' => [
+            'driver' => 'local',
+            'root' => storage_path(),
+            'serve' => true,
+            'throw' => false,
+        ],
 
         'app' => [
             'driver' => 'local',

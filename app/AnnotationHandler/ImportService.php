@@ -8,6 +8,7 @@ use App\Models\AnnotationData;
 use App\Models\Dataset;
 use App\Models\DatasetProperty;
 use App\Models\Image;
+use App\Utils\AppConstants;
 use App\Utils\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -34,7 +35,7 @@ class ImportService
             return Response::error("Zip has invalid structure",$structureIssues);
         }
 
-        $invalidAnnotations = $importHandler->findAnnotationIssues($payload['unique_name']);
+        $invalidAnnotations = $importHandler->findAnnotationIssues($payload['unique_name'], $payload['technique']);
         if (!empty($invalidAnnotations)) {
             return Response::error("Invalid annotations found",$invalidAnnotations);
         }
@@ -112,13 +113,13 @@ class ImportService
         }
     }
 
-    private function moveImagesToPublic($unique_name, $imageFolder)
+    private function moveImagesToPublic($folderName, $imageFolder)
     {
-        // Attempt to retrieve the list of files in the specified folder
-        try {
-            $files = Storage::files($unique_name . '/' . $imageFolder);
-        } catch (\Exception $e) {
-            return Response::error("An error occurred while reading the image files: " . $e->getMessage());
+        $imageFolderPath = AppConstants::LIVEWIRE_TMP_PATH . $folderName . '/' . $imageFolder;
+        $files = Storage::files($imageFolderPath);
+
+        if (empty($files)) {
+            return Response::error("No images found in the dataset");
         }
 
         // Iterate over each file in the folder
@@ -128,11 +129,11 @@ class ImportService
 
             // Validate file type (only process images with supported extensions)
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $source = 'private/' . $file;
-                $destination = 'public/datasets/' . $unique_name . '/' . $filename . '.' . $extension;
+                $source = $file;
+                $destination = AppConstants::DATASETS_PATH . $folderName . '/' . $filename . '.' . $extension;
 
                 try {
-                    Storage::disk('app')->move($source, $destination);
+                    Storage::move($source, $destination);
                 } catch (\Exception $e) {
                     Response::error("An error occurred while moving images to public storage: " . $e->getMessage());
                 }

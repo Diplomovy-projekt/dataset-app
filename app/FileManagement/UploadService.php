@@ -2,9 +2,7 @@
 
 namespace App\FileManagement;
 
-use App\AnnotationHandler\AnnotationConverterService;
-use App\AnnotationHandler\Factory\AnnotationConverterFactory;
-use App\AnnotationHandler\ImportService;
+use App\Utils\AppConstants;
 use App\Utils\Response;
 use ZipArchive;
 
@@ -31,11 +29,11 @@ class UploadService
     private function extractZipFile($file): bool
     {
         $zip = new ZipArchive;
-        $path = storage_path('app/private/livewire-tmp/' . $file->getFilename());
+        $path = storage_path(AppConstants::LIVEWIRE_TMP_PATH . $file->getFilename());
 
         // Open and extract the zip file
         if ($zip->open($path) === true) {
-            $extractPath = storage_path("app/private/" . pathinfo($file->getFilename(), PATHINFO_FILENAME));
+            $extractPath = storage_path(AppConstants::LIVEWIRE_TMP_PATH  . pathinfo($file->getFilename(), PATHINFO_FILENAME));
 
             // Create the extraction directory if it doesn't exist
             if (!is_dir($extractPath)) {
@@ -48,12 +46,6 @@ class UploadService
         }
 
         return false;
-    }
-
-    private function deleteAllTemporaryFiles(string $archiveDir)
-    {
-        //delete all temp files
-
     }
 
 }
