@@ -29,3 +29,4 @@
         @endforeach
     </x-containers.grid-card-container>
 </div>
+

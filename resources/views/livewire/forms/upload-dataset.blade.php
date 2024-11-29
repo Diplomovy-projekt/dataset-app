@@ -1,7 +1,8 @@
-<div>
+<div x-data="chunkedUpload"
+>
     <x-modals.fixed-modal modalId="uploadDataset">
         {{-- Main Form Container using MaryUI's Form Component --}}
-        <x-mary-form wire:submit.prevent="submitUploadDataset" class=" mx-auto">
+        <div  class=" mx-auto">
             <div class="space-y-4 relative">
                 {{-- Loading Spinner (Scoped to form) --}}
                 <div wire:loading.flex wire:target="submitForm" class="absolute inset-0 bg-base-200/50 backdrop-blur-sm items-center justify-center rounded-lg z-50 hidden">
@@ -22,13 +23,15 @@
                         <div wire:loading.flex wire:target="datasetFile" class="absolute inset-0 bg-base-200/50 backdrop-blur-sm items-center justify-center rounded-lg z-10 hidden">
                             <x-mary-loading class="w-6 h-6" />
                         </div>
+                        <input type="file" name="myFile">
                         <x-mary-file
-                            wire:model.live="datasetFile"
+                            name="myFilee"
                             label="Upload Dataset (ZIP)"
                             hint="Upload your dataset containing images and annotations"
-                            accept=".zip, .rar"
+                            accept=".zip"
                             class="border-2 border-dashed border-base-300 hover:border-primary transition-colors"
                         />
+
                     </div>
 
                     <x-mary-select
@@ -92,8 +95,63 @@
                     inline />
 
                 {{-- Submit Button --}}
-                <x-button text="Upload Dataset" wire:loading.attr="disabled" wire:target="submitForm"/>
+                <div >
+                    <x-button @click="uploadChunks" type="button" text="Upload Dataset" wire:loading.attr="disabled" wire:target="submitForm"/>
+                </div>
             </div>
-        </x-mary-form>
+        </div>
     </x-modals.fixed-modal>
 </div>
+
+@script
+    <script>
+        Alpine.data('chunkedUpload', () => {
+            return {
+                uploadChunks() {
+                    const fileInput = document.querySelector('input[name="myFile"]');
+                    // Check if the file input is empty or invalid
+                    if (fileInput.files[0]) {
+                        const file = fileInput.files[0];
+                        $wire.$set('fileSize', file.size, true);
+                        $wire.$set('fileName', file.name, true);
+                        this.livewireUploadChunk(file,0);
+
+                    }
+
+                },
+                livewireUploadChunk(file, start) {
+                    const chunkSize = $wire.$get('chunkSize')
+                    const chunkEnd = Math.min(start + chunkSize, file.size);
+                    chunk = file.slice(start, chunkEnd, file.type);
+                    const chunkFile = new File([chunk], file.name, { type: file.type });
+                    $wire.$upload(
+                        'fileChunk',
+                        chunkFile,
+                        finish = () => {console.log('Upload chunk finished')}, // Explicitly passing null for the `finish` callback
+                        error = () => {console.log('Error during upload')}, // Explicitly passing null for the `error` callback
+                        progress  = (event) => {
+                            console.log("Progress: ",event.detail.progress); // Log progress
+                            console.log(typeof event.detail.progress); // Should output "number"
+                            if (event.detail.progress == 100) {
+                                console.log("Chunk Uploaded");
+                                start = chunkEnd;
+                                if (start < file.size) {
+                                    this.livewireUploadChunk(file, start);
+                                }
+                            }
+                        }
+                    );
+                    /*$wire.$upload('fileChunk', chunk)
+                    $wire.$upload('fileChunk', chunk, (uName) => {}, () => {}, (event) => {
+                        if (event.detail.progress == 100) {
+                            start = chunkEnd;
+                            if (start < file.size) {
+                                this.livewireUploadChunk(file, start); // Corrected `this`
+                            }
+                        }
+                    });*/
+                }
+            };
+        });
+    </script>
+@endscript
