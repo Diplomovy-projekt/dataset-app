@@ -1,8 +1,8 @@
 <?php
 
+use App\Livewire\FullPages\DatasetView;
 use App\Livewire\FullPages\Profile;
 use App\Livewire\FullPages\Welcome;
-use App\Livewire\HelloWorld;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', Welcome::class)->name('welcome');
@@ -21,6 +21,6 @@ Route::get('/db-info', function () {
     return config('database.connections.'.config('database.default'));
 });
 
-Route::get('/hello-world', HelloWorld::class);
-
 Route::get('/profile', Profile::class)->name('profile');
+
+Route::get('/dataset/{uniqueName}', DatasetView::class)->name('dataset.view');
