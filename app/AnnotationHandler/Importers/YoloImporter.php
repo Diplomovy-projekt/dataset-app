@@ -41,10 +41,10 @@ class YoloImporter
             }
 
             // Get the image's dimensions
-            $imageFileName = pathinfo($imageFile, PATHINFO_FILENAME);
             $absolutePath = storage_path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
 
+            $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[] = [
                 'img_folder' => self::IMAGE_FOLDER,
                 'img_filename' => $imageFileName,

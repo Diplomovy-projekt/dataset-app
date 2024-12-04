@@ -6,9 +6,9 @@ use App\Utils\AppConstants;
 use App\Utils\Response;
 use ZipArchive;
 
-class UploadService
+class ZipManager
 {
-    public function handleUpload($file): Response
+    public function processZipFile($file): Response
     {
         if (!$file->getClientOriginalExtension() == 'zip') {
             return Response::error('Invalid file format. Please upload a zip file.');
