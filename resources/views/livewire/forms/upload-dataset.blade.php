@@ -4,10 +4,6 @@
         {{-- Main Form Container using MaryUI's Form Component --}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
-                {{-- Loading Spinner (Scoped to form) --}}
-                <div wire:loading.flex wire:target="submitForm" class="absolute inset-0 bg-base-200/50 backdrop-blur-sm items-center justify-center rounded-lg z-50 hidden">
-                    <x-mary-loading class="w-8 h-8" />
-                </div>
 
                 {{-- Header Section --}}
                 <div class="text-center space-y-2">
@@ -18,21 +14,13 @@
 
                 {{-- Dataset Upload Section --}}
                 <div class="space-y-6 bg-base-200/50 p-6 rounded-xl shadow-sm">
-                    {{-- File Upload with loading indicator --}}
-                    <div class="relative">
-                        <div wire:loading.flex wire:target="datasetFile" class="absolute inset-0 bg-base-200/50 backdrop-blur-sm items-center justify-center rounded-lg z-10 hidden">
-                            <x-mary-loading class="w-6 h-6" />
-                        </div>
-                        <input type="file" name="myFile">
-                        <x-mary-file
-                            name="myFilee"
-                            label="Upload Dataset (ZIP)"
-                            hint="Upload your dataset containing images and annotations"
-                            accept=".zip"
-                            class="border-2 border-dashed border-base-300 hover:border-primary transition-colors"
-                        />
-
-                    </div>
+                    <x-mary-file
+                        name="myFile"
+                        label="Upload Dataset (ZIP)"
+                        hint="Upload your dataset containing images and annotations"
+                        accept=".zip"
+                        class="border-2 border-dashed border-base-300 hover:border-primary transition-colors"
+                    />
 
                     <x-mary-select
                         wire:model="selectedFormat"
@@ -95,8 +83,14 @@
                     inline />
 
                 {{-- Submit Button --}}
-                <div >
-                    <x-button @click="uploadChunks" type="button" text="Upload Dataset" wire:loading.attr="disabled" wire:target="submitForm"/>
+                <x-button @click="uploadChunks" text="Upload Dataset" wire:loading.attr="disabled" wire:target="submitForm"/>
+
+                <div class="flex items-center space-x-2 mt-4">
+                    <!-- MaryUI Progress Bar -->
+                    <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
+
+                    <!-- Percentage Text -->
+                    <p class="text-sm font-medium text-yellow-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
                 </div>
             </div>
         </div>
@@ -105,53 +99,74 @@
 
 @script
     <script>
-        Alpine.data('chunkedUpload', () => {
-            return {
-                uploadChunks() {
-                    const fileInput = document.querySelector('input[name="myFile"]');
-                    // Check if the file input is empty or invalid
-                    if (fileInput.files[0]) {
-                        const file = fileInput.files[0];
-                        $wire.$set('fileSize', file.size, true);
-                        $wire.$set('fileName', file.name, true);
-                        this.livewireUploadChunk(file,0);
+        Alpine.data('chunkedUpload', () => ({
+            progress: 0, // Ensure it's a number
 
-                    }
+            get progressFormatted() {
+                return this.progress.toFixed(2) + '%'; // Returns progress with two decimals
+            },
 
-                },
-                livewireUploadChunk(file, start) {
-                    const chunkSize = $wire.$get('chunkSize')
-                    const chunkEnd = Math.min(start + chunkSize, file.size);
-                    chunk = file.slice(start, chunkEnd, file.type);
-                    const chunkFile = new File([chunk], file.name, { type: file.type });
-                    $wire.$upload(
-                        'fileChunk',
-                        chunkFile,
-                        finish = () => {console.log('Upload chunk finished')}, // Explicitly passing null for the `finish` callback
-                        error = () => {console.log('Error during upload')}, // Explicitly passing null for the `error` callback
-                        progress  = (event) => {
-                            console.log("Progress: ",event.detail.progress); // Log progress
-                            console.log(typeof event.detail.progress); // Should output "number"
-                            if (event.detail.progress == 100) {
-                                console.log("Chunk Uploaded");
-                                start = chunkEnd;
-                                if (start < file.size) {
-                                    this.livewireUploadChunk(file, start);
-                                }
-                            }
-                        }
-                    );
-                    /*$wire.$upload('fileChunk', chunk)
-                    $wire.$upload('fileChunk', chunk, (uName) => {}, () => {}, (event) => {
+            uploadChunks() {
+
+                //Livewire.dispatch('trigger-validation')
+                const fileInput = document.querySelector('input[name="myFile"]');
+                if (fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    this.progress = 0; // Reset progress bar
+                    $wire.$set('fileSize', file.size, true);
+                    $wire.$set('displayName', file.name, true);
+                    $wire.$set('uniqueName', this.generateUUIDv7() +'.'+ file.name.split('.').pop(), true);
+                    this.livewireUploadChunk(file, 0);
+                }
+            },
+
+            livewireUploadChunk(file, start) {
+                console.log('Uploading chunk', start);
+                const chunkSize = $wire.$get('chunkSize');
+                const chunkEnd = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, chunkEnd, file.type);
+                const chunkFile = new File([chunk], file.name, { type: file.type });
+
+                $wire.$upload(
+                    'fileChunk',
+                    chunkFile,
+                    finish = () => {},
+                    error = () => {},
+                    progress = (event) => {
+                        console.log(event.detail.progress);
+                        this.progress = ((start + event.detail.progress) / file.size) * 100;
                         if (event.detail.progress == 100) {
                             start = chunkEnd;
+
                             if (start < file.size) {
-                                this.livewireUploadChunk(file, start); // Corrected `this`
+                                this.livewireUploadChunk(file, start);
                             }
                         }
-                    });*/
+                    }
+                );
+            },
+
+            generateUUIDv7() {
+                const timestamp = Date.now(); // Current Unix timestamp (milliseconds)
+                const randomBytes = crypto.getRandomValues(new Uint8Array(10)); // 80 random bits
+
+                // Set the version (v7) in the UUID format: 'xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx'
+                let uuid = timestamp.toString(16).padStart(12, '0'); // Timestamp in hex, 12 digits
+                uuid += '-';
+                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(4, '0'); // Random 4 digits
+                uuid += '-7'; // Version 7 (always 7)
+                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(3, '0'); // Random 3 digits
+                uuid += '-';
+                uuid += (Math.floor(Math.random() * 0x4000) + 0x8000).toString(16).padStart(4, '0'); // Random 4 digits with variant
+                uuid += '-';
+
+                // Add the remaining random bytes
+                for (let i = 0; i < randomBytes.length; i++) {
+                    uuid += randomBytes[i].toString(16).padStart(2, '0');
                 }
-            };
-        });
+
+                return uuid;
+            }
+        }));
     </script>
 @endscript
