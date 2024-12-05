@@ -9,3 +9,4 @@
 @yield('additional_head')
 @livewireScripts
 <script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.4.0/dist/livewire-sortable.js"></script>
+<script src="https://unpkg.com/konva@9.3.16/konva.js"></script>

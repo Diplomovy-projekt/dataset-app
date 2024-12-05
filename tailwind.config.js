@@ -18,7 +18,10 @@ export default {
             },
             color:{
                 'hcportal-primary': '#1E293B'
-            }
+            },
+            screens: {
+                'xs': '400px'
+            },
         },
     },
 
