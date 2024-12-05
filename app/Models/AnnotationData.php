@@ -29,8 +29,8 @@ class AnnotationData extends Model
         return $this->belongsTo(Image::class);
     }
 
-    public function class(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(AnnotationCategory::class);
+        return $this->belongsTo(AnnotationCategory::class, 'annotation_category_id');
     }
 }
