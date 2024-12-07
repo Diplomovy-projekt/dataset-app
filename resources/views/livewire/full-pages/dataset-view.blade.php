@@ -1,15 +1,35 @@
-<div>
+<div x-data="images" class="container mx-auto pt-10">
+    <div class="flex flex-col gap-2">
+        <livewire:components.search-bar/>
+        <x-mary-dropdown label="Categories" class="w-36">
+            <div class="z-10 max-h-96 divide-y divide-gray-100 overflow-auto">
+            @foreach($this->categories as $category)
+                <x-mary-menu-item @click.stop="">
+                    <div class="flex items-center space-x-2">
+                        <!-- Color Box -->
+                        <div
+                            class="w-4 h-4 rounded"
+                            style="background-color: {{ $category['color'] }};"
+                        ></div>
+                        <!-- Checkbox -->
+                        <x-mary-checkbox label="{{ $category['name'] }}" />
+                    </div>
+                </x-mary-menu-item>
+            @endforeach
+            </div>
+        </x-mary-dropdown>
+    </div>
     <x-containers.grid-card-container size="large">
         {{-- Display images in a grid container --}}
-        @foreach ($images as $image)
-            <div class="relative grid-card" wire:key="{{$image['img_filename']}}">
+        @foreach ($this->images as $image)
+            <div class="relative" wire:key="{{$image['img_filename']}}">
                 <img id="{{$image['img_filename']}}" src="{{ asset('storage/datasets/'.$this->dataset->unique_name. '/' . $image['img_filename']) }}" alt="Image"
-                     class="relative w-full h-auto lazy block">
+                     class="w-full h-auto lazy rounded">
                 <svg wire:ignore id="svg-{{$image['img_filename']}}" width="100%" height="100%" class="absolute top-0 left-0 w-full h-full pointer-events-none"></svg>
             </div>
         @endforeach
     </x-containers.grid-card-container>
-
+    {{ $this->images->links() }}
     {{-- Load More Button --}}
     @if ($imagesLoaded < $this->dataset->images()->count())
         <div class="text-center mt-4">
@@ -20,23 +40,18 @@
 
 @script
     <script>
-        let categories = $wire.$get('categories');
-        $wire.on('images', ({ images }) => {
-            console.log('Images received:', images);
-            // Wait for the DOM to update before accessing image and svg elements
-            setTimeout(() => {
-                images.forEach(function(image) {
-                    // Process the image for annotations
-                    let { imageElement, svg } = getImageAndSvg(image);
-                    if (imageElement && svg) {
-                        processImages([image]); // Process annotations for this image
-                    } else {
-                        console.error('Could not find img or svg with id:', image.id);
-                    }
-                });
-            }, 100); // Delay for DOM updates
-        });
-
+        /*$wire.on('images', ({ images }) => {
+            images.forEach(function(image) {
+                console.log('Processing image:', image);
+                // Process the image for annotations
+                let { imageElement, svg } = getImageAndSvg(image);
+                if (imageElement && svg) {
+                    processImages([image]); // Process annotations for this image
+                } else {
+                    console.error('Could not find img or svg with id:', image.id);
+                }
+            });
+        });*/
 
         function getImageAndSvg(image) {
             let imageElement = document.getElementById(image.img_filename);
@@ -50,7 +65,6 @@
             return { imageElement, svg };
         }
 
-        // Function to draw a polygon based on annotation points
         function drawPolygon(svg, annotation) {
             let points = JSON.parse(annotation.segmentation);
             let polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -79,6 +93,7 @@
 
             svg.appendChild(polygon);
         }
+
         function drawSquare(svg, annotation) {
             // Assuming annotation contains normalized values: x_center, y_center, width, height
             let { x_center, y_center, width, height } = annotation;
@@ -101,7 +116,6 @@
             svg.appendChild(square);
         }
 
-        // Main function to process all images and annotations
         function processImages(imagesData) {
             imagesData.forEach(function(image) {
                 let { imageElement, svg } = getImageAndSvg(image);

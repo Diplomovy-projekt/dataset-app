@@ -4,10 +4,11 @@ namespace App\Livewire\Components;
 
 use Livewire\Component;
 
-class SearchDataset extends Component
+class SearchBar extends Component
 {
+    public $searchTerm;
     public function render()
     {
-        return view('livewire.components.search-dataset');
+        return view('livewire.components.search-bar');
     }
 }

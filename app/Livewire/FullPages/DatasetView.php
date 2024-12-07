@@ -9,26 +9,47 @@ use Livewire\WithPagination;
 
 class DatasetView extends Component
 {
+    use WithPagination;
     public $uniqueName;
     public $dataset;
-    public $images = [];
     public $imagesLoaded = 0;
     public $loadStep = 5;
-    public $categoryColors = [];
+    public $categories = [];
+    public $newlyLoadedImages = [];
+    #[Computed]
+    public function images()
+    {
+        $images = $this->dataset->images()->with(['annotations.category'])->paginate(10);
 
+        //Add color to each annotation based on category
+        $images->each(function ($image) {
+            $image->annotations->each(function ($annotation) {
+                if (isset($this->categories[$annotation->annotation_category_id])) {
+                    $annotation->category->color = $this->categories[$annotation->annotation_category_id]['color'];
+                }
+            });
+        });
+        return $images;
+    }
     public function mount($uniqueName)
     {
         $this->uniqueName = $uniqueName;
 
         // Load dataset without fetching all images
         $this->dataset = Dataset::where('unique_name', $uniqueName)->first();
-        $this->categoryColors = $this->dataset->categories->mapWithKeys(function($category) {
-            $category->color = $this->generateRandomRgba(); // Generate random color
-            return [$category->id => $category->color]; // Keyed by category ID
+        $this->categories = $this->dataset->categories->mapWithKeys(function($category) {
+            $category->color = $this->generateRandomRgba();
+            return [$category->id => $category];
         })->toArray();
-        $this->loadMore(); // Load the initial batch of images
+        //$this->loadMore();
     }
 
+    public function render()
+    {
+        //return view('livewire.full-pages.dataset-view', ['images' => $this->dataset->images()->with(['annotations.category'])->paginate(10)]);
+        return view('livewire.full-pages.dataset-view');
+
+    }
     private function generateRandomRgba()
     {
         // Random color between 0-255 for r, g, b and alpha between 0.5 and 1
@@ -50,20 +71,19 @@ class DatasetView extends Component
                 ->get();
             $newImages->each(function ($image) {
                 $image->annotations->each(function ($annotation) {
-                    // Assign the random color to each annotation based on its category
-                    if (isset($this->categoryColors[$annotation->annotation_category_id])) {
-                        $annotation->category->color = $this->categoryColors[$annotation->annotation_category_id];
+                    if (isset($this->categories[$annotation->annotation_category_id])) {
+                        $annotation->category->color = $this->categories[$annotation->annotation_category_id]['color'];
                     }
                 });
             });
-            $this->images = collect($this->images)->concat($newImages)->toArray();
+
+            $this->images = collect($this->images)->concat($newImages);
+            //$this->images = collect($this->images)->concat($newImages)->toArray();
             $this->imagesLoaded += $newImages->count();
-            $this->dispatch('images', images: $newImages->toArray());
+            $this->newlyLoadedImages = $newImages->toArray();
         }
     }
 
-    public function render()
-    {
-        return view('livewire.full-pages.dataset-view');
-    }
+
+
 }
