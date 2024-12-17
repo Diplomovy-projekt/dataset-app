@@ -5,24 +5,36 @@
     @include('layouts.includes.head')
 </head>
 
-<body class="bg-slate-700 text-white">
+<body class="text-gray-200 ">
 
 <!-- Full height container to ensure footer stays at the bottom -->
-<div class="flex flex-col min-h-screen">
-
+<div class="bg-gradient-to-b from-[#243240] to-slate-900 flex flex-col min-h-screen">
+{{-- bg-gradient-to-b from-[#2c3e50] to-[#0f172a] --}}
+{{-- bg-gradient-to-b from-[#243240] to-slate-900 --}}
     <!-- Navbar (fixed at the top) -->
-    <nav class="bg-gray-800">
+    <nav class="">
         <livewire:navbar />
     </nav>
 
     <!-- Main content that grows to fill the available space -->
-    <main class="flex-1 overflow-auto mb-12">
+    <main class="container relative inset-0 flex-1 overflow-auto">
         {{$slot}}
     </main>
 
     <!-- Footer or bottom element -->
-    <footer class="bg-gray-900 text-white py-4">
-        <div class="text-center">© 2024 Your Website</div>
+    <footer class=" border-t border-gray-600 text-white py-4">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p>&copy; 2021 Dataset App. All Rights Reserved.</p>
+                </div>
+                <div>
+                    <a href="#" class="text-white hover:text-gray-200">Privacy Policy</a>
+                    <span class="mx-2">|</span>
+                    <a href="#" class="text-white hover:text-gray-200">Terms of Service</a>
+                </div>
+            </div>
+        </div>
     </footer>
 
 </div>

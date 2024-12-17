@@ -39,20 +39,6 @@ class UploadDataset extends Component
         $this->propertyTypes = PropertyType::with('propertyValues')->get();
         return view('livewire.forms.upload-dataset');
     }
-    public function updatingFileChunk()
-    {
-        // Perform validation only once
-        if (!$this->validated) {
-            $validatedData = $this->validate([
-                'selectedFormat' => 'required',  // Example validation rule
-                'annotationTechnique' => 'required',
-                'checkedProperties' => 'required',
-                'description' => 'nullable|string',
-            ]);
-
-            $this->validated = true; // Set the flag to prevent future validations
-        }
-    }
 
     public function finishImport()
     {
@@ -77,9 +63,16 @@ class UploadDataset extends Component
             'message' => $response->message
         ]);
     }
+
     public function updatedFileChunk()
     {
-
+        $validatedData = $this->validate([
+            'selectedFormat' => 'required',  // Example validation rule
+            'annotationTechnique' => 'required',
+            'checkedProperties' => 'required',
+            'description' => 'nullable|string',
+        ]);
+        $this->validated = true;
         $chunkFileName = $this->fileChunk->getFileName();
 
         // Read the chunk file
@@ -87,7 +80,7 @@ class UploadDataset extends Component
 
         // Append chunk to final file
         $finalFilePath = 'livewire-tmp/' . $this->uniqueName;
-        Storage::disk('private')->append($finalFilePath, $buff);
+        Storage::disk('private')->append($finalFilePath, $buff, null);
 
         // Delete the chunk file
         Storage::disk('private')->delete('livewire-tmp/' . $chunkFileName);

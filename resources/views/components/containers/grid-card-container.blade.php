@@ -30,9 +30,9 @@
             break;
     }
 
-    $gridClasses = "grid grid-cols-{$cols1} sm:grid-cols-{$colsSm} md:grid-cols-{$colsMd} lg:grid-cols-{$colsLg} xl:grid-cols-{$colsXl} gap-6 p-4";
+    $gridClasses = "grid grid-cols-{$cols1} sm:grid-cols-{$colsSm} md:grid-cols-{$colsMd} lg:grid-cols-{$colsLg} xl:grid-cols-{$colsXl} gap-6";
 @endphp
 
-<div {{--{{ $attributes->merge(['class' => $gridClasses]) }}--}} class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-9 gap-6 p-4">
+<div {{--{{ $attributes->merge(['class' => $gridClasses]) }}--}} class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-9 gap-6">
     {{ $slot }}
 </div>

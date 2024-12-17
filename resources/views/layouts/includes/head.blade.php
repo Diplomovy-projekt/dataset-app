@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 @vite('resources/css/app.css')
 @vite('resources/js/app.js')
 <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>

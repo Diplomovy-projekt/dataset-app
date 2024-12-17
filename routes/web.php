@@ -1,11 +1,11 @@
 <?php
 
-use App\Livewire\FullPages\DatasetView;
+use App\Livewire\FullPages\DatasetBuilder;
+use App\Livewire\FullPages\DatasetIndex;
+use App\Livewire\FullPages\DatasetShow;
 use App\Livewire\FullPages\Profile;
-use App\Livewire\FullPages\Welcome;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', Welcome::class)->name('welcome');
 
 //Route::view('dashboard', 'dashboard')
 //    ->middleware(['auth', 'verified'])
@@ -16,11 +16,9 @@ Route::get('/', Welcome::class)->name('welcome');
 //    ->name('profile');
 
 require __DIR__.'/auth.php';
-
-Route::get('/db-info', function () {
-    return config('database.connections.'.config('database.default'));
-});
-
+Route::view('/', 'welcome')->name('welcome');
+Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
+Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
+Route::get('/builder', DatasetBuilder::class)->name('builder');
 Route::get('/profile', Profile::class)->name('profile');
 
-Route::get('/dataset/{uniqueName}', DatasetView::class)->name('dataset.view');

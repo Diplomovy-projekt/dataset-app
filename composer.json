@@ -6,13 +6,19 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-zip": "*",
         "blade-ui-kit/blade-heroicons": "^2.5",
+        "blade-ui-kit/blade-icons": "^1.7",
+        "blade-ui-kit/blade-zondicons": "^1.5",
+        "codeat3/blade-teeny-icons": "^1.10",
+        "davidhsianturi/blade-bootstrap-icons": "^1.5",
+        "intervention/image": "^3.9",
+        "khatabwedaa/blade-css-icons": "^1.4",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "livewire/volt": "^1.0",
-        "robsontenorio/mary": "^1.40",
-        "ext-zip": "*"
+        "robsontenorio/mary": "^1.40"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "*",

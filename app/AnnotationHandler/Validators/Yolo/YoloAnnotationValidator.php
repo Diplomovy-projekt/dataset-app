@@ -61,7 +61,7 @@ class YoloAnnotationValidator
                     // Remove class_id for coordinate validation
                     $coordinates = array_slice($parts, 1);
                     foreach ($coordinates as $coord) {
-                        $floatCoord = (float)$coord;
+                        $floatCoord = round((float)$coord, 3);
                         if ($floatCoord < 0 || $floatCoord > 1) {
                             $errors[$prettyLabelFile][] = "Line {$lineNumber}: Coordinate {$coord} must be between 0 and 1";
                         }
