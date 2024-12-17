@@ -31,7 +31,7 @@ class Dataset extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function classes(): HasMany
+    public function categories(): HasMany
     {
         return $this->hasMany(AnnotationCategory::class);
     }

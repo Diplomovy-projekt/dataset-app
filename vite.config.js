@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
 export default defineConfig({
-    server: {
+    /*server: {
         host: '0.0.0.0',
         hmr: {
             clientPort: 5173,
@@ -13,7 +13,7 @@ export default defineConfig({
         watch: {
             usePolling: true
         }
-    },
+    },*/
     plugins: [
         laravel({
             input: [

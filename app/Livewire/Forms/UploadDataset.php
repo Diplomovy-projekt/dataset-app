@@ -3,10 +3,12 @@
 namespace App\Livewire\Forms;
 
 use App\AnnotationHandler\ImportService;
-use App\FileManagement\UploadService;
+use App\FileManagement\ZipManager;
 use App\Models\AnnotationFormat;
 use App\Models\PropertyType;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -18,19 +20,19 @@ class UploadDataset extends Component
     public $propertyTypes;
 
     # Selectable form fields
-    public $datasetFile;
     public $checkedProperties = [];
     public $selectedFormat;
     public $annotationTechnique;
     public $description;
 
     # Chunked upload
-    public $chunkSize = 1000000; // 1 MB
+    public $chunkSize = 20000000; // 20 MB
     public $fileChunk;
-
-    public $fileName;
+    public $displayName;
+    public $uniqueName;
     public $fileSize;
     public $finalFile;
+    public $validated = false;
     public function render()
     {
         $this->annotationFormats = AnnotationFormat::all();
@@ -38,19 +40,15 @@ class UploadDataset extends Component
         return view('livewire.forms.upload-dataset');
     }
 
-    public function submitUploadDataset(UploadService $uploadService, ImportService $importService)
+    public function finishImport()
     {
-        $this->validate([
-            'datasetFile' => 'required|file|mimes:zip',
-            'selectedFormat' => 'required',
-        ]);
-
-        $response = $uploadService->handleUpload($this->datasetFile);
+        $zipExtraction = app(ZipManager::class);
+        $importService = app(ImportService::class);
+        $response = $zipExtraction->processZipFile($this->finalFile);
         $payload = [
-            'file' => $this->datasetFile,
-            "display_name" => pathinfo($this->datasetFile->getClientOriginalName(), PATHINFO_FILENAME),
-            "unique_name" => pathinfo($this->datasetFile->getFilename(), PATHINFO_FILENAME),
-            'description' => $this->description,
+            'file' => $this->finalFile,
+            "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
+            "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
             'properties' => $this->checkedProperties,
             'technique' => $this->annotationTechnique,
@@ -65,30 +63,33 @@ class UploadDataset extends Component
             'message' => $response->message
         ]);
     }
+
     public function updatedFileChunk()
     {
+        $validatedData = $this->validate([
+            'selectedFormat' => 'required',  // Example validation rule
+            'annotationTechnique' => 'required',
+            'checkedProperties' => 'required',
+            'description' => 'nullable|string',
+        ]);
+        $this->validated = true;
         $chunkFileName = $this->fileChunk->getFileName();
-        $fileChunkPath   = Storage::disk('private')->path('livewire-tmp/'.$chunkFileName);
-        $realPath = $this->fileChunk->getRealPath();
 
-        # Load chunk file into buff
-        $file = fopen($fileChunkPath, 'rb');
-        // TODO posledny chunk bude asi mensi ako chunkSize
-        $buff = fread($file, $this->chunkSize);
-        fclose($file);
+        // Read the chunk file
+        $buff = Storage::disk('private')->get('livewire-tmp/' . $chunkFileName);
 
-        # Append chunk to final file
-        $finalPath = Storage::disk('private')->path('/livewire-tmp/'.$this->fileName);
-        $final = fopen($finalPath, 'ab');
-        fwrite($final, $buff);
-        fclose($final);
-        unlink($fileChunkPath);
+        // Append chunk to final file
+        $finalFilePath = 'livewire-tmp/' . $this->uniqueName;
+        Storage::disk('private')->append($finalFilePath, $buff, null);
 
-        # Check if file is complete
-        $curSize = Storage::disk('private')->size('/livewire-tmp/'.$this->fileName);
-        if( $curSize == $this->fileSize ){
-            $this->finalFile =
-                TemporaryUploadedFile::createFromLivewire('/'.$this->fileName);
+        // Delete the chunk file
+        Storage::disk('private')->delete('livewire-tmp/' . $chunkFileName);
+
+        // Check if the file is complete
+        $curSize = Storage::disk('private')->size($finalFilePath);
+        if ($curSize == $this->fileSize) {
+            $this->finalFile = TemporaryUploadedFile::createFromLivewire('/' . $this->uniqueName);
+            $this->finishImport();
         }
     }
 }
