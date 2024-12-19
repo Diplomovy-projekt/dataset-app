@@ -33,7 +33,7 @@ class Dataset extends Model
 
     public function categories(): HasMany
     {
-        return $this->hasMany(AnnotationCategory::class);
+        return $this->hasMany(AnnotationClass::class);
     }
 
     public function images(): HasMany

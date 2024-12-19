@@ -16,16 +16,16 @@ class AnnotationDataSeeder extends Seeder
     {
         // Fetch existing images and categories (or create them if needed)
         $images = \App\Models\Image::take(5)->get();  // Or adjust to your specific dataset
-        $categories = \App\Models\AnnotationCategory::take(3)->get();  // Adjust category count
+        $categories = \App\Models\AnnotationClass::take(3)->get();  // Adjust class count
 
         // Create annotations associated with these images and categories
         foreach ($images as $image) {
             foreach ($categories as $category) {
                 AnnotationData::create([
                     'image_id' => $image->id,
-                    'annotation_category_id' => $category->id,
-                    'center_x' => $this->faker->randomFloat(2, 0, 1),
-                    'center_y' => $this->faker->randomFloat(2, 0, 1),
+                    'annotation_class_id' => $category->id,
+                    'x' => $this->faker->randomFloat(2, 0, 1),
+                    'y' => $this->faker->randomFloat(2, 0, 1),
                     'width' => $this->faker->randomFloat(2, 0, 1),
                     'height' => $this->faker->randomFloat(2, 0, 1),
                     'segmentation' => json_encode(

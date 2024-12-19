@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\AnnotationCategory;
+use App\Models\AnnotationClass;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AnnotationCategory>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AnnotationClass>
  */
 class AnnotationCategoryFactory extends Factory
 {
@@ -15,7 +15,7 @@ class AnnotationCategoryFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    protected $model = AnnotationCategory::class;
+    protected $model = AnnotationClass::class;
 
     public function definition(): array
     {

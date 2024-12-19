@@ -24,14 +24,20 @@ class YoloImporter
         $images = collect(Storage::files($imageFolder));
         $annotations = collect(Storage::files($annotationFolder));
 
-        // Initialize an empty arrays to store the parsed data
+        $imageData = $this->parseAnnotationFiles($images, $annotations, $annotationTechnique);
 
-        $categories = [];
+        $categories = $this->getCategories($folderName);
+
+        return $imageData && $categories
+            ? ['categories' => $categories, 'images' => $imageData]
+            : [];
+    }
+
+    private function parseAnnotationFiles($images, $annotations, $annotationTechnique): array
+    {
         $imageData = [];
 
-        // Iterate over the annotations
         foreach ($annotations as $index => $annotationFile) {
-            $annotationData = [];
             $annotationFileName = pathinfo($annotationFile, PATHINFO_FILENAME);
 
             // Find the corresponding image file
@@ -40,81 +46,76 @@ class YoloImporter
                 continue;
             }
 
-            // Get the image's dimensions
+            // Get image dimensions
             $absolutePath = storage_path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
 
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
-            $imageData[] = [
+            $imageData[$index] = [
                 'img_folder' => self::IMAGE_FOLDER,
                 'img_filename' => $imageFileName,
                 'width' => $imageWidth,
                 'height' => $imageHeight,
+                'annotations' => $this->parseAnnotationsInFile($annotationFile, $annotationTechnique),
             ];
+        }
 
-            // Read the annotation content
-            $annotationContent = Storage::get($annotationFile);
-            $lines = explode("\n", trim($annotationContent));
+        return $imageData;
+    }
 
-            // Parse each annotation line (each line represents an object in YOLO format)
-            foreach ($lines as $line) {
-                $data = explode(' ', $line);
+    private function parseAnnotationsInFile(string $annotationFile, string $annotationTechnique): array
+    {
+        $annotationData = [];
+        $annotationContent = Storage::get($annotationFile);
+        $lines = explode("\n", trim($annotationContent));
 
-                // Extract class ID and normalized bounding box or polygon points
-                $classId = $data[0];
-                if ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
-                    $centerX = $data[1];
-                    $centerY = $data[2];
-                    $width = $data[3];
-                    $height = $data[4];
+        foreach ($lines as $line) {
+            $data = explode(' ', $line);
+            $classId = $data[0];
 
-                    $annotationData[] = [
-                        'class_id' => $classId,
-                        'center_x' => $centerX,
-                        'center_y' => $centerY,
-                        'width' => $width,
-                        'height' => $height,
-                        'segmentation' => null, // Not applicable for YOLO bbox
-                    ];
-                } elseif ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['POLYGON']) {
-                    // Extract polygon points and initialize arrays
-                    $polygonPoints = array_slice($data, 1);
-                    $normalizedPoints = [];
-                    $xPoints = [];
-                    $yPoints = [];
-
-                    foreach ($polygonPoints as $i => $point) {
-                        if ($i % 2 === 0) {
-                            // X coordinate
-                            $xPoints[] = $point;
-                        } else {
-                            // Y coordinate
-                            $yPoints[] = $point;
-                        }
-                        $normalizedPoints[] = $point;
-                    }
-
-                    $annotationData[] = [
-                        'class_id' => $classId,
-                        'segmentation' => json_encode($normalizedPoints),
-                        'center_x' => (min($xPoints) + max($xPoints)) / 2,
-                        'center_y' => (min($yPoints) + max($yPoints)) / 2,
-                        'width' => max($xPoints) - min($xPoints),
-                        'height' => max($yPoints) - min($yPoints),
-                    ];
-                }
+            $segmentation = array_slice($data, 1);
+            if ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
+                $annotationData[] = $this->transformBoundingBox($classId, $segmentation);
+            } elseif ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['POLYGON']) {
+                $annotationData[] = $this->transformPolygon($classId, $segmentation);
             }
-            $imageData[$index]['annotations'] = $annotationData;
         }
-        $categories = $this->getCategories($folderName);
 
-        if ($imageData && $annotationData && $categories) {
-            return [
-                'categories' => $categories,
-                'images' => $imageData
-            ];
+        return $annotationData;
+    }
+
+    private function transformBoundingBox(string $classId, array $data): array
+    {
+        [$x, $y, $width, $height] = $data;
+
+        return [
+            'class_id' => $classId,
+            'x' => $x,
+            'y' => $y,
+            'width' => $width,
+            'height' => $height,
+            'segmentation' => null,
+        ];
+    }
+
+    private function transformPolygon(string $classId, array $polygonPoints): array
+    {
+        $normalizedPoints = [];
+        foreach (array_chunk($polygonPoints, 2) as $pair) {
+            $normalizedPoints[] = ['x' => $pair[0], 'y' => $pair[1]];
         }
-        return [];
+
+        $xPoints = array_column($normalizedPoints, 'x');
+        $yPoints = array_column($normalizedPoints, 'y');
+
+        return [
+            'class_id' => $classId,
+            'segmentation' => json_encode($normalizedPoints),
+            'x' => min($xPoints),
+            'y' => min($yPoints),
+            'width' => max($xPoints) - min($xPoints),
+            'height' => max($yPoints) - min($yPoints),
+        ];
     }
 
     private function getCategories($folderName): array
@@ -134,6 +135,4 @@ class YoloImporter
             'names' => $annotationData['names'] ?? [],
         ];
     }
-
-
 }

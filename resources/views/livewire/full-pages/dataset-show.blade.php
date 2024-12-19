@@ -3,22 +3,25 @@
         <x-search-bar />
         <x-category-dropdown />
     </div>
-    <x-containers.grid-card-container size="large">
+    <div class="flex flex-wrap gap-10">
         {{-- Display images in a grid container --}}
         @foreach ($this->images as $image)
             <div x-data="{ imageId: {{ $image->id }} }"
                  @mouseenter="hoveredIndex = {{ $image->id }}"
                  @mouseleave="hoveredIndex = null" class="flex flex-col">
                 <div class="relative w-36" wire:key="{{$image['img_filename']}}">
-                    <img id="{{$image['img_filename']}}" src="{{ asset('storage/datasets/'.$this->dataset->unique_name. '/' . $image['img_filename']) }}" alt="Image"
-                         class="w-full h-auto lazy rounded-md">
+                    <div class="absolute w-36 h-36 inset-0 bg-gray-300 animate-pulse"></div>
+                    <img id="{{$image['img_filename']}}"
+                         class="w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-in-out rounded-md" loading="lazy"
+                         src="{{ asset('storage/datasets/'.$this->dataset->unique_name. '/full-images' . $image['img_filename']) }}" alt="Image"
+                         onload="this.style.opacity=1; this.previousElementSibling.style.display='none';">
                     <svg wire:ignore id="svg-{{$image['img_filename']}}" width="100%" height="100%" viewBox="0 0 100 100" class="absolute top-0 left-0 w-full h-full pointer-events-none">
                         {{-- Draw annotations --}}
                         @foreach($image['annotations'] as $annotation)
                             @if(isset($annotation->segmentation))
                                 <polygon points="{{ $annotation->segmentation }}"
-                                         fill="{{ $annotation->category->color['fill'] }}"
-                                         stroke="{{ $annotation->category->color['stroke'] }}"
+                                         fill="{{ $annotation->class->color['fill'] }}"
+                                         stroke="{{ $annotation->class->color['stroke'] }}"
                                          stroke-width="0.7"
                                          closed="true"
                                 />
@@ -27,8 +30,8 @@
                                       y="{{ $annotation->y }}"
                                       width="{{ $annotation->width }}"
                                       height="{{ $annotation->height }}"
-                                      fill="{{ $annotation->category->color }}"
-                                      stroke="{{ $annotation->category->color }}"
+                                      fill="{{ $annotation->class->color }}"
+                                      stroke="{{ $annotation->class->color }}"
                                       stroke-width="0.1"
                                 />
                             @endif
@@ -51,7 +54,7 @@
 
             </div>
         @endforeach
-    </x-containers.grid-card-container>
+    </div>
     {{ $this->images->links() }}
 
 </div>

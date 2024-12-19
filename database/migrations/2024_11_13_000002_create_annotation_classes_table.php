@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('annotation_categories', function (Blueprint $table) {
+        Schema::create('annotation_classes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dataset_id')->constrained()->onDelete('cascade');
             $table->string('name');
@@ -27,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        Schema::dropIfExists('annotation_categories');
+        Schema::dropIfExists('annotation_classes');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 };

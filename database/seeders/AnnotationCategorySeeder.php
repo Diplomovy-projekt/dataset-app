@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\AnnotationCategory;
+use App\Models\AnnotationClass;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +13,7 @@ class AnnotationCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        AnnotationCategory::factory()
+        AnnotationClass::factory()
             ->count(10) // Adjust the number as needed
             ->create();
     }

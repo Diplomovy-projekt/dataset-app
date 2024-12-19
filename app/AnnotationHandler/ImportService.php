@@ -3,7 +3,8 @@
 namespace App\AnnotationHandler;
 
 use App\AnnotationHandler\Factory\ImportHandlerFactory;
-use App\Models\AnnotationCategory;
+use App\ImageProcessing\DatasetImageProcessor;
+use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
 use App\Models\Dataset;
 use App\Models\DatasetProperty;
@@ -45,7 +46,46 @@ class ImportService
             return Response::error("An error occurred while parsing the dataset");
         }
 
-        return $this->saveDataset($parsedData, $payload, $importHandler);
+        $isSaved = $this->saveDataset($parsedData, $payload, $importHandler);
+        if (!$isSaved->isSuccessful()) {
+            return Response::error("An error occurred while saving the dataset: ".$isSaved->message);
+        }
+
+        $imgProcessor = new DatasetImageProcessor();
+        $imgProcesses = $imgProcessor->processImages($payload['unique_name']);
+        if (!$imgProcesses->isSuccessful()) {
+            return Response::error("An error occurred while processing images: ".$imgProcesses->message);
+        }
+
+        return Response::success("Dataset imported successfully");
+    }
+
+    private function saveDataset($parsedData, array $payload, mixed $importHandler): Response
+    {
+        DB::beginTransaction();
+
+        try {
+            // Save the parsed data to the database
+            $savedToDb = $this->saveToDatabase($parsedData, $payload);
+            if (!$savedToDb->isSuccessful()) {
+                DB::rollBack();
+                return Response::error("An error occurred while saving to the database". $savedToDb->message);
+            }
+
+            // Move images to public storage
+            $imagesMoved = $this->moveImagesToPublic($payload['unique_name'], get_class($importHandler)::IMAGE_FOLDER);
+            if (!$imagesMoved->isSuccessful()) {
+                DB::rollBack();
+                return Response::error("An error occurred while moving images to public storage");
+            }
+
+            DB::commit();
+            return Response::success("Dataset imported successfully");
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+            return Response::error("An unexpected error occurred during the import process".$e->getMessage());
+        }
     }
     public function saveToDatabase($parsedData, $metadata)
     {
@@ -67,7 +107,7 @@ class ImportService
             // 2. Save Categories
             $categoryIds = [];
             foreach ($categories['names'] as $categoryName) {
-                $category = AnnotationCategory::create([
+                $category = AnnotationClass::create([
                     'dataset_id' => $dataset->id,
                     'name' => $categoryName,
                     'supercategory' => $categories['superCategory'] ?? null,
@@ -89,9 +129,9 @@ class ImportService
                 foreach ($img['annotations'] as $annotation) {
                     AnnotationData::create([
                         'image_id' => $image->id,
-                        'annotation_category_id' => $categoryIds[$annotation['class_id']], // map to the correct class_id
-                        'center_x' => $annotation['center_x'],
-                        'center_y' => $annotation['center_y'],
+                        'annotation_class_id' => $categoryIds[$annotation['class_id']], // map to the correct class_id
+                        'x' => $annotation['x'],
+                        'y' => $annotation['y'],
                         'width' => $annotation['width'],
                         'height' => $annotation['height'],
                         'segmentation' => $annotation['segmentation'],
@@ -99,7 +139,7 @@ class ImportService
                 }
             }
 
-            // 4. Save dataset properties
+            // 5. Save dataset properties
             foreach ($metadata['properties'] as $id => $value) {
                 DatasetProperty::create([
                     'dataset_id' => $dataset->id,
@@ -112,7 +152,6 @@ class ImportService
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }
     }
-
     private function moveImagesToPublic($folderName, $imageFolder)
     {
         $imageFolderPath = AppConstants::LIVEWIRE_TMP_PATH . $folderName . '/' . $imageFolder;
@@ -130,7 +169,7 @@ class ImportService
             // Validate file type (only process images with supported extensions)
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
                 $source = $file;
-                $destination = AppConstants::DATASETS_PATH . $folderName . '/' . $filename . '.' . $extension;
+                $destination = AppConstants::DATASETS_PATH . $folderName . '/' . AppConstants::FULL_IMG_FOLDER . $filename . '.' . $extension;
 
                 try {
                     Storage::move($source, $destination);
@@ -143,31 +182,4 @@ class ImportService
         return Response::success("Images moved to public storage successfully");
     }
 
-    private function saveDataset($parsedData, array $payload, mixed $importHandler)
-    {
-        DB::beginTransaction();
-
-        try {
-            // Save the parsed data to the database
-            $savedToDb = $this->saveToDatabase($parsedData, $payload);
-            if (!$savedToDb->isSuccessful()) {
-                DB::rollBack();
-                return Response::error("An error occurred while saving to the database". $savedToDb->message);
-            }
-
-            // Move images to public storage
-            $imagesMoved = $this->moveImagesToPublic($payload['unique_name'], get_class($importHandler)::IMAGE_FOLDER);
-            if (!$imagesMoved->isSuccessful()) {
-                DB::rollBack();
-                return Response::error("An error occurred while moving images to public storage");
-            }
-
-            DB::commit();
-
-            return Response::success("Dataset imported successfully");
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return Response::error("An unexpected error occurred during the import process".$e->getMessage());
-        }
-    }
 }

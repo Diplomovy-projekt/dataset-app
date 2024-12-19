@@ -25,8 +25,8 @@ class DatasetShow extends Component
         //Preprocess annotations
         $images->each(function ($image) {
             $image->annotations->each(function ($annotation) {
-                // Assign color to category
-                $annotation->category->color = $this->categories[$annotation->annotation_category_id]['color'];
+                // Assign color to class
+                $annotation->class->color = $this->categories[$annotation->annotation_class_id]['color'];
 
                 $annotation = $this->rescaleBbox($annotation);
                 if($annotation->segmentation){
@@ -77,7 +77,8 @@ class DatasetShow extends Component
         $svgDim = AppConstants::IMG_THUMB_DIMENSIONS;
         $pointsString = '';
         foreach ($segmentation as $point) {
-            $pointsString .= ($point * $svgDim) . ',';
+            $pointsString .= $point->x * $svgDim . ',' . $point->y * $svgDim . ',';
+            //$pointsString .= ($point * $svgDim) . ',';
         }
         //dd($pointsString);
         return rtrim($pointsString, ',');
@@ -90,8 +91,8 @@ class DatasetShow extends Component
         $pixelWidth = $annotation->width * $thumbWidth;
         $pixelHeight = $annotation->height * $thumbWidth;
 
-        $annotation->x = ($annotation->center_x * $thumbWidth) - ($pixelWidth / 2);
-        $annotation->y = ($annotation->center_y * $thumbWidth) - ($pixelHeight / 2);
+        $annotation->x = $annotation->x * $thumbWidth;
+        $annotation->y = $annotation->y * $thumbWidth;
 
         $annotation->width = $pixelWidth;
         $annotation->height = $pixelHeight;
@@ -113,10 +114,10 @@ class DatasetShow extends Component
     private function fetchImages()
     {
         if ($this->searchTerm) {
-            return Image::where('img_filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.category'])->paginate($this->perPage);
+            return Image::where('img_filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
-            return $this->dataset->images()->with(['annotations.category'])->paginate($this->perPage);
+            return $this->dataset->images()->with(['annotations.class'])->paginate($this->perPage);
         }
     }
 

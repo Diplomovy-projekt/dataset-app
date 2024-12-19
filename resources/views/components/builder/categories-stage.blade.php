@@ -16,7 +16,6 @@
                        focus:border-transparent focus:ring-2 focus:ring-indigo-500"
             >
 
-            {{-- Placeholder image using Lorem Picsum with category-specific seed --}}
             <img
                 src="https://picsum.photos/seed/{{ $category->value }}/400/300"
                 alt="{{ $category->value }}"

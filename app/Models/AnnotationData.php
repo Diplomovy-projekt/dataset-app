@@ -12,9 +12,9 @@ class AnnotationData extends Model
 
     protected $fillable = [
         'image_id',
-        'annotation_category_id',
-        'center_x',
-        'center_y',
+        'annotation_class_id',
+        'x',
+        'y',
         'width',
         'height',
         'segmentation'
@@ -29,8 +29,8 @@ class AnnotationData extends Model
         return $this->belongsTo(Image::class);
     }
 
-    public function category(): BelongsTo
+    public function class(): BelongsTo
     {
-        return $this->belongsTo(AnnotationCategory::class, 'annotation_category_id');
+        return $this->belongsTo(AnnotationClass::class, 'annotation_class_id');
     }
 }
