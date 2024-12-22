@@ -2,7 +2,7 @@
 
 namespace App\FileManagement;
 
-use App\Utils\AppConstants;
+use App\Configs\AppConfig;
 use App\Utils\Response;
 use ZipArchive;
 
@@ -29,11 +29,11 @@ class ZipManager
     private function extractZipFile($file): bool
     {
         $zip = new ZipArchive;
-        $path = storage_path(AppConstants::LIVEWIRE_TMP_PATH . $file->getFilename());
+        $path = storage_path(AppConfig::LIVEWIRE_TMP_PATH . $file->getFilename());
 
         // Open and extract the zip file
         if ($zip->open($path) === true) {
-            $extractPath = storage_path(AppConstants::LIVEWIRE_TMP_PATH  . pathinfo($file->getFilename(), PATHINFO_FILENAME));
+            $extractPath = storage_path(AppConfig::LIVEWIRE_TMP_PATH  . pathinfo($file->getFilename(), PATHINFO_FILENAME));
 
             // Create the extraction directory if it doesn't exist
             if (!is_dir($extractPath)) {

@@ -13,8 +13,8 @@
                wire:navigate
                wire:key="{{ $dataset['unique_name'] }}"
                class="bg-slate-900 rounded-lg shadow-md w-64 block overflow-hidden">
-                <div class="relative h-48">
-                    <img src="https://picsum.photos/200/300" alt="{{ $dataset['name'] }}" class="w-full h-full object-cover rounded-t-lg">
+                <div class="relative h-40">
+                    <img src="https://picsum.photos/200/300" alt="{{ $dataset['name'] }}" class="w-full h-full object-cover rounded-t-lg" loading="lazy">
                     <div class="absolute top-4 right-4 bg-gray-900 text-white px-2 py-1 rounded-lg text-sm">
                         {{ $dataset['annotation_technique'] }}
                     </div>
@@ -32,3 +32,4 @@
     </div>
 </div>
 
+{{-- https://picsum.photos/200/300 --}}

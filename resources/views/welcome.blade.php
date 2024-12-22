@@ -11,7 +11,7 @@
                 </p>
 
                 <div class="flex justify-center space-x-6 mb-12">
-                    <a href="{{ route('dataset.builder') }}" class="px-8 py-4 bg-blue-500   font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-blue-600 transition-all duration-300 ease-in-out">
+                    <a href="{{ route('builder') }}" class="px-8 py-4 bg-blue-500   font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-blue-600 transition-all duration-300 ease-in-out">
                         Create Your Own Dataset
                     </a>
 
