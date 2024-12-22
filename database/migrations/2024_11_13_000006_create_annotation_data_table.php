@@ -15,9 +15,9 @@ return new class extends Migration
         Schema::create('annotation_data', function (Blueprint $table) {
             $table->id();
             $table->foreignId('image_id')->constrained()->onDelete('cascade');
-            $table->foreignId('annotation_category_id')->constrained()->onDelete('cascade');
-            $table->float('center_x');
-            $table->float('center_y');
+            $table->foreignId('annotation_class_id')->constrained()->onDelete('cascade');
+            $table->float('x');
+            $table->float('y');
             $table->float('width');
             $table->float('height');
             $table->json('segmentation')->nullable();

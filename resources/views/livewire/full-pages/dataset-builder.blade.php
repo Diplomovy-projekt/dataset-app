@@ -81,7 +81,7 @@
 
 
 
-    <div class="hidden mx-auto bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+    <div class=" mx-auto bg-gray-800 rounded-lg shadow-xl overflow-hidden">
 
         <!-- Step 1: Categories Selection -->
         <div class="p-8">

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\AnnotationData;
-use App\Models\AnnotationCategory;
+use App\Models\AnnotationClass;
 use App\Models\Image;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,9 +22,9 @@ class AnnotationDataFactory extends Factory
     {
         return [
             'image_id' => \App\Models\Image::factory()->create()->id,  // Create image here manually, but associate the id
-            'annotation_category_id' => \App\Models\AnnotationCategory::factory()->create()->id, // Same for category
-            'center_x' => $this->faker->randomFloat(2, 0, 1),
-            'center_y' => $this->faker->randomFloat(2, 0, 1),
+            'annotation_class_id' => \App\Models\AnnotationClass::factory()->create()->id, // Same for class
+            'x' => $this->faker->randomFloat(2, 0, 1),
+            'y' => $this->faker->randomFloat(2, 0, 1),
             'width' => $this->faker->randomFloat(2, 0, 1),
             'height' => $this->faker->randomFloat(2, 0, 1),
             'segmentation' => json_encode(

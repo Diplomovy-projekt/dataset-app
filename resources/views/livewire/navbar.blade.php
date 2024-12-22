@@ -27,6 +27,13 @@
                               md:dark:hover:bg-transparent">BUILDER</a>
                     </li>
                     <li>
+                        <a href="{{route('dataset.index')}}"
+                           class="block py-2 pl-3 pr-4  rounded
+                             md:border-0 md:hover:text-blue-700 md:p-0 text-white
+                             md:dark:hover:text-blue-500
+                              md:dark:hover:bg-transparent">OUR DATASETS</a>
+                    </li>
+                    <li>
                         <a href="{{route('profile')}}"
                            class="block py-2 pl-3 pr-4  rounded
                              md:border-0 md:hover:text-blue-700 md:p-0 text-white
@@ -45,11 +52,11 @@
                     @endguest
                     @auth
                         <li>
-                            <a href="{{route('welcome')}}"
+                            <a href="{{route('profile')}}"
                                class="block py-2 pl-3 pr-4  rounded
                              md:border-0 md:hover:text-blue-700 md:p-0 text-white
                              md:dark:hover:text-blue-500
-                              md:dark:hover:bg-transparent">Friends Showroom</a>
+                              md:dark:hover:bg-transparent">PROFILE</a>
                         </li>
                     @endauth
                 </ul>

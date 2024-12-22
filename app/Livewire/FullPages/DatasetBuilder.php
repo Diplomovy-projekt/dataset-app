@@ -2,6 +2,7 @@
 
 namespace App\Livewire\FullPages;
 
+use App\Models\Dataset;
 use App\Models\DatasetProperty;
 use App\Models\PropertyType;
 use App\Models\PropertyValue;
@@ -37,6 +38,10 @@ class DatasetBuilder extends Component
 
     public function render()
     {
+        $datasets = Dataset::with(['classes', 'datasetProperties.propertyValue'])->get();
+
+        $this->datasets = $datasets;
+        $this->currentStage = 3;
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -94,14 +99,61 @@ class DatasetBuilder extends Component
 
     private function originDataFilter()
     {
+        // 1. Get the ID of the Category property type
+        $categoryPropertyId = PropertyType::where('name', 'Category')
+            ->value('id');
+
+        // 2. Get dataset IDs that match selected categories
+        $datasetIds = DatasetProperty::where('property_value_id', $this->selectedCategories)
+            ->pluck('dataset_id')
+            ->toArray();
+
+        // 3. Get all property values for these datasets
+        $datasetProperties = DatasetProperty::whereIn('dataset_id', $datasetIds)
+            ->get()
+            ->toArray();
+
+        // 4. Get available property values (excluding categories)
+        $availableValues = PropertyValue::whereIn('property_type_id', array_column($datasetProperties, 'property_value_id'))
+            ->whereNot('property_type_id', $categoryPropertyId)
+            ->get()
+            ->toArray();
+
+        // 5. Get and index property types for easy lookup
+        $availableTypes = PropertyType::whereIn('id', array_column($availableValues, 'property_type_id'))
+            ->get()
+            ->toArray();
+
+        $typesByIds = collect($availableTypes)->keyBy('id')->toArray();
+
+        // 6. Build the final data structure
+        $this->originData = [];
+        foreach ($availableValues as $value) {
+            $typeId = $value['property_type_id'];
+
+            if (!isset($this->originData[$typeId])) {
+                $this->originData[$typeId] = [
+                    'type' => $typesByIds[$typeId],
+                    'values' => []
+                ];
+            }
+
+            $this->originData[$typeId]['values'][] = $value;
+        }
     }
+
 
     private function datasetsFilter()
     {
+        $datasetIds = DatasetProperty::whereIn('property_value_id', $this->selectedOriginData)->pluck('dataset_id');
+        $datasets = Dataset::whereIn('id', $datasetIds)->with(['classes', 'datasetProperties.propertyValue'])->get();
+
+        $this->datasets = $datasets;
     }
 
     private function classesFilter()
     {
+        dd($this->selectedDatasets);
     }
 
     private function finalSelectionFilter()

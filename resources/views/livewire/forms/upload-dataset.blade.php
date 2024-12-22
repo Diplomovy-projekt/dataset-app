@@ -1,13 +1,13 @@
 <div x-data="chunkedUpload"
 >
-    <x-modals.fixed-modal modalId="uploadDataset">
+    <x-modals.fixed-modal modalId="uploadDataset" class="w-1/2">
         {{-- Main Form Container using MaryUI's Form Component --}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
 
                 {{-- Header Section --}}
                 <div class="text-center space-y-2">
-                    <h2 class="text-2xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
+                    <h2 class="text-4xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
                         Dataset Upload
                     </h2>
                 </div>
