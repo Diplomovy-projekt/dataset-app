@@ -51,11 +51,11 @@ class ImportService
             return Response::error("An error occurred while saving the dataset: ".$isSaved->message);
         }
 
-        $createdThumbnails = $imgProcessor->createThumbnails($payload['unique_name']);
+        $createdThumbnails = $imgProcessor->createThumbnailsForNewDataset($payload['unique_name']);
         if (!$createdThumbnails->isSuccessful()) {
             return Response::error("An error occurred while creating thumbnails");
         }
-        $createdClassCrops = $imgProcessor->createClassCrops($payload['unique_name']);
+        $createdClassCrops = $imgProcessor->createClassCropsForNewDataset($payload['unique_name']);
         if (!$createdClassCrops->isSuccessful()) {
             return Response::error("An error occurred while creating class crops");
         }

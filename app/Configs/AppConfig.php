@@ -8,7 +8,7 @@ class AppConfig
         'BOUNDING_BOX' => 'Bounding box',
         'POLYGON' => 'Polygon',
     ];
-    public const SUPPORTED_FORMATS = ['Yolo', 'PascalVOC', 'COCO'];
+    public const SUPPORTED_ANNOTATION_FORMATS = ['Yolo', 'PascalVOC', 'COCO'];
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';
     public const DATASETS_PATH = 'app/public/datasets/';
     public const MAX_THUMB_DIM = 256;

@@ -66,40 +66,41 @@ trait ImageTransformer
         }
     }
 
-    public function drawAnnotations($originalImgDims, $imagePath, $annotations, $technique, $strokeColor = 'blue', $fillColor = 'transparent')
+    public function drawAnnotations($originalImgDims, $croppedImgPath, $annotations, $strokeColor = 'blue', $fillColor = 'transparent')
     {
         $manager = new ImageManager(new Driver());
-        $image = $manager->read($imagePath);
+        $croppedImg = $manager->read($croppedImgPath);
 
         $annotations = is_array($annotations) ? $annotations : [$annotations];
         try
         {
             foreach ($annotations as $annotation)
             {
+                $technique = isset($annotation['segmentation']) ? AppConfig::ANNOTATION_TECHNIQUES['POLYGON'] : AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
                 if ($technique == AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
                     $bbox = $this->pixelizeBbox($annotation, $originalImgDims[0], $originalImgDims[1]);
-                    $bbox = $this->shiftBboxForCroppedImg($bbox, $image->width(), $image->height(), $originalImgDims);
-                    $borderSize = $this->calculateBorderSize($image->width(), $image->height());
+                    $bbox = $this->shiftBboxForCroppedImg($bbox, $croppedImg->width(), $croppedImg->height());
+                    $borderSize = $this->calculateBorderSize($croppedImg->width(), $croppedImg->height());
 
-                    $image->drawRectangle($bbox['x'], $bbox['y'], function (RectangleFactory $rectangle) use ($bbox, $fillColor, $strokeColor, $borderSize) {
+                    $croppedImg->drawRectangle($bbox['x'], $bbox['y'], function (RectangleFactory $rectangle) use ($bbox, $fillColor, $strokeColor, $borderSize) {
                         $rectangle->size($bbox['width'], $bbox['height']);
                         $rectangle->background($fillColor);
                         $rectangle->border($strokeColor, $borderSize);
                     });
-                    $image->save($imagePath);
+                    $croppedImg->save($croppedImgPath);
 
                 } elseif ($technique == AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
                     $segment = $this->pixelizePolygon($annotation['segmentation'], $originalImgDims[0], $originalImgDims[1]);
-                    $segment = $this->shiftPolygonForCroppedImg($segment, $image->width(), $image->height());
-                    $borderSize = $this->calculateBorderSize($image->width(), $image->height());
-                    $image->drawPolygon(function (PolygonFactory $polygon) use ($segment, $strokeColor, $fillColor, $borderSize){
+                    $segment = $this->shiftPolygonForCroppedImg($segment, $croppedImg->width(), $croppedImg->height());
+                    $borderSize = $this->calculateBorderSize($croppedImg->width(), $croppedImg->height());
+                    $croppedImg->drawPolygon(function (PolygonFactory $polygon) use ($segment, $strokeColor, $fillColor, $borderSize){
                         foreach ($segment as $point) {
                             $polygon->point($point['x'], $point['y']);
                         }
                         $polygon->background($fillColor);
                         $polygon->border($strokeColor, $borderSize); // border color and border width
                     });
-                    $image->save($imagePath);
+                    $croppedImg->save($croppedImgPath);
                 }
             }
 
