@@ -44,12 +44,16 @@ class YoloAnnotationValidator
                                 "(class_id, x_center, y_center, width, height). Got " . count($parts);
                             continue;
                         }
-                    } else {
+                    } elseif ($annotationTechnique === AppConstants::ANNOTATION_TECHNIQUES['POLYGON']) {
                         // Polygon must have odd number of parts (class_id + coordinate pairs)
                         if (count($parts) < 7 || (count($parts) - 1) % 2 !== 0) {
                             $errors[$prettyLabelFile][] = "Line {$lineNumber}: Polygon format requires uneven number of numbers(including class_id) and at least 3 coordinates. Got " . count($parts) . " values";
                             continue;
                         }
+                    }
+                    else {
+                        $errors[$prettyLabelFile][] = "Unknown annotation technique: {$annotationTechnique}";
+                        continue;
                     }
 
                     // Validate class_id is non-negative integer

@@ -59,6 +59,9 @@ trait CoordsConvertor
 
     public function pixelizeBbox($bbox, $imgWidth, $imgHeight, $coordsAreCentered = false)
     {
+        if($bbox instanceof Model || $bbox instanceof Collection){
+            $bbox = $bbox->toArray();
+        }
         $pixelized_x = (float)$bbox['x'] * (float)$imgWidth;
         $pixelized_y = (float)$bbox['y'] * (float)$imgHeight;
         $pixelized_width = (float)$bbox['width'] * (float)$imgWidth;
@@ -69,10 +72,10 @@ trait CoordsConvertor
             $pixelized_y -= $pixelized_height / 2;
         }
         return [
-            'x' => $pixelized_x,
-            'y' => $pixelized_y,
-            'width' => $pixelized_width,
-            'height' => $pixelized_height
+            'x' => round($pixelized_x, 1),
+            'y' => round($pixelized_y, 1),
+            'width' => round($pixelized_width, 1),
+            'height' => round($pixelized_height, 1)
         ];
     }
 
@@ -109,129 +112,51 @@ trait CoordsConvertor
         return $pixelizedPolygon;
     }
 
-    /**
-     * Clip coordinates to ensure they fall within image bounds
-     *
-     * @param array<array{x: float, y: float}> $coords Array of coordinate arrays with 'x' and 'y' keys
-     * @param array{0: int, 1: int} $shape Image dimensions as [height, width]
-     * @return array<array{x: float, y: float}> Clipped coordinates
-     */
-    private function clipCoords(array $coords, array $shape): array {
-        return array_map(function($coord) use ($shape) {
-            return [
-                'x' => max(0, min($coord['x'], $shape[1])),  // Clip x between 0 and width
-                'y' => max(0, min($coord['y'], $shape[0]))   // Clip y between 0 and height
-            ];
-        }, $coords);
-    }
-
-    /**
-     * Rescale segment coordinates (xy) from img1_shape to img0_shape
-     *
-     * @param array{0: int, 1: int} $img1Shape The shape of the image that the coords are from
-     * @param array<array{x: float, y: float}> $coords Array of coordinate arrays with 'x' and 'y' keys
-     * @param array{0: int, 1: int} $img0Shape The shape of the image that the segmentation is being applied to
-     * @param ?array{0: array{0: float}, 1: array{0: float, 1: float}} $ratioPad The ratio of the image size to the padded image size
-     * @param bool $normalize Whether to normalize output coordinates to [0,1] range
-     * @param bool $padding Whether to subtract YOLO-style padding from coordinates
-     * @param bool $inputNormalized Whether input coordinates are already normalized (between 0 and 1)
-     * @return array<array{x: float, y: float}> The scaled coordinates
-     */
-    public function scaleCoords(
-        array $img1Shape,
-        array $coords,
-        array $img0Shape,
-        ?array $ratioPad = null,
-        bool $normalize = false,
-        bool $padding = false,
-        bool $inputNormalized = false
-    ): array {
-        // If input is normalized, denormalize to pixels first
-        if ($inputNormalized) {
-            $coords = $this->pixelizePolygon($coords, $img1Shape[1], $img1Shape[0]);
-        }
-
-        // Calculate ratio_pad if not provided
-        if ($ratioPad === null) {
-            $gain = min(
-                $img1Shape[0] / $img0Shape[0],
-                $img1Shape[1] / $img0Shape[1]
-            );
-
-            $pad = [
-                ($img1Shape[1] - $img0Shape[1] * $gain) / 2,  // x padding
-                ($img1Shape[0] - $img0Shape[0] * $gain) / 2   // y padding
-            ];
-        } else {
-            $gain = $ratioPad[0][0];
-            $pad = $ratioPad[1];
-        }
-
-        // Apply padding adjustments if needed
-        if ($padding) {
-            $coords = array_map(function($coord) use ($pad) {
-                return [
-                    'x' => $coord['x'] - $pad[0],
-                    'y' => $coord['y'] - $pad[1]
-                ];
-            }, $coords);
-        }
-
-        // Apply gain scaling
-        $coords = array_map(function($coord) use ($gain) {
-            return [
-                'x' => $coord['x'] / $gain,
-                'y' => $coord['y'] / $gain
-            ];
-        }, $coords);
-
-        // Clip coordinates
-        $coords = $this->clipCoords($coords, $img0Shape);
-
-        // Normalize if requested
-        if ($normalize) {
-            $coords = array_map(function($coord) use ($img0Shape) {
-                return [
-                    'x' => $coord['x'] / $img0Shape[1],
-                    'y' => $coord['y'] / $img0Shape[0]
-                ];
-            }, $coords);
-        }
-
-        return $coords;
-    }
-
-
-    /**
-     * Rescales coordinates from an original image to a cropped image.
-     *
-     * @param array $coords Array of coordinates with 'x' and 'y' keys. in Pixelized form
-     * @param int $new_width Width of the cropped image.
-     * @param int $new_height Height of the cropped image.
-     * @return array Rescaled coordinates for the cropped image.
-     */
-    public function rescaleCoords(array $coords, int $new_width, int $new_height): array
+    public function shiftPolygonForCroppedImg(array $polygon, int $cropImgWidth, int $cropImgHeight): array
     {
-        // Calculate bounding box
-        $x_min = min(array_column($coords, 'x'));
-        $y_min = min(array_column($coords, 'y'));
-        $x_max = max(array_column($coords, 'x'));
-        $y_max = max(array_column($coords, 'y'));
+        // Calculate bounding box minimum coordinates
+        $x_min = min(array_column($polygon, 'x'));
+        $y_min = min(array_column($polygon, 'y'));
 
-        // Crop width and height
-        $crop_width = $x_max - $x_min;
-        $crop_height = $y_max - $y_min;
+        // Calculate bbox dimensions directly from min/max
+        $bboxWidth = max(array_column($polygon, 'x')) - $x_min;
+        $bboxHeight = max(array_column($polygon, 'y')) - $y_min;
 
-        // Calculate scale factors
-        $scale_x = $new_width / $crop_width;
-        $scale_y = $new_height / $crop_height;
+        // Calculate padding to center the bbox in the cropped image
+        $paddingX = ($cropImgWidth - $bboxWidth) / 2;
+        $paddingY = ($cropImgHeight - $bboxHeight) / 2;
 
-        // Adjust coordinates for cropped image
-        return array_map(function ($coord) use ($x_min, $y_min, $scale_x, $scale_y) {
+        // Translate coordinates relative to bbox origin and add padding
+        return array_map(function ($coord) use ($x_min, $y_min, $paddingX, $paddingY) {
             return [
-                "x" => ($coord["x"] - $x_min) * $scale_x,
-                "y" => ($coord["y"] - $y_min) * $scale_y
+                "x" => $coord["x"] - $x_min + $paddingX,
+                "y" => $coord["y"] - $y_min + $paddingY
             ];
-        }, $coords);
+        }, $polygon);
     }
+
+    public function shiftBBoxForCroppedImg(array $bbox, int $cropImgWidth, int $cropImgHeight): array
+    {
+        $paddingX = ($cropImgWidth - $bbox['width']) ;
+        $paddingY = ($cropImgHeight - $bbox['height']);
+
+        // If no padding was applied, no shifting is needed
+        if($paddingX == 0){
+            // We add slight padding so the annotation is not on the edge of the image
+            return [
+                'x' => 1,
+                'y' =>  1,
+                'height' => $bbox['height'] - 2,
+                'width' => $bbox['width'] - 2
+            ];
+        }
+
+        return [
+            'x' => $paddingX / 2,
+            'y' =>  $paddingY / 2,
+            'height' => $bbox['height'],
+            'width' => $bbox['width']
+        ];
+    }
+
 }

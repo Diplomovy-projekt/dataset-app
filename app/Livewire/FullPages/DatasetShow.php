@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Traits\ImageHandler;
 use App\Utils\AppConstants;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
-    use WithPagination;
+    use WithPagination, ImageHandler;
     public $uniqueName;
     public $dataset;
     public $perPage = 50;
@@ -22,32 +23,14 @@ class DatasetShow extends Component
     public function images()
     {
         $images = $this->fetchImages();
-        //Preprocess annotations
-        $images->each(function ($image) {
-            $image->annotations->each(function ($annotation) {
-                // Assign color to class
-                $annotation->class->color = $this->categories[$annotation->annotation_class_id]['color'];
-
-                $annotation = $this->rescaleBbox($annotation);
-                if($annotation->segmentation){
-                    $annotation->segmentation = $this->rescalePolygonPoints($annotation->segmentation);
-                }
-
-            });
-        });
-
-        return $images;
+        return $this->prepareImagesForSvgRendering($images);
     }
     public function mount($uniqueName)
     {
         $this->uniqueName = $uniqueName;
 
-        // Load dataset without fetching all images
         $this->dataset = Dataset::where('unique_name', $uniqueName)->first();
-        $this->categories = $this->dataset->categories->mapWithKeys(function($category) {
-            $category->color = $this->generateRandomRgba();
-            return [$category->id => $category];
-        })->toArray();
+        $this->categories = $this->addColorsToClasses($this->dataset->classes);
     }
 
     public function render()
@@ -69,46 +52,6 @@ class DatasetShow extends Component
 
         $this->checkedCategories[$categoryId] = $toggleState;
         //dump($categoryId, $toggleState);
-    }
-
-    private function rescalePolygonPoints($segmentation): string
-    {
-        $segmentation = json_decode($segmentation);
-        $svgDim = AppConstants::IMG_THUMB_DIMENSIONS;
-        $pointsString = '';
-        foreach ($segmentation as $point) {
-            $pointsString .= $point->x * $svgDim . ',' . $point->y * $svgDim . ',';
-            //$pointsString .= ($point * $svgDim) . ',';
-        }
-        //dd($pointsString);
-        return rtrim($pointsString, ',');
-    }
-
-    private function rescaleBbox($annotation)
-    {
-        $thumbWidth = AppConstants::IMG_THUMB_DIMENSIONS;
-
-        $pixelWidth = $annotation->width * $thumbWidth;
-        $pixelHeight = $annotation->height * $thumbWidth;
-
-        $annotation->x = $annotation->x * $thumbWidth;
-        $annotation->y = $annotation->y * $thumbWidth;
-
-        $annotation->width = $pixelWidth;
-        $annotation->height = $pixelHeight;
-        return $annotation;
-    }
-
-    private function generateRandomRgba()
-    {
-        $r = rand(0, 255);
-        $g = rand(0, 255);
-        $b = rand(0, 255);
-
-        return [
-            'fill' => "rgba($r, $g, $b, 0.2)",
-            'stroke' => "rgba($r, $g, $b, 1)"
-        ];
     }
 
     private function fetchImages()

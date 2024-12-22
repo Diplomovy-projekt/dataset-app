@@ -90,8 +90,8 @@ class YoloImporter
 
         return [
             'class_id' => $classId,
-            'x' => $x,
-            'y' => $y,
+            'x' => $x - $width / 2, // Convert center to top-left
+            'y' => $y - $height / 2, // Convert center to top-left
             'width' => $width,
             'height' => $height,
             'segmentation' => null,

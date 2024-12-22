@@ -22,10 +22,10 @@ class DatasetImageProcessor
     {
         $datasetFolderPath = storage_path(AppConstants::DATASETS_PATH . $datasetFolder);
 
-//        $createdThumbnails = $this->createThumbnails($datasetFolder);
-//        if (!$createdThumbnails->isSuccessful()) {
-//            return Response::error("An error occurred while creating thumbnails");
-//        }
+        $createdThumbnails = $this->createThumbnails($datasetFolder);
+        if (!$createdThumbnails->isSuccessful()) {
+            return Response::error("An error occurred while creating thumbnails");
+        }
         $createdClassCrops = $this->createClassCrops($datasetFolder);
         if (!$createdClassCrops->isSuccessful()) {
             return Response::error("An error occurred while creating class crops");
@@ -69,7 +69,7 @@ class DatasetImageProcessor
         $totalImages = $dataset->num_images;
         $batchSize = max(ceil($dataset->num_images * 0.1), 1); // 10% of the dataset size
 
-        $classes = $dataset->categories()->get()->toArray();
+        $classes = $dataset->classes()->get()->toArray();
 
         foreach ($classes as $class) {
             $classCounts[$class['id']] = ['count' => 0, 'name' => $class['name']];
@@ -84,13 +84,17 @@ class DatasetImageProcessor
             foreach ($images as $image) {
                 $imagePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConstants::FULL_IMG_FOLDER.$image->img_filename);
                 $extension = pathinfo($image->img_filename, PATHINFO_EXTENSION);
-                foreach ($image->annotations as $annotation) {
 
+                foreach ($image->annotations as $annotation) {
                     $classId = $annotation->annotation_class_id;
+
                     if ($classCounts[$classId]['count'] < 3) {
-                        $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConstants::CLASS_IMG_FOLDER.$classId.'/'.$classCounts[$classId]['count'].'.'.$extension);
-                        $this->crop($imagePath,$savePath, $annotation->x, $annotation->y, $annotation->width, $annotation->height, $isNormalized = true);
+                        $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConstants::CLASS_IMG_FOLDER.$classId.'/'.AppConstants::CLASS_SAMPLE_PREFIX.$classCounts[$classId]['count'] . $image->img_filename.'.'.$extension);
+
+                        $pixelizedBbox = $this->pixelizeBbox(["x" => $annotation->x, "y" => $annotation->y, "width" => $annotation->width, "height" => $annotation->height], $image['img_width'], $image['img_height']);
+                        $this->crop($pixelizedBbox, $imagePath,$savePath);
                         $this->drawAnnotations([$image->img_width, $image->img_height], $savePath, $annotation, $dataset->annotation_technique);
+
                         $classCounts[$classId]['count']++;
                     }
                 }

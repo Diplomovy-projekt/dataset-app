@@ -14,8 +14,8 @@ class Profile extends Component
     public function render()
     {
 
-        $imgProcessor = new DatasetImageProcessor();
-        $imgProcesses = $imgProcessor->processImages('0193e0701494-0125-7f45-92e2-8dca8d79a659619dfad8');
+        //$imgProcessor = new DatasetImageProcessor();
+        //$imgProcesses = $imgProcessor->processImages('0193e9e1f169-0e05-76a2-aca1-8bacbc0dea97f26dac78');
 
         $this->loadDatasets();
         return view('livewire.full-pages.profile');
