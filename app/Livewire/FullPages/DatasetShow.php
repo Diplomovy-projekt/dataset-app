@@ -2,17 +2,17 @@
 
 namespace App\Livewire\FullPages;
 
+use App\ImageService\ImageRendering;
+use App\ImageService\ImageTransformer;
 use App\Models\Dataset;
 use App\Models\Image;
-use App\Traits\ImageHandler;
-use App\Utils\AppConstants;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
-    use WithPagination, ImageHandler;
+    use WithPagination, ImageRendering;
     public $uniqueName;
     public $dataset;
     public $perPage = 50;

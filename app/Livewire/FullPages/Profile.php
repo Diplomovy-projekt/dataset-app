@@ -2,11 +2,8 @@
 
 namespace App\Livewire\FullPages;
 
-use App\ImageProcessing\DatasetImageProcessor;
 use App\Models\Dataset;
 use Livewire\Component;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 
 class Profile extends Component
 {
