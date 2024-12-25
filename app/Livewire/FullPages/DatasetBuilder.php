@@ -3,9 +3,9 @@
 namespace App\Livewire\FullPages;
 
 use App\Models\Dataset;
-use App\Models\DatasetProperty;
-use App\Models\PropertyType;
-use App\Models\PropertyValue;
+use App\Models\DatasetMetadata;
+use App\Models\MetadataType;
+use App\Models\MetadataValue;
 use Livewire\Component;
 
 class DatasetBuilder extends Component
@@ -38,7 +38,7 @@ class DatasetBuilder extends Component
 
     public function render()
     {
-        $datasets = Dataset::with(['classes', 'datasetProperties.propertyValue'])->get();
+        $datasets = Dataset::with(['classes', 'datasetMetadata.metadataValue'])->get();
 
         $this->datasets = $datasets;
         $this->currentStage = 3;
@@ -88,39 +88,39 @@ class DatasetBuilder extends Component
 
     private function categoriesFilter()
     {
-        $categoryPropertyTypeIds = PropertyType::where('name', 'Category')->pluck('id');
+        $categoryMetadataTypeIds = MetadataType::where('name', 'Category')->pluck('id');
 
-        $propertyValues = PropertyValue::whereIn('property_type_id', $categoryPropertyTypeIds)
-            ->whereIn('id', DatasetProperty::pluck('property_value_id'))
+        $metadataValues = MetadataValue::whereIn('metadata_type_id', $categoryMetadataTypeIds)
+            ->whereIn('id', DatasetMetadata::pluck('metadata_value_id'))
             ->distinct()
             ->get();
-        $this->categories = $propertyValues;
+        $this->categories = $metadataValues;
     }
 
     private function originDataFilter()
     {
-        // 1. Get the ID of the Category property type
-        $categoryPropertyId = PropertyType::where('name', 'Category')
+        // 1. Get the ID of the Category metadata type
+        $categoryMetadataId = MetadataType::where('name', 'Category')
             ->value('id');
 
         // 2. Get dataset IDs that match selected categories
-        $datasetIds = DatasetProperty::where('property_value_id', $this->selectedCategories)
+        $datasetIds = DatasetMetadata::where('metadata_value_id', $this->selectedCategories)
             ->pluck('dataset_id')
             ->toArray();
 
-        // 3. Get all property values for these datasets
-        $datasetProperties = DatasetProperty::whereIn('dataset_id', $datasetIds)
+        // 3. Get all metadata values for these datasets
+        $datasetMetadata = DatasetMetadata::whereIn('dataset_id', $datasetIds)
             ->get()
             ->toArray();
 
-        // 4. Get available property values (excluding categories)
-        $availableValues = PropertyValue::whereIn('property_type_id', array_column($datasetProperties, 'property_value_id'))
-            ->whereNot('property_type_id', $categoryPropertyId)
+        // 4. Get available metadata values (excluding categories)
+        $availableValues = MetadataValue::whereIn('metadata_type_id', array_column($datasetMetadata, 'metadata_value_id'))
+            ->whereNot('metadata_type_id', $categoryMetadataId)
             ->get()
             ->toArray();
 
-        // 5. Get and index property types for easy lookup
-        $availableTypes = PropertyType::whereIn('id', array_column($availableValues, 'property_type_id'))
+        // 5. Get and index metadata types for easy lookup
+        $availableTypes = MetadataType::whereIn('id', array_column($availableValues, 'metadata_type_id'))
             ->get()
             ->toArray();
 
@@ -129,7 +129,7 @@ class DatasetBuilder extends Component
         // 6. Build the final data structure
         $this->originData = [];
         foreach ($availableValues as $value) {
-            $typeId = $value['property_type_id'];
+            $typeId = $value['metadata_type_id'];
 
             if (!isset($this->originData[$typeId])) {
                 $this->originData[$typeId] = [
@@ -145,8 +145,8 @@ class DatasetBuilder extends Component
 
     private function datasetsFilter()
     {
-        $datasetIds = DatasetProperty::whereIn('property_value_id', $this->selectedOriginData)->pluck('dataset_id');
-        $datasets = Dataset::whereIn('id', $datasetIds)->with(['classes', 'datasetProperties.propertyValue'])->get();
+        $datasetIds = DatasetMetadata::whereIn('metadata_value_id', $this->selectedOriginData)->pluck('dataset_id');
+        $datasets = Dataset::whereIn('id', $datasetIds)->with(['classes', 'datasetMetadata.metadataValue'])->get();
 
         $this->datasets = $datasets;
     }

@@ -22,7 +22,8 @@ trait ImageRendering
             $image->viewDims = $this->calculateThumbnailDimensions($image->img_width, $image->img_height);
 
             $image->annotations->each(function ($annotation) use ($image) {
-                $annotation->class->color = $this->categories[$annotation->annotation_class_id]['color'];
+                $annotation->class->color = $this->classes[$annotation->annotation_class_id]['color'];
+
                 $annotation->bbox = $this->pixelizeBbox($annotation, $image->viewDims['width'], $image->viewDims['height']);
                 if($annotation->segmentation){
                     $pixelizedSegment = $this->pixelizePolygon($annotation->segmentation, $image->viewDims['width'], $image->viewDims['height']);
@@ -58,11 +59,14 @@ trait ImageRendering
         return $svgString;
     }
 
-    public function addColorsToClasses($classes)
+    public function addColorsAndStateToClasses($classes)
     {
-        return $classes->mapWithKeys(function($category) {
-            $category->color = $this->generateRandomRgba();
-            return [$category->id => $category];
+        return $classes->mapWithKeys(function($class) {
+            $class->color = $this->generateRandomRgba();
+            $class->state = 'true';
+            return [
+                $class->id => $class
+            ];
         })->toArray();
     }
 

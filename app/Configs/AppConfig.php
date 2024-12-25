@@ -5,10 +5,21 @@ namespace App\Configs;
 class AppConfig
 {
     public const ANNOTATION_TECHNIQUES = [
-        'BOUNDING_BOX' => 'Bounding box',
         'POLYGON' => 'Polygon',
+        'BOUNDING_BOX' => 'Bounding box',
     ];
-    public const SUPPORTED_ANNOTATION_FORMATS = ['Yolo', 'PascalVOC', 'COCO'];
+    public const ANNOTATION_FORMATS_INFO = [
+        'yolo' => [
+            'name' => 'YOLO',
+            'extension' => 'txt',],
+        'pascalvoc' => [
+            'name' => 'Pascal Voc',
+            'extension' => 'xml',],
+        'coco' => [
+            'name' => 'COCO',
+            'extension' => 'json',],
+    ];
+
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';
     public const DATASETS_PATH = 'app/public/datasets/';
     public const MAX_THUMB_DIM = 256;

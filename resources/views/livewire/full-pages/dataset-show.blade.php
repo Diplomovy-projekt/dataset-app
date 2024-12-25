@@ -1,7 +1,10 @@
-<div x-data="{ hoveredIndex: null }" class="container mx-auto pt-10">
-    <div class="flex flex-col gap-2 pb-5">
-        <x-search-bar />
-        <x-category-dropdown />
+<div x-data="{ hoveredIndex: null }" class="container mx-auto pt-6">
+    <div class="flex flex-col pb-5">
+        <x-dataset-header></x-dataset-header>
+        <div class=" flex items-center border-t border-slate-800 bg-slate-900/50 p-4 gap-4">
+            <x-search-bar />
+            <x-category-dropdown />
+        </div>
     </div>
     <div class="flex flex-wrap gap-10">
         {{-- Display images in a grid container --}}
@@ -10,12 +13,12 @@
                  @mouseenter="hoveredIndex = {{ $image->id }}"
                  @mouseleave="hoveredIndex = null" class="flex flex-col">
                 <div class="relative w-36" wire:key="{{$image['img_filename']}}">
-                    <div class="absolute w-36 h-36 inset-0 bg-gray-300 animate-pulse"></div>
+                    {{--<div class="absolute w-36 h-36 inset-0 bg-gray-300 animate-pulse"></div>--}}
                     <img id="{{$image['img_filename']}}"
-                         class="w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-in-out rounded-md" loading="lazy"
+                         class="w-full h-full object-cover opacity-1 transition-opacity duration-500 ease-in-out rounded-md" loading="lazy"
                          src="{{ asset('storage/datasets/'.$this->dataset->unique_name. '/thumbnails/' . $image['img_filename']) }}" alt="Image"
-                         onload="this.style.opacity=1; this.previousElementSibling.style.display='none';">
-                    <svg wire:ignore id="svg-{{$image['img_filename']}}" width="100%" height="100%" viewBox="0 0 {{$image->viewDims['width']}} {{$image->viewDims['height']}}" class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                         {{--onload="this.style.opacity=1; this.previousElementSibling.style.display='none';"--}}>
+                    <svg id="svg-{{$image['img_filename']}}" width="100%" height="100%" viewBox="0 0 {{$image->viewDims['width']}} {{$image->viewDims['height']}}" class="absolute top-0 left-0 w-full h-full pointer-events-none">
                         <defs>
                             <mask id="annotation-mask-{{$image['img_filename']}}">
                                 <!-- Darken the background (everything will be darkened except the annotations) -->
@@ -24,9 +27,9 @@
                                 @foreach($image['annotations'] as $annotation)
                                     @if(isset($annotation->polygonString))
                                         <!-- Keep the area inside annotations visible by making it transparent in the mask -->
-                                        <polygon points="{{ $annotation->polygonString }}" fill="black" />
+                                        <polygon wire:key="mask-poly-{{time()}}" points="{{ $annotation->polygonString }}" fill="black" />
                                     @else
-                                        <rect x="{{ $annotation->bbox['x'] }}"
+                                        <rect wire:key="mask-rect-{{time()}}" x="{{ $annotation->bbox['x'] }}"
                                               y="{{ $annotation->bbox['y'] }}"
                                               width="{{ $annotation->bbox['width'] }}"
                                               height="{{ $annotation->bbox['height'] }}"
@@ -42,7 +45,8 @@
                         <!-- Annotations with original fill colors and full opacity for the current image -->
                         @foreach($image['annotations'] as $annotation)
                             @if(isset($annotation->polygonString))
-                                <polygon points="{{ $annotation->polygonString }}"
+                                <polygon wire:key="annot-poly-{{time()}}"
+                                         points="{{ $annotation->polygonString }}"
                                          fill="transparent"
                                          stroke="{{ $annotation->class->color['stroke'] }}"
                                          stroke-width="1"
@@ -50,7 +54,8 @@
                                          closed="true"
                                 />
                             @else
-                                <rect x="{{ $annotation->bbox['x'] }}"
+                                <rect wire:key="annot-rect-{{time()}}"
+                                      x="{{ $annotation->bbox['x'] }}"
                                       y="{{ $annotation->bbox['y'] }}"
                                       width="{{ $annotation->bbox['width'] }}"
                                       height="{{ $annotation->bbox['height'] }}"

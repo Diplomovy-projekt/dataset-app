@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Forms;
 
+use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
-use App\Models\AnnotationFormat;
-use App\Models\PropertyType;
+use App\Models\Category;
+use App\Models\MetadataType;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -15,12 +16,15 @@ class UploadDataset extends Component
 {
     use WithFileUploads;
     public $annotationFormats;
-    public $propertyTypes;
+    public $techniques;
+    public $metadataTypes;
+    public $categories;
 
     # Selectable form fields
-    public $checkedProperties = [];
     public $selectedFormat;
-    public $annotationTechnique;
+    public $selectedTechnique;
+    public $selectedMetadata = [];
+    public $selectedCategories = [];
     public $description;
 
     # Chunked upload
@@ -33,8 +37,15 @@ class UploadDataset extends Component
     public $validated = false;
     public function render()
     {
-        $this->annotationFormats = AnnotationFormat::all();
-        $this->propertyTypes = PropertyType::with('propertyValues')->get();
+        $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
+        $this->techniques = array_values(array_map(function ($technique) {
+            return [
+                'key' => $technique,
+                'value' => $technique,
+            ];
+        }, AppConfig::ANNOTATION_TECHNIQUES));
+        $this->metadataTypes = MetadataType::with('metadataValues')->get();
+        $this->categories = Category::all();
         return view('livewire.forms.upload-dataset');
     }
 
@@ -48,8 +59,10 @@ class UploadDataset extends Component
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
-            'properties' => $this->checkedProperties,
-            'technique' => $this->annotationTechnique,
+            'metadata' => $this->selectedMetadata,
+            'technique' => $this->selectedTechnique,
+            'categories' => $this->selectedCategories,
+            'description' => $this->description,
         ];
 
         if ($response->isSuccessful()) {
@@ -64,13 +77,15 @@ class UploadDataset extends Component
 
     public function updatedFileChunk()
     {
-        $validatedData = $this->validate([
-            'selectedFormat' => 'required',  // Example validation rule
-            'annotationTechnique' => 'required',
-            'checkedProperties' => 'required',
-            'description' => 'nullable|string',
-        ]);
-        $this->validated = true;
+        if (!$this->validated){
+            $this->validate([
+                'selectedFormat' => 'required',  // Example validation rule
+                'selectedTechnique' => 'required',
+                'selectedCategories' => 'required',
+                'description' => 'nullable|string',
+            ]);
+            $this->validated = true;
+        }
         $chunkFileName = $this->fileChunk->getFileName();
 
         // Read the chunk file

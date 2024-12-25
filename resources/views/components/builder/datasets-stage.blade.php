@@ -57,13 +57,13 @@
 
                             <!-- Dataset Properties -->
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
-                                @forelse($dataset->datasetProperties as $property)
+                                @forelse($dataset->datasetMetadata as $metadata)
                                     <div class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
-                                        {{ $property->propertyValue->value }}
+                                        {{ $metadata->metadataValue->value }}
                                     </div>
                                 @empty
                                     <div class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-400">
-                                        No properties
+                                        No metadata
                                     </div>
                                 @endforelse
                             </div>

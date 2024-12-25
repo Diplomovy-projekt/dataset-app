@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('property_types', function (Blueprint $table) {
+        Schema::create('metadata_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->text('description');
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        Schema::dropIfExists('property_types');
+        Schema::dropIfExists('metadata_types');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 };

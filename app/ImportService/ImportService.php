@@ -7,7 +7,8 @@ use App\ImageService\DatasetImageProcessor;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
 use App\Models\Dataset;
-use App\Models\DatasetProperty;
+use App\Models\DatasetCategory;
+use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Utils\Response;
 use Illuminate\Support\Facades\DB;
@@ -90,39 +91,38 @@ class ImportService
             return Response::error("An unexpected error occurred during the import process".$e->getMessage());
         }
     }
-    public function saveToDatabase($parsedData, $metadata)
+    public function saveToDatabase($parsedData, $data)
     {
         try {
-            $categories = $parsedData['categories'];
+            $classes = $parsedData['categories'];
             $imageData = $parsedData['images'];
             // 1. Create Dataset
             $dataset = Dataset::create([
                 'user_id' => auth()->id() ?? "1",
-                'display_name' => $metadata['display_name'],
-                'unique_name' => $metadata['unique_name'],
-                'description' => $metadata['description'] ?? "",
+                'display_name' => $data['display_name'],
+                'unique_name' => $data['unique_name'],
+                'description' => $data['description'] ?? "",
                 'num_images' => count($imageData),
                 'total_size' => 0,
-                'annotation_technique' => $metadata['technique'],
+                'annotation_technique' => $data['technique'],
                 'is_public' => false,
             ]);
 
-            // 2. Save Categories
-            $categoryIds = [];
-            foreach ($categories['names'] as $categoryName) {
+            // 2. Save Classes
+            $classIds = [];
+            foreach ($classes['names'] as $categoryName) {
                 $category = AnnotationClass::create([
                     'dataset_id' => $dataset->id,
                     'name' => $categoryName,
-                    'supercategory' => $categories['superCategory'] ?? null,
+                    'supercategory' => $classes['superCategory'] ?? null,
                 ]);
-                $categoryIds[] = $category->id;
+                $classIds[] = $category->id;
             }
 
             // 3. Save Images and Annotations
             foreach ($imageData as $img) {
                 $image = Image::create([
                     'dataset_id' => $dataset->id,
-                    'img_folder' => $img['img_folder'],
                     'img_filename' => $img['img_filename'],
                     'img_width' => $img['width'],
                     'img_height' => $img['height'],
@@ -132,7 +132,7 @@ class ImportService
                 foreach ($img['annotations'] as $annotation) {
                     AnnotationData::create([
                         'image_id' => $image->id,
-                        'annotation_class_id' => $categoryIds[$annotation['class_id']], // map to the correct class_id
+                        'annotation_class_id' => $classIds[$annotation['class_id']], // map to the correct class_id
                         'x' => $annotation['x'],
                         'y' => $annotation['y'],
                         'width' => $annotation['width'],
@@ -142,11 +142,19 @@ class ImportService
                 }
             }
 
-            // 5. Save dataset properties
-            foreach ($metadata['properties'] as $id => $value) {
-                DatasetProperty::create([
+            // 5. Save dataset metadata
+            foreach ($data['metadata'] as $id => $value) {
+                DatasetMetadata::create([
                     'dataset_id' => $dataset->id,
-                    'property_value_id' => $id,
+                    'metadata_value_id' => $id,
+                ]);
+            }
+
+            // 6. Save dataset categories
+            foreach ($data['categories'] as $id) {
+                DatasetCategory::create([
+                    'dataset_id' => $dataset->id,
+                    'category_id' => $id,
                 ]);
             }
 

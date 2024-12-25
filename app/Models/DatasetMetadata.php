@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DatasetProperty extends Model
+class DatasetMetadata extends Model
 {
     use HasFactory;
     protected $fillable = [
         'dataset_id',
-        'property_value_id'
+        'metadata_value_id'
     ];
 
     public function dataset(): BelongsTo
@@ -19,8 +19,8 @@ class DatasetProperty extends Model
         return $this->belongsTo(Dataset::class);
     }
 
-    public function propertyValue(): BelongsTo
+    public function metadataValue(): BelongsTo
     {
-        return $this->belongsTo(PropertyValue::class);
+        return $this->belongsTo(MetadataValue::class);
     }
 }

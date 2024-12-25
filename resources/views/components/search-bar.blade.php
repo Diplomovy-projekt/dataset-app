@@ -1,15 +1,13 @@
-<div class="flex items-center bg-slate-900 border border-slate-600  rounded-lg shadow-md">
-    <!-- Search Input -->
-    <input
-        type="text"
-        wire:model="searchTerm"
-        class="flex-grow p-3 bg-transparent text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-300"
-        placeholder="Search..."
-    >
-    <!-- Search Button -->
-    <button wire:click="search"
-            class="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-r-lg focus:outline-none">
-        Search
-        <x-zondicon-search class="w-5 h-5 ml-2" />
+<div class="flex-1 relative items-center">
+    <input type="text"
+           wire:model="searchTerm"
+           placeholder="Search images..."
+           class="w-full bg-slate-900/50 text-slate-100 rounded-lg pl-10 pr-4 py-2
+                                  border border-slate-700 focus:outline-none focus:border-blue-500/50">
+    <button wire:click="search"  class="absolute left-3 top-2.5 h-5 w-5 text-slate-500">
+        <svg class="h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
     </button>
 </div>
