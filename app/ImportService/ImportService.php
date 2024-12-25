@@ -25,69 +25,72 @@ class ImportService
     /**
      * @throws \Exception
      */
-    public function handleImport(array $payload): Response {
-        $imgProcessor = new DatasetImageProcessor();
-        $importHandler = $this->importHandlerFactory->create($payload['format']);
+    public function handleImport(array $data): Response {
+        $importHandler = $this->importHandlerFactory->create($data['format']);
         if ($importHandler instanceof Response) {
             return $importHandler;
         }
 
-        $structureIssues  = $importHandler->findStructureErrors($payload['unique_name']);
+        $structureIssues  = $importHandler->findStructureErrors($data['unique_name']);
         if (!empty($structureIssues)) {
             return Response::error("Zip has invalid structure",$structureIssues);
         }
 
-        $invalidAnnotations = $importHandler->findAnnotationIssues($payload['unique_name'], $payload['technique']);
+        $invalidAnnotations = $importHandler->findAnnotationIssues($data['unique_name'], $data['technique']);
         if (!empty($invalidAnnotations)) {
             return Response::error("Invalid annotations found",$invalidAnnotations);
         }
 
-        $parsedData = $importHandler->parseDataset($payload['unique_name'], $payload['technique']);
+        $parsedData = $importHandler->parseDataset($data['unique_name'], $data['technique']);
         if (empty($parsedData)) {
             return Response::error("An error occurred while parsing the dataset");
         }
 
-        $isSaved = $this->saveDataset($parsedData, $payload, $importHandler);
+        $isSaved = $this->saveDataset($parsedData, $data, $importHandler);
         if (!$isSaved->isSuccessful()) {
-            return Response::error("An error occurred while saving the dataset: ".$isSaved->message);
-        }
-
-        $createdThumbnails = $imgProcessor->createThumbnailsForNewDataset($payload['unique_name']);
-        if (!$createdThumbnails->isSuccessful()) {
-            return Response::error("An error occurred while creating thumbnails");
-        }
-        $createdClassCrops = $imgProcessor->createClassCropsForNewDataset($payload['unique_name']);
-        if (!$createdClassCrops->isSuccessful()) {
-            return Response::error("An error occurred while creating class crops");
+            return Response::error($isSaved->message);
         }
 
         return Response::success("Dataset imported successfully");
     }
 
-    private function saveDataset($parsedData, array $payload, mixed $importHandler): Response
+    private function saveDataset($parsedData, array $data, mixed $importHandler): Response
     {
+        $imgProcessor = new DatasetImageProcessor();
         DB::beginTransaction();
 
         try {
             // Save the parsed data to the database
-            $savedToDb = $this->saveToDatabase($parsedData, $payload);
+            $savedToDb = $this->saveToDatabase($parsedData, $data);
             if (!$savedToDb->isSuccessful()) {
-                DB::rollBack();
-                return Response::error("An error occurred while saving to the database". $savedToDb->message);
+                throw new \Exception("An error occurred while saving to the database: " . $savedToDb->message);
             }
 
             // Move images to public storage
-            $imagesMoved = $this->moveImagesToPublic($payload['unique_name'], get_class($importHandler)::IMAGE_FOLDER);
+            $imagesMoved = $this->moveImagesToPublic($data['unique_name'], get_class($importHandler)::IMAGE_FOLDER);
             if (!$imagesMoved->isSuccessful()) {
-                DB::rollBack();
-                return Response::error("An error occurred while moving images to public storage");
+                throw new \Exception("An error occurred while moving images to public storage");
             }
 
-            DB::commit();
-            return Response::success("Dataset imported successfully");
-        } catch (\Exception $e) {
+            // Create thumbnails
+            $createdThumbnails = $imgProcessor->createThumbnailsForNewDataset($data['unique_name']);
+            if (!$createdThumbnails->isSuccessful()) {
+                throw new \Exception("An error occurred while creating thumbnails");
+            }
 
-            DB::rollBack();
+            //  Create class crops
+            $createdClassCrops = $imgProcessor->createClassCropsForNewDataset($data['unique_name']);
+            if (!$createdClassCrops->isSuccessful()) {
+                throw new \Exception("An error occurred while creating class crops");
+            }
+
+            $savedToDb->data->thumbnail_image = $createdThumbnails->data;
+            $savedToDb->data->save();
+            DB::commit();
+
+            return Response::success();
+        } catch (\Exception $e) {
+            $this->rollBackDatasetUpload($data['unique_name']);
             return Response::error("An unexpected error occurred during the import process".$e->getMessage());
         }
     }
@@ -105,6 +108,7 @@ class ImportService
                 'num_images' => count($imageData),
                 'total_size' => 0,
                 'annotation_technique' => $data['technique'],
+                'thumbnail_image' => "",
                 'is_public' => false,
             ]);
 
@@ -123,9 +127,10 @@ class ImportService
             foreach ($imageData as $img) {
                 $image = Image::create([
                     'dataset_id' => $dataset->id,
-                    'img_filename' => $img['img_filename'],
-                    'img_width' => $img['width'],
-                    'img_height' => $img['height'],
+                    'filename' => $img['filename'],
+                    'width' => $img['width'],
+                    'height' => $img['height'],
+                    'size' => $img['size'],
                 ]);
 
                 // 4. Save Annotations
@@ -158,11 +163,12 @@ class ImportService
                 ]);
             }
 
-            return Response::success("Annotations imported successfully");
+            return Response::success("Annotations imported successfully", data: $dataset);
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }
     }
+
     private function moveImagesToPublic($folderName, $imageFolder)
     {
         $imageFolderPath = AppConfig::LIVEWIRE_TMP_PATH . $folderName . '/' . $imageFolder;
@@ -193,4 +199,11 @@ class ImportService
         return Response::success("Images moved to public storage successfully");
     }
 
+    private function rollBackDatasetUpload($datasetFolder){
+        // Rollback the dataset upload
+        if(Storage::disk('datasets')->exists($datasetFolder)){
+            Storage::disk('datasets')->deleteDirectory($datasetFolder);
+        }
+        DB::rollBack();
+    }
 }

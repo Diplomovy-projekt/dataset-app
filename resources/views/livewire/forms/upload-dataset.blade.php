@@ -56,7 +56,7 @@
                             <div class="p-4 space-y-3">
                                 @foreach($categories as $category)
                                     <x-mary-checkbox
-                                        wire:model="selectedCategories.{{ $category->id }}"
+                                        wire:model="selectedCategories"
                                         value="{{ $category->id }}"
                                         label="{{ $category->name }}"
                                     />
@@ -103,8 +103,14 @@
                     inline />
 
                 {{-- Submit Button --}}
-                <x-button @click="uploadChunks" text="Upload Dataset" wire:loading.attr="disabled" wire:target="submitForm"/>
-
+                <x-button
+                    @click="uploadChunks"
+                    x-bind:disabled="isUploading"
+                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
+                    text="Upload Dataset">
+                    <span x-show="!isUploading">Upload Dataset</span>
+                    <span x-show="isUploading">Uploading...</span>
+                </x-button>
                 <div class="flex items-center space-x-2 mt-4">
                     <!-- MaryUI Progress Bar -->
                     <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
@@ -120,67 +126,92 @@
 @script
     <script>
         Alpine.data('chunkedUpload', () => ({
-            progress: 0, // Ensure it's a number
+            progress: 0,
+            isUploading: false, // Add upload state tracking
 
             get progressFormatted() {
-                return this.progress.toFixed(2) + '%'; // Returns progress with two decimals
+                return this.progress.toFixed(2) + '%';
             },
 
             uploadChunks() {
+                // Prevent multiple uploads
+                if (this.isUploading) {
+                    console.log('Upload already in progress');
+                    return;
+                }
 
-                //Livewire.dispatch('trigger-validation')
                 const fileInput = document.querySelector('input[name="myFile"]');
                 if (fileInput.files[0]) {
                     const file = fileInput.files[0];
-                    this.progress = 0; // Reset progress bar
+                    this.progress = 0;
+                    this.isUploading = true; // Set upload state to true
+
                     $wire.$set('fileSize', file.size, true);
                     $wire.$set('displayName', file.name, true);
-                    $wire.$set('uniqueName', this.generateUUIDv7() +'.'+ file.name.split('.').pop(), true);
-                    this.livewireUploadChunk(file, 0);
+                    $wire.$set('uniqueName', this.generateUUIDv7() + '.' + file.name.split('.').pop(), true);
+
+                    this.livewireUploadChunk(file, 0).catch(() => {
+                        // Handle any errors that occur during upload
+                        this.isUploading = false;
+                        this.progress = 0;
+                    });
                 }
             },
 
-            livewireUploadChunk(file, start) {
+            async livewireUploadChunk(file, start) {
                 console.log('Uploading chunk', start);
                 const chunkSize = $wire.$get('chunkSize');
                 const chunkEnd = Math.min(start + chunkSize, file.size);
                 const chunk = file.slice(start, chunkEnd, file.type);
                 const chunkFile = new File([chunk], file.name, { type: file.type });
 
-                $wire.$upload(
-                    'fileChunk',
-                    chunkFile,
-                    finish = () => {},
-                    error = () => {},
-                    progress = (event) => {
-                        console.log(event.detail.progress);
-                        this.progress = ((start + event.detail.progress) / file.size) * 100;
-                        if (event.detail.progress == 100) {
-                            start = chunkEnd;
+                try {
+                    await new Promise((resolve, reject) => {
+                        $wire.$upload(
+                            'fileChunk',
+                            chunkFile,
+                            () => resolve(), // finish
+                            (error) => {
+                                console.error('Upload error:', error);
+                                this.isUploading = false; // Reset on error
+                                reject(error);
+                            },
+                            (event) => {
+                                console.log(event.detail.progress);
+                                this.progress = ((start + event.detail.progress) / file.size) * 100;
 
-                            if (start < file.size) {
-                                this.livewireUploadChunk(file, start);
+                                if (event.detail.progress == 100) {
+                                    start = chunkEnd;
+
+                                    if (start < file.size) {
+                                        this.livewireUploadChunk(file, start);
+                                    } else {
+                                        // Upload is complete
+                                        this.isUploading = false;
+                                    }
+                                }
                             }
-                        }
-                    }
-                );
+                        );
+                    });
+                } catch (error) {
+                    this.isUploading = false;
+                    throw error;
+                }
             },
 
             generateUUIDv7() {
-                const timestamp = Date.now(); // Current Unix timestamp (milliseconds)
-                const randomBytes = crypto.getRandomValues(new Uint8Array(10)); // 80 random bits
+                const timestamp = Date.now();
+                const randomBytes = crypto.getRandomValues(new Uint8Array(10));
 
-                // Set the version (v7) in the UUID format: 'xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx'
-                let uuid = timestamp.toString(16).padStart(12, '0'); // Timestamp in hex, 12 digits
+                let uuid = timestamp.toString(16).padStart(12, '0');
                 uuid += '-';
-                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(4, '0'); // Random 4 digits
-                uuid += '-7'; // Version 7 (always 7)
-                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(3, '0'); // Random 3 digits
+                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(4, '0');
+                uuid += '-7';
+                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(3, '0');
                 uuid += '-';
-                uuid += (Math.floor(Math.random() * 0x4000) + 0x8000).toString(16).padStart(4, '0'); // Random 4 digits with variant
+                uuid += (Math.floor(Math.random() * 0x4000) + 0x8000).toString(16).padStart(4, '0');
                 uuid += '-';
 
-                // Add the remaining random bytes
                 for (let i = 0; i < randomBytes.length; i++) {
                     uuid += randomBytes[i].toString(16).padStart(2, '0');
                 }

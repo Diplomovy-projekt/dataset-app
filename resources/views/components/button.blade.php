@@ -1,6 +1,6 @@
 @props([
     'type' => 'primary',
-    'size' => 'medium',  // Default size
+    'size' => 'md',  // Default size
     'text' => 'Button',
     'color' => null,     // Optional custom Tailwind background color
 ])

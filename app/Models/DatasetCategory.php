@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class DatasetCategory extends Model
 {
@@ -23,5 +24,11 @@ class DatasetCategory extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public static function getAllUniqueCategories(): Collection
+    {
+        return Category::whereIn('id', self::select('category_id')->distinct())
+            ->get(['id', 'name']);
     }
 }

@@ -20,29 +20,29 @@ class DatasetShow extends Component
     public $dataset;
     public $perPage = 50;
     public $searchTerm;
-    public $classes = [];
     public $metadata = [];
     public $categories = [];
     #[Computed]
     public function images()
     {
         $images = $this->fetchImages();
-        return $this->prepareImagesForSvgRendering($images);
+        return $this->prepareImagesForSvgRendering($images, $this->dataset['classes']);
     }
     public function mount($uniqueName)
     {
-        $this->uniqueName = $uniqueName;
+        $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
 
-        $this->dataset = Dataset::where('unique_name', $uniqueName)->with(['classes'])->first();
-        $this->metadata = $this->dataset->metadataGroupedByType();
-        $this->categories = $this->dataset->categories()->get();
-        $this->classes = $this->addColorsAndStateToClasses($this->dataset->classes);
+        $classes = $this->addColorsAndStateToClasses($dataset->classes);
+
+        $this->dataset = $dataset->toArray();
+        $this->dataset['classes'] = $classes;
+        $this->metadata = $dataset->metadataGroupedByType();
+        $this->categories = $dataset->categories()->get();
     }
 
     public function render()
     {
         return view('livewire.full-pages.dataset-show');
-
     }
 
     public function search()
@@ -55,24 +55,24 @@ class DatasetShow extends Component
     {
         switch ($toggleState) {
             case 'all':
-                $this->classes = array_map(function ($class) {
+                $this->dataset['classes'] = array_map(function ($class) {
                     $class['state'] = 'true'; // Set state to 'true'
                     return $class;
-                }, $this->classes);
+                }, $this->dataset->classes);
                 break;
 
             case 'none':
-                $this->classes = array_map(function ($class) {
+                $this->dataset['classes'] = array_map(function ($class) {
                     $class['state'] = 'false'; // Set state to 'false'
                     return $class;
-                }, $this->classes);
+                }, $this->dataset['classes']);
                 break;
             default:
                 if ($toggleState == 'true') {
-                    $this->classes[$categoryId]['state'] = 'true';
+                    $this->dataset['classes'][$categoryId]['state'] = 'true';
                 }
                 else {
-                    $this->classes[$categoryId]['state'] = 'false';
+                    $this->dataset['classes'][$categoryId]['state'] = 'false';
                 }
         }
         unset($this->images);
@@ -80,16 +80,16 @@ class DatasetShow extends Component
 
     private function fetchImages()
     {
-
         if ($this->searchTerm) {
-            return Image::where('img_filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            return Image::where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
-            $activeClassIds = collect($this->classes)
+            $activeClassIds = collect($this->dataset['classes'])
                 ->where('state', 'true')  // Filter classes where state is 'true'
                 ->pluck('id')             // Get the IDs of those classes
                 ->toArray();
-            return $this->dataset->images()
+            $dataset = Dataset::where('unique_name', $this->uniqueName)->first();
+            return $dataset->images()
                 ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
                 ->paginate($this->perPage);
         }

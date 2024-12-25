@@ -6,23 +6,23 @@
                 <div>
                     <div class="flex gap-3 items-center">
                         <h2 class="text-2xl font-bold text-slate-100">
-                           {{ $this->dataset->display_name }}
+                           {{ $this->dataset['display_name'] }}
                         </h2>
-                        <span class="flex-shrink-0 grow-0 px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $this->dataset->annotation_technique === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
-                            {{ $this->dataset->annotation_technique }}
+                        <span class="flex-shrink-0 grow-0 px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $this->dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
+                            {{ $this->dataset['annotation_technique'] }}
                         </span>
                     </div>
                     <p class="mt-2 text-sm text-slate-400 max-w-2xl">
-                        {{ empty($this->dataset->description) ? 'No description available' : $this->dataset->description }}
+                        {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
                     </p>
                 </div>
                 <div class="flex gap-3 text-slate-100">
                     <div class="text-center bg-slate-700/40 rounded-lg p-2">
-                        <div class="text-2xl font-bold">{{$this->dataset->num_images ?? 'N/A'}}</div>
+                        <div class="text-2xl font-bold">{{$this->dataset['num_images'] ?? 'N/A'}}</div>
                         <div class="text-xs text-slate-400">Images</div>
                     </div>
                     <div class="text-center bg-slate-700/40 rounded-lg p-2">
-                        <div class="text-2xl font-bold">{{count($this->classes)}}</div>
+                        <div class="text-2xl font-bold">{{count($this->dataset['classes'])}}</div>
                         <div class="text-xs text-slate-400">Labels</div>
                     </div>
                 </div>

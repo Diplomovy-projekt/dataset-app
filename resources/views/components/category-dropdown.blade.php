@@ -36,7 +36,7 @@
 
                     {{-- Class buttons --}}
                 </div>
-                @foreach($this->classes as $class)
+                @foreach($this->dataset['classes'] as $class)
                     <div @click.stop="" class="p-2" wire:key="{{$class['id']}}">
                         <div class="flex items-center space-x-2">
                             {{-- Class color --}}

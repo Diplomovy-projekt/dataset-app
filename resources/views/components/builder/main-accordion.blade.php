@@ -25,34 +25,47 @@
             {{ $slot }}
 
             <hr class="border border-gray-700 mt-2">
-            <div wire:loading.class="opacity-50 cursor-not-allowed" wire:loading.attr="disabled"
-                 class="mt-4 flex {{ $currentStage > 1 ? 'justify-between' : 'justify-end' }}">
-                @if($currentStage > 1)
-                    <button wire:click="previousStage"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50"
-                            wire:target="previousStage"
-                            class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex">
-                        <x-bi-arrow-up-circle class="w-6 h-6 pr-1" />
-                        Previous Stage
-                    </button>
-                @endif
-
-                <div wire:loading.class.remove="hidden" class="hidden ml-4 flex items-center">
-                    <x-css-spinner class="w-6 h-6 text-gray-500 animate-spin" />
-                    <span class="ml-2 text-gray-500">Customizing your dataset</span>
+            <div wire:loading.class="opacity-50 cursor-not-allowed"
+                 wire:loading.attr="disabled"
+                 wire:target="previousStage,nextStage"
+                 class="mt-4 grid grid-cols-3 relative">
+                <!-- Left Column -->
+                <div>
+                    @if($currentStage > 1)
+                        <button wire:click="previousStage"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50"
+                                wire:target="previousStage,nextStage"
+                                class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex">
+                            <x-bi-arrow-up-circle class="w-6 h-6 pr-1" />
+                            Previous Stage
+                        </button>
+                    @endif
                 </div>
 
-                @if($currentStage < max(array_keys($stageData)))
-                    <button wire:click="nextStage"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50"
-                            wire:target="nextStage"
-                            class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex">
-                        <x-bi-arrow-down-circle class="w-6 h-6 pr-1"/>
-                        Next Stage
-                    </button>
-                @endif
+                <!-- Middle Column - Loading Indicator (Absolute Positioning) -->
+                <div wire:loading.class.remove="hidden"
+                     wire:target="previousStage,nextStage"
+                     class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div class="flex items-center whitespace-nowrap">
+                        <x-css-spinner class="w-6 h-6 text-gray-500 animate-spin" />
+                        <span class="ml-2 text-gray-500">Customizing your dataset</span>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-start-3 flex justify-end">
+                    @if($currentStage < max(array_keys($stageData)))
+                        <button wire:click="nextStage"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50"
+                                wire:target="previousStage,nextStage"
+                                class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex">
+                            <x-bi-arrow-down-circle class="w-6 h-6 pr-1"/>
+                            Next Stage
+                        </button>
+                    @endif
+                </div>
             </div>
         </div>
     @endif

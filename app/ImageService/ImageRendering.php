@@ -5,33 +5,28 @@ namespace App\ImageService;
 use App\Configs\AppConfig;
 use App\Traits\CoordsTransformer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 trait ImageRendering
 {
     use CoordsTransformer;
-    public function prepareImagesForSvgRendering($images)
+    public function prepareImagesForSvgRendering($images, $classes)
     {
-        if ($images->isEmpty()) {
-            return $images;
-        }
-        if($images instanceof Model || is_array($images)){
-            $images = collect([$images]);
-        }
+        $images = $images instanceof \Illuminate\Pagination\LengthAwarePaginator ? $images : collect([$images]);
 
-        $images->each(function ($image) {
-            $image->viewDims = $this->calculateThumbnailDimensions($image->img_width, $image->img_height);
+        foreach ($images as $image) {
+            $image->viewDims = $this->calculateThumbnailDimensions($image->width, $image->height);
 
-            $image->annotations->each(function ($annotation) use ($image) {
-                $annotation->class->color = $this->classes[$annotation->annotation_class_id]['color'];
+            $image->annotations->each(function ($annotation) use ($image, $classes) {
+                $annotation->class->color = $classes[$annotation->annotation_class_id]['color'];
 
                 $annotation->bbox = $this->pixelizeBbox($annotation, $image->viewDims['width'], $image->viewDims['height']);
-                if($annotation->segmentation){
+                if ($annotation->segmentation) {
                     $pixelizedSegment = $this->pixelizePolygon($annotation->segmentation, $image->viewDims['width'], $image->viewDims['height']);
                     $annotation->polygonString = $this->transformPolygonToSvgString($pixelizedSegment);
                 }
-
             });
-        });
+        }
 
         return $images;
     }
@@ -61,13 +56,14 @@ trait ImageRendering
 
     public function addColorsAndStateToClasses($classes)
     {
-        return $classes->mapWithKeys(function($class) {
+        $idk =  $classes->mapWithKeys(function($class) {
             $class->color = $this->generateRandomRgba();
             $class->state = 'true';
             return [
                 $class->id => $class
             ];
         })->toArray();
+        return $idk;
     }
 
     public function generateRandomRgba()

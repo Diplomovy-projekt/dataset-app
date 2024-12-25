@@ -35,7 +35,8 @@ class UploadDataset extends Component
     public $fileSize;
     public $finalFile;
     public $validated = false;
-    public function render()
+
+    public function mount()
     {
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         $this->techniques = array_values(array_map(function ($technique) {
@@ -46,6 +47,9 @@ class UploadDataset extends Component
         }, AppConfig::ANNOTATION_TECHNIQUES));
         $this->metadataTypes = MetadataType::with('metadataValues')->get();
         $this->categories = Category::all();
+    }
+    public function render()
+    {
         return view('livewire.forms.upload-dataset');
     }
 
@@ -53,7 +57,7 @@ class UploadDataset extends Component
     {
         $zipExtraction = app(ZipManager::class);
         $importService = app(ImportService::class);
-        $response = $zipExtraction->processZipFile($this->finalFile);
+        $zipExtracted = $zipExtraction->processZipFile($this->finalFile);
         $payload = [
             'file' => $this->finalFile,
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
@@ -65,14 +69,28 @@ class UploadDataset extends Component
             'description' => $this->description,
         ];
 
-        if ($response->isSuccessful()) {
-            $response = $importService->handleImport($payload);
+        if ($zipExtracted->isSuccessful()) {
+            $datasetImported = $importService->handleImport($payload);
         }
 
         $this->dispatch('flash-message', [
-            'success' => $response->isSuccessful(),
-            'message' => $response->message
+            'success' => $datasetImported->isSuccessful(),
+            'message' => $datasetImported->message
         ]);
+
+        $this->reset([
+            'fileChunk',
+            'finalFile',
+            'selectedFormat',
+            'selectedTechnique',
+            'selectedCategories',
+            'selectedMetadata',
+            'description'
+        ]);
+
+        if($datasetImported->isSuccessful()){
+            $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
+        }
     }
 
     public function updatedFileChunk()

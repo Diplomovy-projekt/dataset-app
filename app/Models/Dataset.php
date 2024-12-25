@@ -19,6 +19,7 @@ class Dataset extends Model
         'description',
         'num_images',
         'total_size',
+        'thumbnail_image',
         'annotation_technique',
         'is_public'
     ];

@@ -15,9 +15,10 @@ return new class extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dataset_id')->constrained()->onDelete('cascade');
-            $table->string('img_filename');
-            $table->integer('img_width');
-            $table->integer('img_height');
+            $table->string('filename');
+            $table->integer('width');
+            $table->integer('height');
+            $table->integer('size');
             $table->timestamps();
         });
     }
