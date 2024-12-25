@@ -31,7 +31,7 @@ class SearchBar extends Component
     }
     private function searchImages()
     {
-        $result = Image::where('img_filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->get();
+        $result = Image::where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->get();
         dd($result);
         $this->emit('searchImages', $this->searchTerm);
     }

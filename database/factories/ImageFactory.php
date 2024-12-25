@@ -19,9 +19,9 @@ class ImageFactory extends Factory
         return [
             'dataset_id' => \App\Models\Dataset::first()->id ?? \App\Models\Dataset::factory(), // Use first dataset or create a new one
             'img_folder' => $this->faker->word(),
-            'img_filename' => 'https://picsum.photos/' . $this->faker->numberBetween(100, 5000) . '/' . $this->faker->numberBetween(100, 5000), // Image URL from Lorem Picsum
-            'img_width' => $this->faker->numberBetween(100, 5000),
-            'img_height' => $this->faker->numberBetween(100, 5000)
+            'filename' => 'https://picsum.photos/' . $this->faker->numberBetween(100, 5000) . '/' . $this->faker->numberBetween(100, 5000), // Image URL from Lorem Picsum
+            'width' => $this->faker->numberBetween(100, 5000),
+            'height' => $this->faker->numberBetween(100, 5000)
         ];
     }
 }

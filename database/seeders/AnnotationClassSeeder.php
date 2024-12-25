@@ -6,7 +6,7 @@ use App\Models\AnnotationClass;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class AnnotationCategorySeeder extends Seeder
+class AnnotationClassSeeder extends Seeder
 {
     /**
      * Run the database seeds.

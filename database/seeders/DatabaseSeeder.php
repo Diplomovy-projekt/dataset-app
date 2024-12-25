@@ -14,15 +14,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // Seed Property Types and Values first (independent)
-            PropertyTypeSeeder::class,
-            PropertyValueSeeder::class,
+            // Seed Metadata Types and Values first (independent)
+            MetadataTypeSeeder::class,
+            MetadataValueSeeder::class,
 
-            // Seed Categories and Formats (dependent on Property Values if needed)
-            //AnnotationCategorySeeder::class, // Seed categories (Language, Century, etc.)
-            AnnotationFormatSeeder::class,  // Seed annotation formats (after categories)
+            // Seed Categories and Formats (dependent on Metadata Values if needed)
+            //AnnotationClassSeeder::class, // Seed categories (Language, Century, etc.)
 
-            // Seed Datasets (depends on Property Values and Categories)
+            // Seed Datasets (depends on Metadata Values and Categories)
             //DatasetSeeder::class,
 
             // Seed Annotation Data (depends on Categories and Formats)
@@ -33,6 +32,8 @@ class DatabaseSeeder extends Seeder
 
             // Seed Users last (can depend on other data)
             UserSeeder::class,
+
+            CategorySeeder::class,
         ]);
     }
 

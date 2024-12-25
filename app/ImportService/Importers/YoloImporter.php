@@ -5,6 +5,7 @@ namespace App\ImportService\Importers;
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
 class YoloImporter
@@ -50,9 +51,10 @@ class YoloImporter
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [
                 'img_folder' => self::IMAGE_FOLDER,
-                'img_filename' => $imageFileName,
+                'filename' => $imageFileName,
                 'width' => $imageWidth,
                 'height' => $imageHeight,
+                'size' => filesize($absolutePath),
                 'annotations' => $this->parseAnnotationsInFile($annotationFile, $annotationTechnique),
             ];
         }

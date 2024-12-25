@@ -10,15 +10,16 @@
             {{-- Checkbox that covers entire label --}}
             <input
                 type="checkbox"
-                wire:model="selectedCategories.{{$category->id}}"
+                value="{{$category->id}}"
+                wire:model="selectedCategories"
                 class="absolute z-20 top-2 right-2 form-checkbox h-5 w-5 text-indigo-600
                        bg-gray-700 border-transparent
                        focus:border-transparent focus:ring-2 focus:ring-indigo-500"
             >
 
             <img
-                src="https://picsum.photos/seed/{{ $category->value }}/400/300"
-                alt="{{ $category->value }}"
+                src="https://picsum.photos/seed/{{ $category->name }}/400/300"
+                alt="{{ $category->name }}"
                 class="w-full h-full object-cover
                        group-hover:opacity-80
                        transition-opacity duration-300"
@@ -26,7 +27,7 @@
 
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-gray-700 bg-opacity-70">
                 <h3 class="text-lg font-semibold text-gray-200 truncate">
-                    {{ $category->value }}
+                    {{ $category->name }}
                 </h3>
             </div>
         </label>

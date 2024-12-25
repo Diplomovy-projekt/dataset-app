@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\PropertyType;
+use App\Models\MetadataType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PropertyTypeSeeder extends Seeder
+class MetadataTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $propertyTypes = [
+        $metadataTypes = [
             [
                 'name' => 'Language',
                 'description' => 'Defines the languages used in the dataset.',
@@ -21,15 +21,11 @@ class PropertyTypeSeeder extends Seeder
             [
                 'name' => 'Century',
                 'description' => 'Indicates the time period the documents were written.',
-            ],
-            [
-                'name' => 'Category',
-                'description' => 'Represents the classification category of annotated data.',
-            ],
+            ]
         ];
 
-        foreach ($propertyTypes as $type) {
-            PropertyType::create($type);
+        foreach ($metadataTypes as $type) {
+            MetadataType::create($type);
         }
     }
 }

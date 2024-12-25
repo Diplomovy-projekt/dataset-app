@@ -4,8 +4,11 @@ namespace App\Livewire\FullPages;
 
 use App\ImageService\ImageRendering;
 use App\ImageService\ImageTransformer;
+use App\Models\Category;
 use App\Models\Dataset;
+use App\Models\DatasetCategory;
 use App\Models\Image;
+use App\Models\MetadataValue;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,53 +19,80 @@ class DatasetShow extends Component
     public $uniqueName;
     public $dataset;
     public $perPage = 50;
-    public $categories = [];
     public $searchTerm;
-    public $checkedCategories = [];
+    public $metadata = [];
+    public $categories = [];
     #[Computed]
     public function images()
     {
         $images = $this->fetchImages();
-        return $this->prepareImagesForSvgRendering($images);
+        return $this->prepareImagesForSvgRendering($images, $this->dataset['classes']);
     }
     public function mount($uniqueName)
     {
-        $this->uniqueName = $uniqueName;
+        $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
 
-        $this->dataset = Dataset::where('unique_name', $uniqueName)->first();
-        $this->categories = $this->addColorsToClasses($this->dataset->classes);
+        $classes = $this->addColorsAndStateToClasses($dataset->classes);
+
+        $this->dataset = $dataset->toArray();
+        $this->dataset['classes'] = $classes;
+        $this->metadata = $dataset->metadataGroupedByType();
+        $this->categories = $dataset->categories()->get();
     }
 
     public function render()
     {
         return view('livewire.full-pages.dataset-show');
-
     }
 
     public function search()
     {
-        // Unsetting computed property makes it to recompute, where we fetch images based on search term
+        // Unsetting computed metadata makes it to recompute, where we fetch images based on search term
         unset($this->images);
     }
 
-    public function toggleCategory($categoryId, $toggleState)
+    public function toggleClass($categoryId, $toggleState)
     {
-        // TODO ulozit IDcka tych co treba includnut a tych co excludnut, neja rozumne, a nasledne vytvorit
-        // query vo fetchImages tak aby to bralo do uvahy
+        switch ($toggleState) {
+            case 'all':
+                $this->dataset['classes'] = array_map(function ($class) {
+                    $class['state'] = 'true'; // Set state to 'true'
+                    return $class;
+                }, $this->dataset->classes);
+                break;
 
-        $this->checkedCategories[$categoryId] = $toggleState;
-        //dump($categoryId, $toggleState);
+            case 'none':
+                $this->dataset['classes'] = array_map(function ($class) {
+                    $class['state'] = 'false'; // Set state to 'false'
+                    return $class;
+                }, $this->dataset['classes']);
+                break;
+            default:
+                if ($toggleState == 'true') {
+                    $this->dataset['classes'][$categoryId]['state'] = 'true';
+                }
+                else {
+                    $this->dataset['classes'][$categoryId]['state'] = 'false';
+                }
+        }
+        unset($this->images);
     }
 
     private function fetchImages()
     {
         if ($this->searchTerm) {
-            return Image::where('img_filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            return Image::where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
-            return $this->dataset->images()->with(['annotations.class'])->paginate($this->perPage);
+            $activeClassIds = collect($this->dataset['classes'])
+                ->where('state', 'true')  // Filter classes where state is 'true'
+                ->pluck('id')             // Get the IDs of those classes
+                ->toArray();
+            $dataset = Dataset::where('unique_name', $this->uniqueName)->first();
+            return $dataset->images()
+                ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
+                ->paginate($this->perPage);
         }
     }
-
 
 }

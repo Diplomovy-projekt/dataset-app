@@ -21,8 +21,11 @@ return new class extends Migration
             $table->integer('num_images');
             $table->integer('total_size');
             $table->string('annotation_technique');
+            $table->string('thumbnail_image');
             $table->boolean('is_public')->default(false);
             $table->timestamps();
+
+            $table->index('unique_name');
         });
     }
 

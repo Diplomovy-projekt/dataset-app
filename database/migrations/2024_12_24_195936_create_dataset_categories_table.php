@@ -12,13 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('images', function (Blueprint $table) {
+        Schema::create('dataset_categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dataset_id')->constrained()->onDelete('cascade');
-            $table->string('filename');
-            $table->integer('width');
-            $table->integer('height');
-            $table->integer('size');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        Schema::dropIfExists('images');
+        Schema::dropIfExists('dataset_categories');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 };

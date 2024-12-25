@@ -10,12 +10,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('annotation_formats', function (Blueprint $table) {
+        Schema::create('metadata_values', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('extension');
+            $table->foreignId('metadata_type_id')->constrained()->onDelete('cascade');
+            $table->string('value');
             $table->timestamps();
         });
     }
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        Schema::dropIfExists('annotation_formats');
+        Schema::dropIfExists('metadata_values');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 };
