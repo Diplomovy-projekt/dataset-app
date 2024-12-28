@@ -1,11 +1,4 @@
-<!-- components/dropdown-menu.blade.php -->
-@props([
-    'align' => 'right', // options: right, left
-    'width' => '48', // width in rem
-    'contentClasses' => 'py-1 bg-slate-900'
-])
-
-<div class="relative"
+<div class="relative z-30"
      x-data="{
         open: false,
         positionDropdown() {
@@ -41,10 +34,8 @@
 
     {{-- Trigger Button --}}
     <button
-        type="button"
         @click="open = !open; $nextTick(() => { if(open) positionDropdown() })"
-        class="p-2 rounded-full hover:bg-gray-100 transition-colors"
-    >
+        class="p-2 rounded-full hover:bg-slate-800 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-100" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
         </svg>
@@ -62,8 +53,8 @@
          @scroll.window="if(open) positionDropdown()"
          role="menu"
          style="display: none;"
-         class="z-50 w-48">
-        <div class="bg-slate-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
+         class="z-20 w-48">
+        <div {{ $attributes->merge(['class' => 'bg-slate-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5']) }}>
             {{ $slot }}
         </div>
     </div>

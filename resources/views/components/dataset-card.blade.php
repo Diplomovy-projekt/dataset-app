@@ -1,8 +1,7 @@
 @props([
     'dataset',
 ])
-
-<a href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
+<a @click.stop.prevent href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
    wire:navigate
    wire:key="{{ $dataset['unique_name'] }}"
    class="block w-60 overflow-hidden rounded-lg bg-slate-900/50 backdrop-blur-sm border border-slate-800 transition-all hover:border-slate-700 hover:bg-slate-900/60">
@@ -22,36 +21,15 @@
         <div class="flex flex-col gap-2 items-start justify-between">
             <div class="flex-1">
                 <div class="flex justify-between items-center gap-3">
-                    <div>
+                    <div class="flex items-center gap-3">
                         <h3 class="text-lg font-bold text-slate-100">
                             {{ $dataset['display_name'] }}
                         </h3>
-                        <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
+                        <div class="flex-shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
                             {{ $dataset['annotation_technique'] }}
-                        </span>
+                        </div>
                     </div>
-                    <x-dropdown-menu>
-                        <x-dropdown-menu-item
-                            wire:click="editDataset({{ $dataset['id'] }})"
-                            :icon="svg('gmdi-edit')->toHtml()">
-                            Edit Dataset
-                        </x-dropdown-menu-item>
 
-                        <x-dropdown-menu-item
-                            wire:click="downloadDataset({{ $dataset['id'] }})"
-                            :icon="@svg('eva-download')->toHtml()">
-                            Download Dataset
-                        </x-dropdown-menu-item>
-
-                        <div class="border-t border-gray-100"></div>
-
-                        <x-dropdown-menu-item
-                            wire:click="deleteDataset({{ $dataset['id'] }})"
-                            danger
-                            :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                            Delete Dataset
-                        </x-dropdown-menu-item>
-                    </x-dropdown-menu>
                 </div>
             </div>
             {{-- Stats --}}

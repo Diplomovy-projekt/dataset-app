@@ -6,30 +6,21 @@ use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
 use App\Models\Category;
-use App\Models\Dataset;
 use App\Models\MetadataType;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-class UploadDataset extends Component
+class ExtendDataset extends Component
 {
     use WithFileUploads;
 
-    public $editingDataset = null;
-    public $modalStyle;
+    public $editingDataset;
     public $annotationFormats;
-    public $techniques;
-    public $metadataTypes;
-    public $categories;
 
     # Selectable form fields
     public $selectedFormat;
-    public $selectedTechnique;
-    public $selectedMetadata = [];
-    public $selectedCategories = [];
-    public $description;
 
     # Chunked upload
     public $chunkSize = 20000000; // 20 MB
@@ -40,7 +31,6 @@ class UploadDataset extends Component
     public $finalFile;
     public $validated = false;
 
-
     public function mount()
     {
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
@@ -50,12 +40,10 @@ class UploadDataset extends Component
                 'value' => $technique,
             ];
         }, AppConfig::ANNOTATION_TECHNIQUES));
-        $this->metadataTypes = MetadataType::with('metadataValues')->get();
-        $this->categories = Category::all()->toArray();
     }
     public function render()
     {
-        return view('livewire.forms.upload-dataset');
+        return view('livewire.forms.extend-dataset');
     }
 
     public function finishImport()

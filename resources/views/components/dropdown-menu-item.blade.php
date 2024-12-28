@@ -1,5 +1,4 @@
 @props([
-    'type' => 'button',
     'href' => null,
     'danger' => false,
     'icon' => null
@@ -23,7 +22,7 @@
         {{ $slot }}
     </a>
 @else
-    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
+    <button {{ $attributes->merge(['class' => $classes]) }}>
         @if ($icon)
             <span class="w-5 h-5 mr-2">
                 {!! $icon !!}

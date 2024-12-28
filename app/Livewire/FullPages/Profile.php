@@ -2,6 +2,7 @@
 
 namespace App\Livewire\FullPages;
 
+use App\DatasetCrud\DatasetCrud;
 use App\ImageService\DatasetImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
@@ -32,5 +33,14 @@ class Profile extends Component
             $datasets[$key]['images'] = $processedImage;
         }
         $this->datasets = $datasets->toArray();
+    }
+
+    public function deleteDataset(DatasetCrud $datasetService, $id)
+    {
+        $result = $datasetService->deleteDataset($id);
+        if($result->isSuccessful()){
+            $this->loadDatasets();
+        }
+        
     }
 }

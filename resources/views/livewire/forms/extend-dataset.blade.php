@@ -1,22 +1,19 @@
 <div x-data="chunkedUpload(@this)">
-    <x-modals.fixed-modal modalId="uploadDataset" class="w-1/2">
-         {{--Main Form Container using MaryUI's Form Component--}}
+    <x-modals.fixed-modal modalId="extend-dataset" class="w-1/2">
+        {{--Main Form Container using MaryUI's Form Component--}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
 
                 {{-- Header Section--}}
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
-                        Dataset upload
+                        Extend Dataset
                     </h2>
                 </div>
 
                 {{-- Upload File Section--}}
-                <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="new-upload" />
+                <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="extend-dataset" />
 
-                {{-- Format Select--}}
-
-                <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
                 {{-- Submit Button--}}
                 <x-button
                     @click="uploadChunks"

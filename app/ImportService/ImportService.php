@@ -100,7 +100,7 @@ class ImportService
             $classes = $parsedData['categories'];
             $imageData = $parsedData['images'];
             // 1. Create Dataset
-            $dataset = Dataset::create([
+            $dataset = Dataset::updateOrCreate([
                 'user_id' => auth()->id() ?? "1",
                 'display_name' => $data['display_name'],
                 'unique_name' => $data['unique_name'],
@@ -111,11 +111,12 @@ class ImportService
                 'thumbnail_image' => "",
                 'is_public' => false,
             ]);
+            if($data['isEditing']) $this->handleEditPreprocessing($dataset);
 
             // 2. Save Classes
             $classIds = [];
             foreach ($classes['names'] as $categoryName) {
-                $category = AnnotationClass::create([
+                $category = AnnotationClass::updateOrCreate([
                     'dataset_id' => $dataset->id,
                     'name' => $categoryName,
                     'supercategory' => $classes['superCategory'] ?? null,
@@ -205,5 +206,11 @@ class ImportService
             Storage::disk('datasets')->deleteDirectory($datasetFolder);
         }
         DB::rollBack();
+    }
+
+    private function handleEditPreprocessing($dataset)
+    {
+        DatasetMetadata::where('dataset_id', $dataset->id)->delete();
+        DatasetCategory::where('dataset_id', $dataset->id)->delete();
     }
 }

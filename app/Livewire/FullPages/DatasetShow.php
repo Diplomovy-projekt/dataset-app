@@ -22,6 +22,7 @@ class DatasetShow extends Component
     public $searchTerm;
     public $metadata = [];
     public $categories = [];
+    public $modalStyle;
     #[Computed]
     public function images()
     {
@@ -58,7 +59,7 @@ class DatasetShow extends Component
                 $this->dataset['classes'] = array_map(function ($class) {
                     $class['state'] = 'true'; // Set state to 'true'
                     return $class;
-                }, $this->dataset->classes);
+                }, $this->dataset['classes']);
                 break;
 
             case 'none':
