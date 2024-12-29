@@ -16,11 +16,7 @@
                 {{-- Submit Button--}}
                 <x-button
                     wire:click="updateDatasetInfo"
-                    x-bind:disabled="isUploading"
-                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
                     text="Save">
-                    <span x-show="!isUploading">Save</span>
-                    <span x-show="isUploading">Saving...</span>
                 </x-button>
             </div>
         </div>

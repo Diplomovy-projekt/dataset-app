@@ -1,6 +1,6 @@
-<div class="relative z-30"
+<div class="relative z-10"
      x-data="{
-        open: false,
+        openDropdown: false,
         positionDropdown() {
             const button = $el.querySelector('button');
             const dropdown = $el.querySelector('[role=\'menu\']');
@@ -30,11 +30,11 @@
             }
         }
      }"
-     @click.away="open = false">
+     @click.away="openDropdown = false">
 
     {{-- Trigger Button --}}
     <button
-        @click="open = !open; $nextTick(() => { if(open) positionDropdown() })"
+        @click="openDropdown = !openDropdown; $nextTick(() => { if(openDropdown) positionDropdown() })"
         class="p-2 rounded-full hover:bg-slate-800 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-100" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
@@ -42,7 +42,7 @@
     </button>
 
     {{-- Dropdown Menu --}}
-    <div x-show="open"
+    <div x-show="openDropdown"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="transform opacity-0 scale-95"
          x-transition:enter-end="transform opacity-100 scale-100"

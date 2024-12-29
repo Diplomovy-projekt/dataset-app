@@ -18,9 +18,11 @@ class ExtendDataset extends Component
 
     public $editingDataset;
     public $annotationFormats;
+    public $techniques;
 
     # Selectable form fields
     public $selectedFormat;
+    public $selectedTechnique;
 
     # Chunked upload
     public $chunkSize = 20000000; // 20 MB

@@ -1,34 +1,21 @@
 <div x-data="{ hoveredIndex: null, open: '' }" class="container mx-auto pt-6">
 
-
     <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"/>
     <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"/>
 
-
     <div  class="flex flex-col pb-5">
-        <button
-            @click.prevent="open = 'edit-dataset'">
-            Edit</button>
-        <button
-            @click.prevent="open = 'extend-dataset'">
-            Extend</button>
         <x-dataset-header></x-dataset-header>
         <div class=" flex items-center border-t border-slate-800 bg-slate-900/50 p-4 gap-4">
             <x-search-bar />
             <x-category-dropdown />
-                <button wire:click="$set('modalStyle', 'edit-info')"
-                        @click.prevent="open = 'uploadDataset'">
-                    IDKKK
-                </button>
             <x-dropdown-menu class="w-50">
                 <x-dropdown-menu-item
-                    wire:click="$set('modalStyle', 'edit-info')"
-                    @click.prevent="open = 'uploadDataset'"
-                    :icon="@svg('eva-download')->toHtml()">
+                    @click.prevent="open = 'extend-dataset'"
+                    :icon="@svg('eva-upload')->toHtml()">
                     Extend Dataset
                 </x-dropdown-menu-item>
                 <x-dropdown-menu-item
-                    @click.prevent.stop="open = 'uploadDataset'"
+                    @click.prevent.stop="open = 'edit-dataset'"
                     :icon="@svg('eos-edit')->toHtml()">
                     Edit Dataset info
                 </x-dropdown-menu-item>
