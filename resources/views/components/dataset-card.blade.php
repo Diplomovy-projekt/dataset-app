@@ -8,7 +8,7 @@
 
     {{-- Thumbnail Section --}}
     <div class="relative h-48">
-        <img src="{{asset('storage/datasets/'.$dataset['unique_name']. '/thumbnails/' . $dataset['thumbnail_image'])}}"
+        <img src="{{asset('storage/datasets/'.$dataset['unique_name']. '/thumbnails/' . $dataset['images'][0]['filename'])}}"
              alt="{{ $dataset['display_name'] }}"
              class="h-full w-full object-cover"
              loading="lazy">

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ImportService\Importers;
+namespace App\ImportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
@@ -8,15 +8,14 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
-class YoloImporter
+class YoloMapper
 {
-    use YoloConfig;
     public function parse(string $folderName, $annotationTechnique): array
     {
         // Define folder paths
         $datasetPath = AppConfig::LIVEWIRE_TMP_PATH . $folderName;
-        $imageFolder = $datasetPath . '/' . self::IMAGE_FOLDER;
-        $annotationFolder = $datasetPath . '/' . self::LABELS_FOLDER;
+        $imageFolder = $datasetPath . '/' . YoloConfig::IMAGE_FOLDER;
+        $annotationFolder = $datasetPath . '/' . YoloConfig::LABELS_FOLDER;
 
         // Get list of image and annotation files
         $images = collect(Storage::files($imageFolder));
@@ -50,7 +49,7 @@ class YoloImporter
 
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [
-                'img_folder' => self::IMAGE_FOLDER,
+                'img_folder' => YoloConfig::IMAGE_FOLDER,
                 'filename' => $imageFileName,
                 'width' => $imageWidth,
                 'height' => $imageHeight,
@@ -120,7 +119,7 @@ class YoloImporter
     private function getCategories($folderName): array
     {
 
-        $dataFilePath = AppConfig::LIVEWIRE_TMP_PATH . $folderName . '/' . self::DATA_YAML;
+        $dataFilePath = AppConfig::LIVEWIRE_TMP_PATH . $folderName . '/' . YoloConfig::DATA_YAML;
         if (!Storage::exists($dataFilePath)) {
             return [];
         }

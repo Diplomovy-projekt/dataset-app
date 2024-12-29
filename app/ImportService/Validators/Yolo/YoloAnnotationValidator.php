@@ -9,11 +9,9 @@ use Illuminate\Support\Facades\Storage;
 
 class YoloAnnotationValidator
 {
-    use YoloConfig;
-
     public function validate(string $fileName, string $annotationTechnique): array
     {
-        $annotationsPath = AppConfig::LIVEWIRE_TMP_PATH . $fileName .'/'. self::LABELS_FOLDER;
+        $annotationsPath = AppConfig::LIVEWIRE_TMP_PATH . $fileName .'/'. YoloConfig::LABELS_FOLDER;
         $labels = collect(Storage::files($annotationsPath));
         $errors = [];
 

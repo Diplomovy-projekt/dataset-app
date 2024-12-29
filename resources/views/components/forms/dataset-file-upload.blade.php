@@ -48,7 +48,7 @@
         <x-mary-select
             wire:model="selectedFormat"
             label="Select Annotation Format"
-            hint="Choose the format used in your dataset"
+            hint="Choose the format used in this dataset"
             :options="$annotationFormats"
             option-value="name"
             option-label="name"

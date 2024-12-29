@@ -6,6 +6,7 @@ use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
 use App\Models\Category;
+use App\Models\Dataset;
 use App\Models\MetadataType;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -35,6 +36,7 @@ class ExtendDataset extends Component
 
     public function mount()
     {
+        $this->editingDataset = Dataset::where('unique_name', $this->editingDataset)->first();
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         $this->techniques = array_values(array_map(function ($technique) {
             return [
@@ -56,15 +58,12 @@ class ExtendDataset extends Component
 
         $uniqueName = $this->editingDataset ? $this->editingDataset->unique_name : pathinfo($this->uniqueName, PATHINFO_FILENAME);
         $payload = [
-            'isEditing' => $this->editingDataset->id ?? null,
+            'isEditing' => $this->editingDataset->unique_name,
             'file' => $this->finalFile,
-            "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
-            "unique_name" => $uniqueName,
+            "display_name" => $this->editingDataset->display_name,
+            "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
-            'metadata' => $this->selectedMetadata,
-            'technique' => $this->selectedTechnique,
-            'categories' => $this->selectedCategories,
-            'description' => $this->description,
+            'technique' => $this->editingDataset->annotation_technique,
         ];
 
         if ($zipExtracted->isSuccessful()) {
@@ -81,9 +80,6 @@ class ExtendDataset extends Component
             'finalFile',
             'selectedFormat',
             'selectedTechnique',
-            'selectedCategories',
-            'selectedMetadata',
-            'description'
         ]);
 
         if($datasetImported->isSuccessful()){
@@ -119,14 +115,7 @@ class ExtendDataset extends Component
             $rules = [
                 'fileChunk' => 'required',
                 'selectedFormat' => 'required',
-                'selectedTechnique' => 'required',
-                'selectedCategories' => 'required',
-                'description' => 'nullable|string',
             ];
-
-            if ($this->editingDataset) {
-                unset($rules['fileChunk']);
-            }
             $this->validate($rules);
             $this->validated = true;
         }

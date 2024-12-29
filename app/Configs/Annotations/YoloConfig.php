@@ -2,7 +2,7 @@
 
 namespace App\Configs\Annotations;
 
-trait YoloConfig
+class YoloConfig
 {
     /*
      * Expected archive structure for YOLO:
@@ -16,8 +16,8 @@ trait YoloConfig
      *     ├── annotation1.txt
      *     └── annotation2.txt
      */
-    const DATA_YAML = 'data.yaml';
-    const TXT_EXTENSION = 'txt';
-    const IMAGE_FOLDER = 'images';
-    const LABELS_FOLDER = 'labels';
+    public const DATA_YAML = 'data.yaml';
+    public const TXT_EXTENSION = 'txt';
+    public const IMAGE_FOLDER = 'images';
+    public const LABELS_FOLDER = 'labels';
 }

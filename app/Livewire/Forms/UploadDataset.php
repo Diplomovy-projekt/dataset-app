@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
+use App\ImportService\Strategies\NewDatasetStrategy;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
@@ -44,13 +45,11 @@ class UploadDataset extends Component
     public function mount()
     {
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
-        $this->techniques = array_values(array_map(function ($technique) {
-            return [
-                'key' => $technique,
-                'value' => $technique,
-            ];
-        }, AppConfig::ANNOTATION_TECHNIQUES));
+        $this->techniques = array_map(fn($technique) => ['key' => $technique, 'value' => $technique], AppConfig::ANNOTATION_TECHNIQUES);
         $this->metadataTypes = MetadataType::with('metadataValues')->get();
+        $this->selectedMetadata = $this->metadataTypes->pluck('metadataValues', 'id')->map(function () {
+            return ['metadataValues' => []];
+        })->toArray();
         $this->categories = Category::all()->toArray();
     }
     public function render()
@@ -61,15 +60,14 @@ class UploadDataset extends Component
     public function finishImport()
     {
         $zipExtraction = app(ZipManager::class);
-        $importService = app(ImportService::class);
+        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
         $zipExtracted = $zipExtraction->processZipFile($this->finalFile);
 
-        $uniqueName = $this->editingDataset ? $this->editingDataset->unique_name : pathinfo($this->uniqueName, PATHINFO_FILENAME);
         $payload = [
             'isEditing' => $this->editingDataset->id ?? null,
             'file' => $this->finalFile,
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
-            "unique_name" => $uniqueName,
+            "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
             'metadata' => $this->selectedMetadata,
             'technique' => $this->selectedTechnique,
@@ -133,10 +131,6 @@ class UploadDataset extends Component
                 'selectedCategories' => 'required',
                 'description' => 'nullable|string',
             ];
-
-            if ($this->editingDataset) {
-                unset($rules['fileChunk']);
-            }
             $this->validate($rules);
             $this->validated = true;
         }

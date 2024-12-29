@@ -3,7 +3,7 @@
 namespace App\Livewire\FullPages;
 
 use App\DatasetCrud\DatasetCrud;
-use App\ImageService\DatasetImageProcessor;
+use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use Livewire\Component;
@@ -15,7 +15,7 @@ class Profile extends Component
     public function render()
     {
 
-        //$imgProcessor = new DatasetImageProcessor();
+        //$imgProcessor = new ImageProcessor();
         //$imgProcesses = $imgProcessor->createClassCropsForNewDataset('0193e9e1f169-0e05-76a2-aca1-8bacbc0dea97f26dac78');
 
         $this->loadDatasets();
@@ -41,6 +41,6 @@ class Profile extends Component
         if($result->isSuccessful()){
             $this->loadDatasets();
         }
-        
+
     }
 }
