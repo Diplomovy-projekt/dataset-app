@@ -3,6 +3,7 @@
 namespace App\ImportService;
 
 use App\Configs\AppConfig;
+use App\Exceptions\DatasetImportException;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
@@ -49,20 +50,20 @@ class ImportService
             // Save the parsed data to the database
             $savedToDb = $this->strategy->saveToDatabase($mappedData, $requestData);
             if (!$savedToDb->isSuccessful()) {
-                throw new \Exception($savedToDb->message);
+                throw new DatasetImportException($savedToDb->message);
             }
 
             // Process images
             $processedImages = $this->strategy->processImages($requestData['unique_name'], get_class($this->importPreprocessor->config)::IMAGE_FOLDER);
             if (!$processedImages->isSuccessful()) {
-                throw new \Exception($processedImages->message);
+                throw new DatasetImportException($processedImages->message, $processedImages->data);
             }
 
             DB::commit();
             return Response::success("Dataset imported successfully");
-        } catch (\Exception $e){
+        } catch (DatasetImportException $e){
             $this->strategy->handleRollback($requestData['unique_name']);
-            return Response::error("An unexpected error occurred during the import process: \n".$e->getMessage());
+            return Response::error($e->getMessage(), $e->getData());
         }
     }
 

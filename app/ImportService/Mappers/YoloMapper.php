@@ -4,13 +4,14 @@ namespace App\ImportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
 class YoloMapper
 {
-    public function parse(string $folderName, $annotationTechnique): array
+    public function parse(string $folderName, $annotationTechnique): Response
     {
         // Define folder paths
         $datasetPath = AppConfig::LIVEWIRE_TMP_PATH . $folderName;
@@ -23,11 +24,14 @@ class YoloMapper
 
         $imageData = $this->parseAnnotationFiles($images, $annotations, $annotationTechnique);
 
-        $categories = $this->getCategories($folderName);
+        $classes = $this->getClasses($folderName);
 
-        return $imageData && $categories
-            ? ['categories' => $categories, 'images' => $imageData]
-            : [];
+        return $imageData && $classes
+            ? Response::success(data:[
+                'images' => $imageData,
+                'classes' => $classes,
+            ])
+            : Response::error("Failed to map annotations");
     }
 
     private function parseAnnotationFiles($images, $annotations, $annotationTechnique): array
@@ -44,8 +48,9 @@ class YoloMapper
             }
 
             // Get image dimensions
-            $absolutePath = storage_path($imageFile);
+            $absolutePath = Storage::path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
+
 
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [
@@ -116,7 +121,7 @@ class YoloMapper
         ];
     }
 
-    private function getCategories($folderName): array
+    private function getClasses($folderName): array
     {
 
         $dataFilePath = AppConfig::LIVEWIRE_TMP_PATH . $folderName . '/' . YoloConfig::DATA_YAML;

@@ -91,9 +91,10 @@ class ImageProcessor
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
                 $source = $file;
                 $destination = AppConfig::DATASETS_PATH . $folderName . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
-
+                //dd($source, $destination);
                 try {
-                    Storage::move($source, $destination);
+                    Storage::disk('storage')->move($source, $destination);
+                    //dd(Storage::disk('storage')->path($destination));
                     $filesMoved[] = pathinfo($file, PATHINFO_BASENAME);
                 } catch (\Exception $e) {
                     Response::error("An error occurred while moving images to public static storage: " . $e->getMessage());

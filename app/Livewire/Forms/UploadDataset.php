@@ -18,8 +18,8 @@ class UploadDataset extends Component
 {
     use WithFileUploads;
 
-    public $editingDataset = null;
     public $modalStyle;
+    public $errors;
     public $annotationFormats;
     public $techniques;
     public $metadataTypes;
@@ -64,8 +64,6 @@ class UploadDataset extends Component
         $zipExtracted = $zipExtraction->processZipFile($this->finalFile);
 
         $payload = [
-            'isEditing' => $this->editingDataset->id ?? null,
-            'file' => $this->finalFile,
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
@@ -79,20 +77,10 @@ class UploadDataset extends Component
             $datasetImported = $importService->handleImport($payload);
         }
 
-        $this->dispatch('flash-message', [
-            'success' => $datasetImported->isSuccessful(),
-            'message' => $datasetImported->message
-        ]);
-
-        $this->reset([
-            'fileChunk',
-            'finalFile',
-            'selectedFormat',
-            'selectedTechnique',
-            'selectedCategories',
-            'selectedMetadata',
-            'description'
-        ]);
+        if(!$datasetImported->isSuccessful()) {
+            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
+            $this->errors['message'] = $datasetImported->message;
+        }
 
         if($datasetImported->isSuccessful()){
             $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
@@ -135,4 +123,15 @@ class UploadDataset extends Component
             $this->validated = true;
         }
     }
+    private function normalizeErrors($errors): array
+    {
+        if (is_array($errors)) {
+            return collect($errors)
+                ->flatten()
+                ->toArray(); // Converts nested arrays to a flat array
+        }
+
+        return [$errors]; // If a single error message is returned
+    }
+
 }

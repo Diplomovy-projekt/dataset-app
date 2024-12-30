@@ -34,23 +34,23 @@ class ImportPreprocess
         }
         // 1. Find structure errors
         $structureErrors = $this->zipValidator->validate($folderName);
-        if (!empty($structureErrors)) {
-            return Response::error('Zip structure errors found', data: $structureErrors);
+        if (!$structureErrors->isSuccessful()) {
+            return Response::error($structureErrors->message, data: $structureErrors->data);
         }
 
         // 2. Find annotation issues
         $annotationIssues = $this->annotationValidator->validate($folderName, $annotationTechnique);
-        if (!empty($annotationIssues)) {
-            return Response::error('Annotation issues found', data: $annotationIssues);
+        if (!$annotationIssues->isSuccessful()) {
+            return Response::error($annotationIssues->message, data: $annotationIssues->data);
         }
 
         // 3. Parse the dataset
         $mappedData = $this->mapper->parse($folderName, $annotationTechnique);
-        if (empty($mappedData)) {
-            return Response::error('Parsing failed or no data found.');
+        if (!$mappedData->isSuccessful()) {
+            return Response::error($mappedData->message);
         }
 
-        return Response::success(data: $mappedData);
+        return Response::success(data: $mappedData->data);
     }
 }
 

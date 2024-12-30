@@ -28,7 +28,7 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
     public function saveToDatabase($mappedData, $requestData): Response
     {
         try {
-            $classes = $mappedData['categories'];
+            $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
             // 1. Create Dataset
             $requestDataset = Dataset::create([
@@ -41,7 +41,6 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
                 'annotation_technique' => $requestData['technique'],
                 'is_public' => false,
             ]);
-
             // 2. Save Classes
             $classIds = [];
             foreach ($classes['names'] as $categoryName) {
@@ -93,7 +92,7 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
                 ]);
             }
 
-            return Response::success("Annotations imported successfully", data: $requestDataset);
+            return Response::success();
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }
@@ -129,7 +128,7 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
 
         $thumbnails = $this->imageProcessor->createThumbnails($datasetFolder, $files);
         if (count($thumbnails) == count($files)) {
-            return Response::success("Thumbnails created successfully", data: $thumbnails[0]);
+            return Response::success(data: $thumbnails[0]);
         }
 
         return Response::error("Failed to create thumbnails for some images");

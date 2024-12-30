@@ -4,17 +4,18 @@ namespace App\ImportService\Validators\Yolo;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Yaml\Yaml;
 
 class YoloZipValidator
 {
-    public function validate(string $fileName): array
+    public function validate(string $fileName): Response
     {
         try {
             $filePath = AppConfig::LIVEWIRE_TMP_PATH . $fileName;
             if (!Storage::exists($filePath)) {
-                return ["error" => "File not found"];
+                return Response::error("Zip file not found");
             }
 
             $resultDataFile = $this->validateDataFile($filePath);
@@ -36,11 +37,12 @@ class YoloZipValidator
                 $errors["annotations"] = $resultAnnotation;
             }
 
-            // Return the errors if any
-            return $errors;
-
+            if (!empty($errors)) {
+                return Response::error("Zip structure issues found", $errors);
+            }
+            return Response::success();
         } catch (\Exception $e) {
-            return ["error" => "An unexpected error occurred: " . $e->getMessage()];
+            return Response::error("Unexpected error occurred during zip structure validation",$e->getMessage());
         }
     }
 
