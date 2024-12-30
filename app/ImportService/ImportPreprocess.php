@@ -4,6 +4,7 @@ namespace App\ImportService;
 
 namespace App\ImportService;
 
+use App\ImportService\Factory\ImportComponentFactory;
 use App\Utils\Response;
 
 class ImportPreprocess

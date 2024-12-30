@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Storage;
 class DatasetCrud
 {
 
-    public function deleteDataset($id): Response
+    public function deleteDataset($unique_name): Response
     {
         try {
-            $dataset = Dataset::find($id);
+            $dataset = Dataset::where('unique_name', $unique_name)->first();
             $dataset->delete();
             if(Storage::disk('datasets')->exists($dataset->unique_name)) {
                 Storage::disk('datasets')->deleteDirectory($dataset->unique_name);

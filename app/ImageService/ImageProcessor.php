@@ -22,18 +22,20 @@ class ImageProcessor
         if(!is_array($images)){
             $images = [$images];
         }
-        $datasetsPath = Storage::disk('datasets')->path('');
-        $outputFolderPath = $datasetsPath . $datasetFolder . '/' . AppConfig::IMG_THUMB_FOLDER;
+        if(empty($images)){
+            return [];
+        }
 
-        $thumbnails = [];
-        foreach ($images as $file) {
-            $fileName = pathinfo($file, PATHINFO_BASENAME);
-            $thumbnailPath = $outputFolderPath . $fileName;
-            if($this->rescale($datasetsPath . $file, $thumbnailPath)){
-                $thumbnails[] = $fileName;
+        $source = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
+        $destination = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
+
+        $createdThumbnails = [];
+        foreach($images as $image){
+            if($this->rescale($source.$image, $destination.$image) === true){
+                $createdThumbnails[] = $image;
             }
         }
-        return $thumbnails;
+        return $createdThumbnails;
     }
 
     public function createClassCrops(string $datasetFolder, Collection $images, $classCounts): array
@@ -69,13 +71,15 @@ class ImageProcessor
     /**
      * Moves images from a temporary folder to a public static dataset folder.
      *
-     * @param string $folderName Dataset folder in tmp storage (source of dataset).
+     * @param string $sourceFolder Dataset folder in tmp storage (source of dataset).
      * @param string $imageFolder The subfolder within the temporary folder where the images are stored(it's specific to annotation format).
      * @return \App\Utils\Response A response indicating the success or failure of the operation.
      */
-    public function moveImagesToPublicDataset($folderName, $imageFolder): Response
+    public function moveImagesToPublicDataset($sourceFolder, $imageFolder, $destinationFolder = null): Response
     {
-        $imageFolderPath = AppConfig::LIVEWIRE_TMP_PATH . $folderName . '/' . $imageFolder;
+        $destinationFolder = $destinationFolder ?? $sourceFolder;
+
+        $imageFolderPath = AppConfig::LIVEWIRE_TMP_PATH . $sourceFolder . '/' . $imageFolder;
         $files = Storage::files($imageFolderPath);
 
         if (empty($files)) {
@@ -90,11 +94,10 @@ class ImageProcessor
             // Validate file type (only process images with supported extensions)
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
                 $source = $file;
-                $destination = AppConfig::DATASETS_PATH . $folderName . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
-                //dd($source, $destination);
+                $destination = AppConfig::DATASETS_PATH . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
+
                 try {
                     Storage::disk('storage')->move($source, $destination);
-                    //dd(Storage::disk('storage')->path($destination));
                     $filesMoved[] = pathinfo($file, PATHINFO_BASENAME);
                 } catch (\Exception $e) {
                     Response::error("An error occurred while moving images to public static storage: " . $e->getMessage());
@@ -102,6 +105,6 @@ class ImageProcessor
             }
         }
 
-        return Response::success(data: $filesMoved);
+        return Response::success(data: ['images' => $filesMoved, 'destinationFolder' => $destinationFolder]);
     }
 }

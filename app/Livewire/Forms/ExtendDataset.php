@@ -5,9 +5,12 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
+use App\ImportService\Strategies\ExtendDatasetStrategy;
+use App\ImportService\Strategies\NewDatasetStrategy;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
+use App\Traits\DatasetImportHelper;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -15,8 +18,9 @@ use Livewire\WithFileUploads;
 
 class ExtendDataset extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, DatasetImportHelper;
 
+    public $errors;
     public $editingDataset;
     public $annotationFormats;
     public $techniques;
@@ -50,64 +54,37 @@ class ExtendDataset extends Component
         return view('livewire.forms.extend-dataset');
     }
 
-    public function finishImport()
+    public function finishImport(ZipManager $zipManager): void
     {
-        $zipExtraction = app(ZipManager::class);
-        $importService = app(ImportService::class);
-        $zipExtracted = $zipExtraction->processZipFile($this->finalFile);
+        $zipExtracted = $zipManager->processZipFile($this->finalFile);
 
-        $uniqueName = $this->editingDataset ? $this->editingDataset->unique_name : pathinfo($this->uniqueName, PATHINFO_FILENAME);
         $payload = [
-            'isEditing' => $this->editingDataset->unique_name,
-            'file' => $this->finalFile,
-            "display_name" => $this->editingDataset->display_name,
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
+            "parent_dataset_unique_name" => $this->editingDataset->unique_name,
             'format' => $this->selectedFormat,
             'technique' => $this->editingDataset->annotation_technique,
         ];
 
-        if ($zipExtracted->isSuccessful()) {
-            $datasetImported = $importService->handleImport($payload);
+        if (!$zipExtracted->isSuccessful()) {
+            $this->errors['message'] = $zipExtracted->message;
+            return;
         }
 
-        $this->dispatch('flash-message', [
-            'success' => $datasetImported->isSuccessful(),
-            'message' => $datasetImported->message
-        ]);
-
-        $this->reset([
-            'fileChunk',
-            'finalFile',
-            'selectedFormat',
-            'selectedTechnique',
-        ]);
+        $importService = app(ImportService::class, ['strategy' => new ExtendDatasetStrategy()]);
+        $datasetImported = $importService->handleImport($payload);
 
         if($datasetImported->isSuccessful()){
-            $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
+            $this->redirectRoute('dataset.show', ['uniqueName' => $this->editingDataset->unique_name]);
+        } else {
+            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
+            $this->errors['message'] = $datasetImported->message;
         }
     }
 
     public function updatedFileChunk()
     {
         $this->validateDataset();
-        $chunkFileName = $this->fileChunk->getFileName();
-
-        // Read the chunk file
-        $buff = Storage::disk('private')->get('livewire-tmp/' . $chunkFileName);
-
-        // Append chunk to final file
-        $finalFilePath = 'livewire-tmp/' . $this->uniqueName;
-        Storage::disk('private')->append($finalFilePath, $buff, null);
-
-        // Delete the chunk file
-        Storage::disk('private')->delete('livewire-tmp/' . $chunkFileName);
-
-        // Check if the file is complete
-        $curSize = Storage::disk('private')->size($finalFilePath);
-        if ($curSize == $this->fileSize) {
-            $this->finalFile = TemporaryUploadedFile::createFromLivewire('/' . $this->uniqueName);
-            $this->finishImport();
-        }
+        $this->chunkUpload();
     }
     private function validateDataset()
     {

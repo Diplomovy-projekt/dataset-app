@@ -2,6 +2,7 @@
 
 namespace App\Livewire\FullPages;
 
+use App\DatasetCrud\DatasetCrud;
 use App\ImageService\ImageRendering;
 use App\ImageService\ImageTransformer;
 use App\Models\Category;
@@ -29,7 +30,7 @@ class DatasetShow extends Component
         $images = $this->fetchImages();
         return $this->prepareImagesForSvgRendering($images, $this->dataset['classes']);
     }
-    public function mount($uniqueName)
+    public function mount()
     {
         $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
 
@@ -94,6 +95,12 @@ class DatasetShow extends Component
                 ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
                 ->paginate($this->perPage);
         }
+    }
+
+    public function deleteDataset(DatasetCrud $crud)
+    {
+        $crud->deleteDataset($this->uniqueName);
+        $this->redirectRoute('profile');
     }
 
 }

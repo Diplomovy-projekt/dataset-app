@@ -18,10 +18,10 @@ class ZipManager
             // Step 1: Extract the zip file
             $extractionResult = $this->extractZipFile($file);
             if (!$extractionResult) {
-                return Response::error('Extraction failed', $extractionResult);
+                return Response::error('An error occurred while extracting the zip file.');
             }
 
-            return Response::success('Extraction successful');
+            return Response::success();
         } catch (\Exception $e) {
             return Response::error('An unexpected error occurred during zip extraction: ' . $e->getMessage());
         }

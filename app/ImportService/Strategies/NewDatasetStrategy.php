@@ -27,6 +27,7 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
 
     public function saveToDatabase($mappedData, $requestData): Response
     {
+        $this->createFolderStructure($requestData['unique_name']);
         try {
             $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
@@ -37,12 +38,13 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
                 'unique_name' => $requestData['unique_name'],
                 'description' => $requestData['description'] ?? "",
                 'num_images' => count($imageData),
-                'total_size' => 0,
+                'total_size' => array_sum(array_column($imageData, 'size')),
                 'annotation_technique' => $requestData['technique'],
                 'is_public' => false,
             ]);
             // 2. Save Classes
             $classIds = [];
+            $classesToSample = [];
             foreach ($classes['names'] as $categoryName) {
                 $category = AnnotationClass::updateOrCreate([
                     'dataset_id' => $requestDataset->id,
@@ -50,6 +52,9 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
                     'supercategory' => $classes['superCategory'] ?? null,
                 ]);
                 $classIds[] = $category->id;
+                if ($category->wasRecentlyCreated) {
+                    $classesToSample[] = $category->id;
+                }
             }
 
             // 3. Save Images and Annotations
@@ -92,80 +97,25 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
                 ]);
             }
 
-            return Response::success();
+            return Response::success(data: ['classesToSample' => $classesToSample]);
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }
     }
 
-    public function processImages(string $uniqueName, string $imageFolder): Response
-    {
-        // Move images to public storage
-        $imagesMoved = $this->imageProcessor->moveImagesToPublicDataset($uniqueName, $imageFolder);
-        if (!$imagesMoved->isSuccessful()) {
-            return Response::error($imagesMoved->message);
-        }
-
-        // Create thumbnails
-        $createdThumbnails = $this->createThumbnailsForNewDataset($uniqueName);
-        if (!$createdThumbnails->isSuccessful()) {
-            return Response::error($imagesMoved->message);
-        }
-
-        //  Create class crops
-        $createdClassCrops = $this->createClassCropsForNewDataset($uniqueName);
-        if (!$createdClassCrops->isSuccessful()) {
-            return Response::error($imagesMoved->message);
-        }
-
-        return Response::success();
-    }
-
-    public function createThumbnailsForNewDataset(string $datasetFolder): Response
-    {
-        Storage::disk('datasets')->makeDirectory($datasetFolder.'/'.AppConfig::IMG_THUMB_FOLDER);
-        $files = Storage::disk('datasets')->files($datasetFolder.'/'.AppConfig::FULL_IMG_FOLDER);
-
-        $thumbnails = $this->imageProcessor->createThumbnails($datasetFolder, $files);
-        if (count($thumbnails) == count($files)) {
-            return Response::success(data: $thumbnails[0]);
-        }
-
-        return Response::error("Failed to create thumbnails for some images");
-    }
-
-    public function createClassCropsForNewDataset(string $datasetFolder): Response
-    {
-        Storage::disk('datasets')->makeDirectory($datasetFolder.'/'.AppConfig::CLASS_IMG_FOLDER);
-
-        $dataset = Dataset::where('unique_name', $datasetFolder)->first();
-        $batchSize = max(ceil($dataset->num_images * 0.1), 1); // 10% of the dataset size
-
-        $classCounts = [];
-        // We are creating crops for classes in batches of 10% images because most likely
-        // we will get 3 crops per class sooner than parsing through whole dataset
-        for($i = 0; $i < 10; $i++){
-            $offset = $i * $batchSize;
-            $images = $dataset->images()->with('annotations')->skip($offset)->take($batchSize)->get();
-
-            $classCounts = $this->imageProcessor->createClassCrops($datasetFolder, $images, $classCounts);
-            if (!in_array(false, array_map(fn($count) => $count['count'] >= 3, $classCounts))) {
-                break;
-            }
-
-            if ($offset + $batchSize >= $dataset->num_images) {
-                break;
-            }
-        }
-        return Response::success("Class crops created successfully");
-    }
-
-    public function handleRollback($uniqueName): void
+    public function handleRollback(array $requestData): void
     {
         // Rollback the dataset upload
-        if(Storage::disk('datasets')->exists($uniqueName)){
-            Storage::disk('datasets')->deleteDirectory($uniqueName);
+        if(Storage::disk('datasets')->exists($requestData['unique_name'])){
+            Storage::disk('datasets')->deleteDirectory($requestData['unique_name']);
         }
         DB::rollBack();
+    }
+
+    private function createFolderStructure(mixed $unique_name)
+    {
+        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::FULL_IMG_FOLDER);
+        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::CLASS_IMG_FOLDER);
+        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::IMG_THUMB_FOLDER);
     }
 }
