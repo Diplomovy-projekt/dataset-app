@@ -6,7 +6,7 @@
         <x-button type="primary" text="Upload Dataset" size="sm" @click.prevent="open = 'uploadDataset'"/>
     </div>
 
-    <livewire:forms.upload-dataset :modalId="'uploadDataset'" />
+    <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <div class="flex flex-wrap sm:gap-5 pt-5">
         @foreach($datasets as $dataset)
             <x-dataset-card :dataset="$dataset"></x-dataset-card>

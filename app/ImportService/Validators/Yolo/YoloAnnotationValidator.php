@@ -4,21 +4,17 @@ namespace App\ImportService\Validators\Yolo;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\Utils\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class YoloAnnotationValidator
 {
-    use YoloConfig;
-
-    public function validate(string $fileName, string $annotationTechnique): array
+    public function validate(string $fileName, string $annotationTechnique): Response
     {
-        $annotationsPath = AppConfig::LIVEWIRE_TMP_PATH . $fileName .'/'. self::LABELS_FOLDER;
+        $annotationsPath = AppConfig::LIVEWIRE_TMP_PATH . $fileName .'/'. YoloConfig::LABELS_FOLDER;
         $labels = collect(Storage::files($annotationsPath));
         $errors = [];
-
-        // Start measuring time
-        $startTime = microtime(true);
 
         foreach ($labels as $labelFile) {
             try {
@@ -71,17 +67,13 @@ class YoloAnnotationValidator
                     }
                 }
             } catch (\Exception $e) {
-                $errors[$labelFile][] = "Error processing file: " . $e->getMessage();
+                return Response::error("An unexpected error occurred: " . $e->getMessage());
             }
         }
 
-        // Measure time taken
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
-
-        // Optionally log the execution time for debugging or performance tracking
-        Log::info("validateAnnotationFormat execution time: " . $executionTime . " seconds");
-
-        return $errors;
+        if (!empty($errors)) {
+            return Response::error("Annotation issues found", $errors);
+        }
+        return Response::success();
     }
 }

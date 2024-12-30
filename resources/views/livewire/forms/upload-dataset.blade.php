@@ -1,223 +1,92 @@
-<div x-data="chunkedUpload"
->
+<div x-data="chunkedUpload(@this)">
     <x-modals.fixed-modal modalId="uploadDataset" class="w-1/2">
-        {{-- Main Form Container using MaryUI's Form Component --}}
+         {{--Main Form Container using MaryUI's Form Component--}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
 
-                {{-- Header Section --}}
+                {{-- Header Section--}}
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
-                        Dataset Upload
+                        Dataset upload
                     </h2>
                 </div>
 
-                {{-- Dataset Upload Section --}}
-                <div class="space-y-6 bg-base-200/50 p-6 rounded-xl shadow-sm">
-                    <x-mary-file
-                        name="myFile"
-                        label="Upload Dataset (ZIP)"
-                        hint="Upload your dataset containing images and annotations"
-                        accept=".zip"
-                        class="border-2 border-dashed border-base-300 hover:border-primary transition-colors"
-                    />
+                {{-- Upload File Section--}}
+                <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="new-upload" />
 
-                    <x-mary-select
-                        wire:model="selectedFormat"
-                        label="Select Annotation Format"
-                        hint="Choose the format used in your dataset"
-                        :options="$annotationFormats"
-                        option-value="name"
-                        option-label="name"
-                        placeholder="Select format"/>
-                    <x-mary-radio
-                        label="Select used annotation technique"
-                        :options="$this->techniques"
-                        option-value="key"
-                        option-label="value"
-                        wire:model="selectedTechnique" />
+                {{-- Format Select--}}
 
-                </div>
-                {{-- Categories --}}
-                <div class="space-y-6">
-                    <div x-data="{ open: false }" class="rounded-lg border border-base-300">
-                        <button type="button" @click="open = !open" class="w-full flex justify-between items-center p-4 hover:bg-base-200 transition-colors">
-                            <span class="font-medium">Categories</span>
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="h-5 w-5 transform transition-transform"
-                                 :class="{ 'rotate-180': open }"
-                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div x-show="open"
-                             x-collapse
-                             class="border-t border-base-300">
-                            <div class="p-4 space-y-3">
-                                @foreach($categories as $category)
-                                    <x-mary-checkbox
-                                        wire:model="selectedCategories"
-                                        value="{{ $category->id }}"
-                                        label="{{ $category->name }}"
-                                    />
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Metadata Section with Dynamic Accordions --}}
-                <div class="space-y-6">
-                    <h3 class="text-lg font-semibold text-base-content">Metadata</h3>
-
-                    @foreach($metadataTypes  as $metadataType)
-                        <div x-data="{ open: false }" class="rounded-lg border border-base-300">
-                            <button type="button" @click="open = !open" class="w-full flex justify-between items-center p-4 hover:bg-base-200 transition-colors">
-                                <span class="font-medium">{{ $metadataType->name }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="h-5 w-5 transform transition-transform"
-                                     :class="{ 'rotate-180': open }"
-                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="open"
-                                 x-collapse
-                                 class="border-t border-base-300">
-                                <div class="p-4 space-y-3">
-                                    @foreach($metadataType->metadataValues as $metadataValue)
-                                        <x-mary-checkbox
-                                            wire:model="selectedMetadata.{{ $metadataValue->id }}"
-                                            value="{{ $metadataValue->id }}"
-                                            label="{{ $metadataValue->value }}"
-                                        />
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-                <x-mary-textarea
-                    label="Description"
-                    wire:model="description"
-                    rows="1"
-                    inline />
-
-                {{-- Submit Button --}}
-                <x-button
-                    @click="uploadChunks"
-                    x-bind:disabled="isUploading"
-                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
-                    text="Upload Dataset">
-                    <span x-show="!isUploading">Upload Dataset</span>
-                    <span x-show="isUploading">Uploading...</span>
-                </x-button>
+                <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
+                {{-- Submit Button--}}
                 <div class="flex items-center space-x-2 mt-4">
                     <!-- MaryUI Progress Bar -->
                     <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
 
                     <!-- Percentage Text -->
-                    <p class="text-sm font-medium text-yellow-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
+                    <p class="text-sm font-medium text-gray-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
                 </div>
+                @if($errors)
+                    <div x-data="{ isOpen: true }" class="my-4 bg-slate-800/50 border border-red-500/50 rounded-lg shadow-lg overflow-hidden">
+                        {{-- Clickable Error Header --}}
+                        <div @click="isOpen = !isOpen"
+                             class="px-4 py-3 bg-slate-800/80 border-b border-red-500/50 flex items-center justify-between cursor-pointer hover:bg-slate-800/90 transition-colors">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                          clip-rule="evenodd" />
+                                </svg>
+                                <h3 class="font-medium text-red-400">{{ $errors['message'] }}</h3>
+                            </div>
+
+                            {{-- Toggle Arrow --}}
+                            <svg class="w-5 h-5 text-red-400 transform transition-transform duration-200"
+                                 :class="{'rotate-180': !isOpen}"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+
+                        {{-- Collapsible Error Details --}}
+                        @if(count($errors['data']) > 0)
+                            <div x-show="isOpen"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 transform translate-y-0"
+                                 x-transition:leave-end="opacity-0 transform -translate-y-2"
+                                 class="px-4 py-3">
+                                <ul class="space-y-2">
+                                    @foreach($errors['data'] as $error)
+                                        <li class="flex items-center text-slate-300 text-sm">
+                                            <span class="mr-2">•</span>
+                                            {{ $error }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+                <x-button
+                    @click="uploadChunks"
+                    x-bind:disabled="isUploading"
+                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
+                    text="Save">
+                    <span x-show="!isUploading">Upload Dataset</span>
+                    <span x-show="isUploading">Uploading...</span>
+                </x-button>
             </div>
         </div>
     </x-modals.fixed-modal>
 </div>
 
-@script
-    <script>
-        Alpine.data('chunkedUpload', () => ({
-            progress: 0,
-            isUploading: false, // Add upload state tracking
-
-            get progressFormatted() {
-                return this.progress.toFixed(2) + '%';
-            },
-
-            uploadChunks() {
-                // Prevent multiple uploads
-                if (this.isUploading) {
-                    console.log('Upload already in progress');
-                    return;
-                }
-
-                const fileInput = document.querySelector('input[name="myFile"]');
-                if (fileInput.files[0]) {
-                    const file = fileInput.files[0];
-                    this.progress = 0;
-                    this.isUploading = true; // Set upload state to true
-
-                    $wire.$set('fileSize', file.size, true);
-                    $wire.$set('displayName', file.name, true);
-                    $wire.$set('uniqueName', this.generateUUIDv7() + '.' + file.name.split('.').pop(), true);
-
-                    this.livewireUploadChunk(file, 0).catch(() => {
-                        // Handle any errors that occur during upload
-                        this.isUploading = false;
-                        this.progress = 0;
-                    });
-                }
-            },
-
-            async livewireUploadChunk(file, start) {
-                console.log('Uploading chunk', start);
-                const chunkSize = $wire.$get('chunkSize');
-                const chunkEnd = Math.min(start + chunkSize, file.size);
-                const chunk = file.slice(start, chunkEnd, file.type);
-                const chunkFile = new File([chunk], file.name, { type: file.type });
-
-                try {
-                    await new Promise((resolve, reject) => {
-                        $wire.$upload(
-                            'fileChunk',
-                            chunkFile,
-                            () => resolve(), // finish
-                            (error) => {
-                                console.error('Upload error:', error);
-                                this.isUploading = false; // Reset on error
-                                reject(error);
-                            },
-                            (event) => {
-                                console.log(event.detail.progress);
-                                this.progress = ((start + event.detail.progress) / file.size) * 100;
-
-                                if (event.detail.progress == 100) {
-                                    start = chunkEnd;
-
-                                    if (start < file.size) {
-                                        this.livewireUploadChunk(file, start);
-                                    } else {
-                                        // Upload is complete
-                                        this.isUploading = false;
-                                    }
-                                }
-                            }
-                        );
-                    });
-                } catch (error) {
-                    this.isUploading = false;
-                    throw error;
-                }
-            },
-
-            generateUUIDv7() {
-                const timestamp = Date.now();
-                const randomBytes = crypto.getRandomValues(new Uint8Array(10));
-
-                let uuid = timestamp.toString(16).padStart(12, '0');
-                uuid += '-';
-                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(4, '0');
-                uuid += '-7';
-                uuid += (Math.floor(Math.random() * 0x1000)).toString(16).padStart(3, '0');
-                uuid += '-';
-                uuid += (Math.floor(Math.random() * 0x4000) + 0x8000).toString(16).padStart(4, '0');
-                uuid += '-';
-
-                for (let i = 0; i < randomBytes.length; i++) {
-                    uuid += randomBytes[i].toString(16).padStart(2, '0');
-                }
-
-                return uuid;
-            }
-        }));
-    </script>
-@endscript
+@push('scripts')
+    @vite('resources/js/chunkedUpload.js')
+@endpush

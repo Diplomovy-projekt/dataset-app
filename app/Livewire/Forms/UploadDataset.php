@@ -5,7 +5,9 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
+use App\ImportService\Strategies\NewDatasetStrategy;
 use App\Models\Category;
+use App\Models\Dataset;
 use App\Models\MetadataType;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -15,6 +17,9 @@ use Livewire\WithFileUploads;
 class UploadDataset extends Component
 {
     use WithFileUploads;
+
+    public $modalStyle;
+    public $errors;
     public $annotationFormats;
     public $techniques;
     public $metadataTypes;
@@ -36,17 +41,16 @@ class UploadDataset extends Component
     public $finalFile;
     public $validated = false;
 
+
     public function mount()
     {
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
-        $this->techniques = array_values(array_map(function ($technique) {
-            return [
-                'key' => $technique,
-                'value' => $technique,
-            ];
-        }, AppConfig::ANNOTATION_TECHNIQUES));
+        $this->techniques = array_map(fn($technique) => ['key' => $technique, 'value' => $technique], AppConfig::ANNOTATION_TECHNIQUES);
         $this->metadataTypes = MetadataType::with('metadataValues')->get();
-        $this->categories = Category::all();
+        $this->selectedMetadata = $this->metadataTypes->pluck('metadataValues', 'id')->map(function () {
+            return ['metadataValues' => []];
+        })->toArray();
+        $this->categories = Category::all()->toArray();
     }
     public function render()
     {
@@ -56,10 +60,10 @@ class UploadDataset extends Component
     public function finishImport()
     {
         $zipExtraction = app(ZipManager::class);
-        $importService = app(ImportService::class);
+        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
         $zipExtracted = $zipExtraction->processZipFile($this->finalFile);
+
         $payload = [
-            'file' => $this->finalFile,
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
@@ -73,20 +77,10 @@ class UploadDataset extends Component
             $datasetImported = $importService->handleImport($payload);
         }
 
-        $this->dispatch('flash-message', [
-            'success' => $datasetImported->isSuccessful(),
-            'message' => $datasetImported->message
-        ]);
-
-        $this->reset([
-            'fileChunk',
-            'finalFile',
-            'selectedFormat',
-            'selectedTechnique',
-            'selectedCategories',
-            'selectedMetadata',
-            'description'
-        ]);
+        if(!$datasetImported->isSuccessful()) {
+            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
+            $this->errors['message'] = $datasetImported->message;
+        }
 
         if($datasetImported->isSuccessful()){
             $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
@@ -95,15 +89,7 @@ class UploadDataset extends Component
 
     public function updatedFileChunk()
     {
-        if (!$this->validated){
-            $this->validate([
-                'selectedFormat' => 'required',  // Example validation rule
-                'selectedTechnique' => 'required',
-                'selectedCategories' => 'required',
-                'description' => 'nullable|string',
-            ]);
-            $this->validated = true;
-        }
+        $this->validateDataset();
         $chunkFileName = $this->fileChunk->getFileName();
 
         // Read the chunk file
@@ -123,4 +109,29 @@ class UploadDataset extends Component
             $this->finishImport();
         }
     }
+    private function validateDataset()
+    {
+        if (!$this->validated) {
+            $rules = [
+                'fileChunk' => 'required',
+                'selectedFormat' => 'required',
+                'selectedTechnique' => 'required',
+                'selectedCategories' => 'required',
+                'description' => 'nullable|string',
+            ];
+            $this->validate($rules);
+            $this->validated = true;
+        }
+    }
+    private function normalizeErrors($errors): array
+    {
+        if (is_array($errors)) {
+            return collect($errors)
+                ->flatten()
+                ->toArray(); // Converts nested arrays to a flat array
+        }
+
+        return [$errors]; // If a single error message is returned
+    }
+
 }

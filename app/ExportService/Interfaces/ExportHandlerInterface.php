@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ImportService\Interfaces;
+namespace App\ExportService\Interfaces;
 
 interface ExportHandlerInterface
 {

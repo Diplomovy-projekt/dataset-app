@@ -4,6 +4,7 @@ namespace App\FileManagement;
 
 use App\Configs\AppConfig;
 use App\Utils\Response;
+use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class ZipManager
@@ -29,11 +30,11 @@ class ZipManager
     private function extractZipFile($file): bool
     {
         $zip = new ZipArchive;
-        $path = storage_path(AppConfig::LIVEWIRE_TMP_PATH . $file->getFilename());
+        $path = Storage::disk('storage')->path(AppConfig::LIVEWIRE_TMP_PATH . $file->getFilename());
 
         // Open and extract the zip file
         if ($zip->open($path) === true) {
-            $extractPath = storage_path(AppConfig::LIVEWIRE_TMP_PATH  . pathinfo($file->getFilename(), PATHINFO_FILENAME));
+            $extractPath = Storage::disk('storage')->path(AppConfig::LIVEWIRE_TMP_PATH  . pathinfo($file->getFilename(), PATHINFO_FILENAME));
 
             // Create the extraction directory if it doesn't exist
             if (!is_dir($extractPath)) {

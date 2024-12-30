@@ -1,15 +1,14 @@
 @props([
     'dataset',
 ])
-
-<a href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
+<a @click.stop.prevent href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
    wire:navigate
    wire:key="{{ $dataset['unique_name'] }}"
    class="block w-60 overflow-hidden rounded-lg bg-slate-900/50 backdrop-blur-sm border border-slate-800 transition-all hover:border-slate-700 hover:bg-slate-900/60">
 
     {{-- Thumbnail Section --}}
     <div class="relative h-48">
-        <img src="{{asset('storage/datasets/'.$dataset['unique_name']. '/thumbnails/' . $dataset['thumbnail_image'])}}"
+        <img src="{{asset('storage/datasets/'.$dataset['unique_name']. '/thumbnails/' . $dataset['images'][0]['filename'])}}"
              alt="{{ $dataset['display_name'] }}"
              class="h-full w-full object-cover"
              loading="lazy">
@@ -21,13 +20,16 @@
         {{-- Header with technique --}}
         <div class="flex flex-col gap-2 items-start justify-between">
             <div class="flex-1">
-                <div class="flex items-center gap-3">
-                    <h3 class="text-lg font-bold text-slate-100">
-                        {{ $dataset['display_name'] }}
-                    </h3>
-                    <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
-                        {{ $dataset['annotation_technique'] }}
-                    </span>
+                <div class="flex justify-between items-center gap-3">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-lg font-bold text-slate-100">
+                            {{ $dataset['display_name'] }}
+                        </h3>
+                        <div class="flex-shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
+                            {{ $dataset['annotation_technique'] }}
+                        </div>
+                    </div>
+
                 </div>
             </div>
             {{-- Stats --}}

@@ -39,8 +39,8 @@
                 </div>
                 @foreach($this->metadata as $metadata)
                     <div class="flex items-center gap-3">
-                        <span class="text-sm text-slate-400">{{$metadata['type']['name']}}:</span> <!-- Accessing 'type' and 'name' keys -->
-                        @foreach($metadata['values'] as $metadataValue) <!-- Accessing 'values' array -->
+                        <span class="text-sm text-slate-400">{{$metadata['name']}}:</span> <!-- Accessing 'type' and 'name' keys -->
+                        @foreach($metadata['metadataValues'] as $metadataValue) <!-- Accessing 'values' array -->
                         <span class="text-sm text-slate-300">{{$metadataValue['value']}}</span> <!-- Accessing 'value' key -->
                         @endforeach
                     </div>

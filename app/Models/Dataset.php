@@ -19,7 +19,6 @@ class Dataset extends Model
         'description',
         'num_images',
         'total_size',
-        'thumbnail_image',
         'annotation_technique',
         'is_public'
     ];
@@ -45,24 +44,20 @@ class Dataset extends Model
     public function metadataGroupedByType()
     {
         return $this->metadataValues()
-            ->with('metadataType:id,name') // Only load the 'id' and 'name' fields of metadataType
+            ->with('metadataType:id,name')
             ->get()
-            ->groupBy('metadataType.name') // Group by metadataType name
-            ->map(function ($values, $typeName) {
-                // Extract the id of the type from the first value in the group
-                $typeId = $values->first()->metadataType->id;
+            ->groupBy('metadataType.id')
+            ->map(function ($values, $typeId) {
+                $typeName = $values->first()->metadataType->name;
 
                 return [
-                    'type' => [
-                        'id' => $typeId,
-                        'name' => $typeName,
-                    ],
-                    'values' => $values->map(function ($value) {
+                    'id' => $typeId,
+                    'name' => $typeName,
+                    'metadataValues' => $values->map(function ($value) {
                         return $value->only(['id', 'value']);
-                    }),
+                    })->toArray(),
                 ];
-            })
-            ->values(); // Reindex the collection to make it an indexed array
+            });
     }
 
 
