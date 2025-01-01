@@ -1,21 +1,25 @@
 <x-app-layout>
-    <div class="relative w-full h-screen ">
+    <div class="relative w-full h-screen">
         <div class="absolute inset-0 flex items-center justify-center text-gray-200">
             <div class="text-center max-w-4xl mx-6">
-                <h1 class="text-6xl font-extrabold   leading-tight mb-8 tracking-wide">
+                <h1 class="text-6xl font-extrabold leading-tight mb-8 tracking-wide">
                     Discover, Create, and Elevate Your Datasets
                 </h1>
 
                 <p class="text-2xl text-gray-300 mb-10 px-6">
                     Unlock the potential of your research with custom datasets. Whether you're exploring, building, or analyzing, our intuitive platform helps you create the exact data you need.
+                    With over <span class="font-semibold text-blue-400">{{ $statistics['total_images'] }}</span> images,
+                    <span class="font-semibold text-blue-400">{{ $statistics['total_annotations'] }}</span> annotations, and
+                    <span class="font-semibold text-blue-400">{{ $statistics['total_classes'] }}</span> classes,
+                    you're already equipped with a rich foundation to build your next project.
                 </p>
 
                 <div class="flex justify-center space-x-6 mb-12">
-                    <a href="{{ route('builder') }}" class="px-8 py-4 bg-blue-500   font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-blue-600 transition-all duration-300 ease-in-out">
+                    <a href="{{ route('builder') }}" class="px-8 py-4 bg-blue-500 font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-blue-600 transition-all duration-300 ease-in-out">
                         Create Your Own Dataset
                     </a>
 
-                    <a href="{{ route('dataset.index') }}" class="px-8 py-4 bg-gray-700   font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-gray-600 transition-all duration-300 ease-in-out">
+                    <a href="{{ route('dataset.index') }}" class="px-8 py-4 bg-gray-700 font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-gray-600 transition-all duration-300 ease-in-out">
                         View Our Datasets
                     </a>
                 </div>
@@ -54,6 +58,4 @@
             </div>
         </div>
     </div>
-
-
 </x-app-layout>

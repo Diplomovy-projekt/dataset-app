@@ -20,6 +20,7 @@ class EditDataset extends Component
     #[Validate('required')]
     public $selectedCategories = [];
     public $description;
+    public $displayName;
 
     public function mount($editingDataset)
     {
@@ -39,6 +40,7 @@ class EditDataset extends Component
     public function updateDatasetInfo()
     {
         $this->editingDataset->description = $this->description;
+        $this->editingDataset->display_name = $this->displayName;
         $ids = array_merge(...array_column($this->selectedMetadata, 'metadataValues'));
         $this->editingDataset->metadataValues()->sync($ids);
         $this->editingDataset->categories()->sync($this->selectedCategories);
@@ -55,5 +57,6 @@ class EditDataset extends Component
         });
         $this->selectedCategories = $this->editingDataset->categories->pluck('id')->toArray();
         $this->description = $this->editingDataset->description;
+        $this->displayName = $this->editingDataset->display_name;
     }
 }

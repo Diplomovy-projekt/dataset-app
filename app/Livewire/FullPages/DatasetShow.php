@@ -19,10 +19,11 @@ class DatasetShow extends Component
     use WithPagination, ImageRendering;
     public $uniqueName;
     public $dataset;
-    public $perPage = 50;
+    public $perPage = 25;
     public $searchTerm;
     public $metadata = [];
     public $categories = [];
+    public $selectedAll = 'all';
     public $modalStyle;
     #[Computed]
     public function images()
@@ -57,6 +58,7 @@ class DatasetShow extends Component
     {
         switch ($toggleState) {
             case 'all':
+                $this->selectedAll = 'all';
                 $this->dataset['classes'] = array_map(function ($class) {
                     $class['state'] = 'true'; // Set state to 'true'
                     return $class;
@@ -64,6 +66,7 @@ class DatasetShow extends Component
                 break;
 
             case 'none':
+                $this->selectedAll = 'none';
                 $this->dataset['classes'] = array_map(function ($class) {
                     $class['state'] = 'false'; // Set state to 'false'
                     return $class;
@@ -95,12 +98,6 @@ class DatasetShow extends Component
                 ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
                 ->paginate($this->perPage);
         }
-    }
-
-    public function deleteDataset(DatasetCrud $crud)
-    {
-        $crud->deleteDataset($this->uniqueName);
-        $this->redirectRoute('profile');
     }
 
 }

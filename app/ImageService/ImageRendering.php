@@ -9,14 +9,15 @@ use Illuminate\Support\Collection;
 
 trait ImageRendering
 {
-    use CoordsTransformer;
+    use CoordsTransformer, ImageTransformer;
     public function prepareImagesForSvgRendering($images, $classes)
     {
         $images = $images instanceof \Illuminate\Pagination\LengthAwarePaginator ? $images : collect([$images]);
 
         foreach ($images as $image) {
-            $image->viewDims = $this->calculateThumbnailDimensions($image->width, $image->height);
+            $image->viewDims = ['width' => $image->width, 'height' => $image->height];//$this->calculateThumbnailDimensions($image->width, $image->height);
 
+            $image->strokeWidth = $this->calculateBorderSize($image->width, $image->height);
             $image->annotations->each(function ($annotation) use ($image, $classes) {
                 $annotation->class->color = $classes[$annotation->annotation_class_id]['color'];
 

@@ -60,7 +60,6 @@ class Dataset extends Model
             });
     }
 
-
     public function metadataValues(): BelongsToMany
     {
         return $this->belongsToMany(MetadataValue::class, 'dataset_metadata');
