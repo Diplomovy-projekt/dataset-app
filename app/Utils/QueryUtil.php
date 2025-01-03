@@ -6,7 +6,7 @@ use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
 use App\Models\Image;
 
-class QueryHelper
+class QueryUtil
 {
     public static function getDatasetCounts()
     {

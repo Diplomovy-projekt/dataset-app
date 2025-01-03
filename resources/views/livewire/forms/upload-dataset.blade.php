@@ -29,6 +29,8 @@
                     <x-dataset-errors></x-dataset-errors>
                 @endif
                 <x-button
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-not-allowed"
                     @click="uploadChunks"
                     x-bind:disabled="isUploading"
                     x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\FullPages;
 
-use App\DatasetCrud\DatasetCrud;
+use App\DatasetActions\DatasetActions;
 use App\ImageService\ImageRendering;
 use App\ImageService\ImageTransformer;
 use App\Models\Category;
@@ -19,11 +19,10 @@ class DatasetShow extends Component
     use WithPagination, ImageRendering;
     public $uniqueName;
     public $dataset;
-    public $perPage = 25;
+    private $perPage = 25;
     public $searchTerm;
     public $metadata = [];
     public $categories = [];
-    public $selectedAll = 'all';
     public $modalStyle;
     #[Computed]
     public function images()
@@ -34,7 +33,10 @@ class DatasetShow extends Component
     public function mount()
     {
         $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
-
+        if (!$dataset) {
+            session()->flash('error', 'Dataset not found.');
+            return redirect()->route('dataset.index');
+        }
         $classes = $this->addColorsAndStateToClasses($dataset->classes);
 
         $this->dataset = $dataset->toArray();
@@ -54,35 +56,6 @@ class DatasetShow extends Component
         unset($this->images);
     }
 
-    public function toggleClass($categoryId, $toggleState)
-    {
-        switch ($toggleState) {
-            case 'all':
-                $this->selectedAll = 'all';
-                $this->dataset['classes'] = array_map(function ($class) {
-                    $class['state'] = 'true'; // Set state to 'true'
-                    return $class;
-                }, $this->dataset['classes']);
-                break;
-
-            case 'none':
-                $this->selectedAll = 'none';
-                $this->dataset['classes'] = array_map(function ($class) {
-                    $class['state'] = 'false'; // Set state to 'false'
-                    return $class;
-                }, $this->dataset['classes']);
-                break;
-            default:
-                if ($toggleState == 'true') {
-                    $this->dataset['classes'][$categoryId]['state'] = 'true';
-                }
-                else {
-                    $this->dataset['classes'][$categoryId]['state'] = 'false';
-                }
-        }
-        unset($this->images);
-    }
-
     private function fetchImages()
     {
         if ($this->searchTerm) {
@@ -97,6 +70,21 @@ class DatasetShow extends Component
             return $dataset->images()
                 ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
                 ->paginate($this->perPage);
+        }
+    }
+    public function deleteDataset(DatasetActions $datasetService)
+    {
+        $result = $datasetService->deleteDataset($this->uniqueName);
+        if($result->isSuccessful()){
+            return redirect()->route('profile');
+        }
+    }
+
+    public function deleteImages(DatasetActions $datasetService, $ids)
+    {
+        $result = $datasetService->deleteImages($this->uniqueName, $ids);
+        if($result->isSuccessful()){
+            $this->mount();
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-class Helper
+class Util
 {
     public static function isJson($data) {
 

@@ -3,12 +3,13 @@
 namespace App\ImageService;
 
 use App\Configs\AppConfig;
-use App\Models\Dataset;
+use App\Utils\FileUtil;
 use App\Utils\Response;
+use Faker\Core\File;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class ImageProcessor
+trait ImageProcessor
 {
     use ImageTransformer;
 
@@ -28,7 +29,7 @@ class ImageProcessor
 
         $source = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
         $destination = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
-
+        FileUtil::ensureFolderExists($destination);
         $createdThumbnails = [];
         foreach($images as $image){
             if($this->rescale($source.$image, $destination.$image) === true){
@@ -38,30 +39,28 @@ class ImageProcessor
         return $createdThumbnails;
     }
 
-    public function createClassCrops(string $datasetFolder, Collection $images, $classCounts): array
+    public function createClassCrops(string $datasetFolder, Collection $images): array
     {
+        $classCounts = [];
         foreach ($images as $image) {
             $imagePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::FULL_IMG_FOLDER.$image->filename);
 
-            foreach ($image->annotations as $annotation) {
+            foreach ($image->annotations as $index => $annotation) {
                 $classId = $annotation->annotation_class_id;
                 $directoryPath = $datasetFolder . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
 
-                if (!Storage::disk('datasets')->exists($directoryPath)) {
-                    Storage::disk('datasets')->makeDirectory($directoryPath);
+                if(!isset($classCounts[$classId])) {
+                    $classCounts[$classId] = count(Storage::disk('datasets')->files($directoryPath));
                 }
+                if ($classCounts[$classId] < AppConfig::SAMPLES_COUNT) {
+                    $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
+                    FileUtil::ensureFolderExists($savePath);
 
-                if (!isset($classCounts[$classId]['count'])) {
-                    $classCounts[$classId]['count'] = 0;
-                }
-
-                if ($classCounts[$classId]['count'] < 3) {
-                    $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::CLASS_IMG_FOLDER.$classId.'/'.AppConfig::CLASS_SAMPLE_PREFIX.$classCounts[$classId]['count'] . $image->filename);
                     $pixelizedBbox = $this->pixelizeBbox(["x" => $annotation->x, "y" => $annotation->y, "width" => $annotation->width, "height" => $annotation->height], $image['width'], $image['height']);
                     $this->crop($pixelizedBbox, $imagePath,$savePath);
                     $this->drawAnnotations([$image->width, $image->height], $savePath, $annotation);
                     $this->rescale($savePath, $savePath);
-                    $classCounts[$classId]['count']++;
+                    $classCounts[$classId]++;
                 }
             }
         }
@@ -97,6 +96,7 @@ class ImageProcessor
                 $destination = AppConfig::DATASETS_PATH . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
 
                 try {
+                    FileUtil::ensureFolderExists($destination);
                     Storage::disk('storage')->move($source, $destination);
                     $filesMoved[] = pathinfo($file, PATHINFO_BASENAME);
                 } catch (\Exception $e) {

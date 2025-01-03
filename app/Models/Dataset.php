@@ -68,4 +68,14 @@ class Dataset extends Model
     {
         return $this->belongsToMany(Category::class, 'dataset_categories');
     }
+
+    public function updateImageCount($difference = null): void
+    {
+        if ($difference) {
+            $this->num_images += $difference;
+        } else {
+            $this->num_images = $this->images()->count();
+        }
+        $this->save();
+    }
 }

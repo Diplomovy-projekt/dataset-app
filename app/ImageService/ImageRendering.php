@@ -4,14 +4,15 @@ namespace App\ImageService;
 
 use App\Configs\AppConfig;
 use App\Traits\CoordsTransformer;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 
 trait ImageRendering
 {
     use CoordsTransformer, ImageTransformer;
     public function prepareImagesForSvgRendering($images, $classes)
     {
+        if(empty($images)) {
+            return null;
+        }
         $images = $images instanceof \Illuminate\Pagination\LengthAwarePaginator ? $images : collect([$images]);
 
         foreach ($images as $image) {

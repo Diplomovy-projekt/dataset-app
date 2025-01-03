@@ -27,4 +27,5 @@ class AppConfig
     public const IMG_THUMB_FOLDER = 'thumbnails/';
     public const CLASS_IMG_FOLDER = 'class-images/';
     public const CLASS_SAMPLE_PREFIX = 'sample_';
+    public const SAMPLES_COUNT = 3;
 }

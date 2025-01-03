@@ -3,6 +3,7 @@
 namespace App\ImportService;
 
 use App\Configs\AppConfig;
+use App\DatasetActions\DatasetActions;
 use App\Exceptions\DatasetImportException;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
@@ -18,13 +19,12 @@ use Illuminate\Support\Facades\Storage;
 
 class ImportService
 {
+    use ImageProcessor;
     protected $strategy;
     protected $importPreprocessor;
-    protected $imageProcessor;
     public function __construct($strategy)
     {
         $this->strategy = $strategy;
-        $this->imageProcessor = app(ImageProcessor::class);
     }
 
     /**
@@ -57,22 +57,23 @@ class ImportService
             }
 
             // Move images to public storage
-            $imagesMoved = $this->imageProcessor->moveImagesToPublicDataset(
+            $imagesMoved = $this->moveImagesToPublicDataset(
                 sourceFolder: $requestData['unique_name'],
-                destinationFolder: $requestData['parent_dataset_unique_name'] ?? null,
-                imageFolder: get_class($this->importPreprocessor->config)::IMAGE_FOLDER);
+                imageFolder: get_class($this->importPreprocessor->config)::IMAGE_FOLDER,
+                destinationFolder: $requestData['parent_dataset_unique_name'] ?? null);
             if (!$imagesMoved->isSuccessful()) {
                 throw new DatasetImportException($imagesMoved->message);
             }
 
             // Create thumbnails
-            $thumbnails = $this->imageProcessor->createThumbnails($imagesMoved->data['destinationFolder'], $imagesMoved->data['images']);
+            $thumbnails = $this->createThumbnails($imagesMoved->data['destinationFolder'], $imagesMoved->data['images']);
             if (count($thumbnails) != count($imagesMoved->data['images'])) {
                 throw new DatasetImportException("Failed to create thumbnails for some images");
             }
 
             //  Create class samples
-            $createdClassCrops = $this->createSamplesForClasses($imagesMoved->data['destinationFolder'], $savedToDb->data['classesToSample']);
+            $datasetService = new DatasetActions();
+            $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'], $savedToDb->data['classesToSample']);
             if (!$createdClassCrops->isSuccessful()) {
                 throw new DatasetImportException($imagesMoved->message);
             }
@@ -83,40 +84,6 @@ class ImportService
             $this->strategy->handleRollback($requestData);
             return Response::error($e->getMessage(), $e->getData());
         }
-    }
-
-    public function createSamplesForClasses(string $datasetFolder, array $classesToSample): Response
-    {
-        $dataset = Dataset::where('unique_name', $datasetFolder)->first();
-        $batchSize = max(ceil($dataset->num_images * 0.1), 10); // 10% of the dataset size
-
-        $classCounts = [];
-        // We are creating crops for classes in batches of 10% images because most likely
-        // we will get 3 crops per class sooner than parsing through whole dataset
-        for($i = 0; $i < 10; $i++){
-            $offset = $i * $batchSize;
-            // Fetch images in the batch with annotations belonging to classes to sample
-            $images = $dataset->images()
-                ->whereHas('annotations', function ($query) use ($classesToSample) {
-                    $query->whereIn('annotation_class_id', $classesToSample);
-                })
-                ->with(['annotations' => function ($query) use ($classesToSample) {
-                    $query->whereIn('annotation_class_id', $classesToSample);
-                }])
-                ->skip($offset)
-                ->take($batchSize)
-                ->get();
-
-            $classCounts = $this->imageProcessor->createClassCrops($datasetFolder, $images, $classCounts);
-            if (!in_array(false, array_map(fn($count) => $count['count'] >= 3, $classCounts))) {
-                break;
-            }
-
-            if ($offset + $batchSize >= $dataset->num_images) {
-                break;
-            }
-        }
-        return Response::success("Class crops created successfully");
     }
 
 }

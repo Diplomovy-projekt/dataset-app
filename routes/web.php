@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
 Route::get('/', function () {
-    $statistics = \App\Utils\QueryHelper::getDatasetCounts();
+    $statistics = \App\Utils\QueryUtil::getDatasetCounts();
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
 Route::get('/datasets', DatasetIndex::class)->name('dataset.index');

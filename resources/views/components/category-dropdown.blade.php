@@ -72,7 +72,7 @@
 </div>
 --}}
 <div x-data="{ open: false,
-        classes: $wire.entangle('dataset.classes'),
+        classes: @this.get('dataset.classes'),
         selectedClasses: [],
         init() {
             if (this.classes && typeof this.classes === 'object') {

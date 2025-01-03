@@ -17,17 +17,8 @@ use Illuminate\Support\Facades\Storage;
 
 class NewDatasetStrategy implements DatasetSavingStrategyInterface
 {
-    private $imageProcessor;
-
-    public function __construct()
-    {
-        // Resolving ImgProcessor from the container
-        $this->imageProcessor = app(ImageProcessor::class);
-    }
-
     public function saveToDatabase($mappedData, $requestData): Response
     {
-        $this->createFolderStructure($requestData['unique_name']);
         try {
             $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
@@ -110,12 +101,5 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
             Storage::disk('datasets')->deleteDirectory($requestData['unique_name']);
         }
         DB::rollBack();
-    }
-
-    private function createFolderStructure(mixed $unique_name)
-    {
-        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::FULL_IMG_FOLDER);
-        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::CLASS_IMG_FOLDER);
-        Storage::disk('datasets')->makeDirectory($unique_name.'/'.AppConfig::IMG_THUMB_FOLDER);
     }
 }

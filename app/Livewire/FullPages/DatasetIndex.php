@@ -10,6 +10,7 @@ class DatasetIndex extends Component
 {
     use ImageRendering;
     public $datasets;
+    public $searchTerm;
 
     public function render()
     {
