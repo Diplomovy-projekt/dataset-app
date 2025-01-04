@@ -10,13 +10,18 @@
 
     <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"/>
     <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"/>
-
+    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']"/>
     <div class="flex flex-col mb-5 bg-slate-900/50">
         <x-dataset-header></x-dataset-header>
         <div class="flex items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar />
             <x-category-dropdown />
             <x-dropdown-menu class="w-50">
+                <x-dropdown-menu-item
+                    @click.prevent="open = 'display-classes'"
+                    :icon="@svg('eva-upload')->toHtml()">
+                    Extend Dataset
+                </x-dropdown-menu-item>
                 <x-dropdown-menu-item
                     @click.prevent="open = 'extend-dataset'"
                     :icon="@svg('eva-upload')->toHtml()">
@@ -67,10 +72,9 @@
                          src="{{ asset('storage/datasets/'.$this->dataset['unique_name'] . '/thumbnails/' . $image['filename']) }}"
                          alt="Image"
                          @click="
-                            fullScreenImageModal = true;
-                            fullScreenImageSrc = '{{ asset('storage/datasets/'.$this->dataset['unique_name'] . '/full-images/' . $image['filename']) }}';
-                            modalSvg = document.getElementById(`svg-{{ $image['filename'] }}`)?.cloneNode(true).outerHTML;">
-                    <x-annotation-overlay :image="$image"></x-annotation-overlay>
+                            const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
+                            $dispatch('open-full-screen-image', { src: imgSrc, overlayId: `svg-{{ $image['filename'] }}` })">
+                    <x-annotation-overlay :image="$image"></x-annotation-overlay>d
                     <div
                         x-show="hoveredImageIndex === {{ $image->id }} || selectedImages.includes({{ strval($image->id) }})"
                         class="absolute -top-0 -right-0"
@@ -103,21 +107,7 @@
         @endforeach
     </div>
     {{ $this->images->links() }}
-
-    {{-- Modal --}}
-    <div x-show="fullScreenImageModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-        <button
-            class="absolute top-4 right-4 text-white text-2xl"
-            @click="fullScreenImageModal = false">
-            &times;
-        </button>
-        <div class="relative">
-            <img :src="fullScreenImageSrc" class="max-w-full max-h-screen rounded-md" alt="Full-size Image">
-            {{--Copy the svg overlay here--}}
-            <div x-html="modalSvg" class="absolute inset-0 pointer-events-none"></div>
-
-        </div>
-    </div>
+    <x-images.full-screen-image/>
 
 
 </div>

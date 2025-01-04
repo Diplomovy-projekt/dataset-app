@@ -21,6 +21,7 @@ class ExtendDataset extends Component
     use WithFileUploads, DatasetImportHelper;
 
     public $errors;
+    public $lockUpload = false;
     public $editingDataset;
     public $annotationFormats;
     public $techniques;

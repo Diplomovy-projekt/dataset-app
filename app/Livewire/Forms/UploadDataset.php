@@ -21,6 +21,7 @@ class UploadDataset extends Component
 
     public $modalStyle;
     public $errors;
+    public $lockUpload = false;
     public $annotationFormats;
     public $techniques;
     public $metadataTypes;
@@ -34,7 +35,7 @@ class UploadDataset extends Component
     public $description;
 
     # Chunked upload
-    public $chunkSize = 20000000; // 20 MB
+    public $chunkSize = 1000000;//20000000; // 20 MB
     public $fileChunk;
     public $displayName;
     public $uniqueName;
@@ -85,12 +86,14 @@ class UploadDataset extends Component
         } else {
             $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
             $this->errors['message'] = $datasetImported->message;
+            $this->lockUpload = false;
         }
     }
 
     public function updatedFileChunk()
     {
         $this->validateDataset();
+        $this->lockUpload = true;
         $this->chunkUpload();
     }
     private function validateDataset()

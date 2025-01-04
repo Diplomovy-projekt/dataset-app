@@ -28,18 +28,18 @@
                 @if($errors)
                     <x-dataset-errors></x-dataset-errors>
                 @endif
+
+                <span x-text="lock ? 'Uploading...' : ''"></span>
                 <x-button
-                    wire:loading.attr="disabled"
-                    wire:loading.class="opacity-50 cursor-not-allowed"
+                    type="submit"
+                    x-bind:disabled="lock"
+                    class="{{$this->lockUpload ? 'opacity-50 cursor-not-allowed' : ''}}"
                     @click="uploadChunks"
-                    x-bind:disabled="isUploading"
-                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
                     text="Save">
-                    <span x-show="!isUploading">Upload Dataset</span>
-                    <span x-show="isUploading">Uploading...</span>
                 </x-button>
             </div>
         </div>
+
     </x-modals.fixed-modal>
 </div>
 

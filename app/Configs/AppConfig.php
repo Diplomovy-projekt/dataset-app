@@ -22,6 +22,7 @@ class AppConfig
 
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';
     public const DATASETS_PATH = 'app/public/datasets/';
+    public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
     public const FULL_IMG_FOLDER = 'full-images/';
     public const IMG_THUMB_FOLDER = 'thumbnails/';
