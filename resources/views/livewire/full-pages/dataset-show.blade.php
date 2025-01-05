@@ -6,7 +6,7 @@
         modalSvg: '',
         selectedImages: [],
      }"
-     class="container mx-auto pt-6">
+     class="container mx-auto pt-3">
 
     <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"/>
     <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"/>
@@ -69,7 +69,7 @@
                          @click="
                             const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
                             $dispatch('open-full-screen-image', { src: imgSrc, overlayId: `svg-{{ $image['filename'] }}` })">
-                    <x-annotation-overlay :image="$image"></x-annotation-overlay>d
+                    <x-annotation-overlay :image="$image"></x-annotation-overlay>
                     <div
                         x-show="hoveredImageIndex === {{ $image->id }} || selectedImages.includes({{ strval($image->id) }})"
                         class="absolute -top-0 -right-0"

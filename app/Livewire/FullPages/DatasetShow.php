@@ -39,6 +39,7 @@ class DatasetShow extends Component
         }
         $classes = $this->addColorsAndStateToClasses($dataset->classes);
 
+        $dataset->annotationCount = $dataset->annotations()->count();
         $this->dataset = $dataset->toArray();
         $this->dataset['classes'] = $classes;
         $this->metadata = $dataset->metadataGroupedByType();

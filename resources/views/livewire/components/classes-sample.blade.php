@@ -1,5 +1,4 @@
-<div class="p-6"
-x-data="classSampleSort">
+<div x-data="classSampleSort">
     <x-modals.fixed-modal modalId="display-classes" class="sm:max-w-11/12">
 
         <!-- Modal Title -->
@@ -66,7 +65,7 @@ x-data="classSampleSort">
                                             title="Images that have at least 1 annotation labeled with this class"
                                             data-type="image-count"
                                             data-value={{$class['imageCount']}}>
-                                            <x-icon name="o-photo" class="w-4 h-4 text-slate-400" />
+                                            <x-icon name="o-photo" class="w-4 h-4 text-blue-400" />
                                             <span class="text-sm text-gray-200">{{$class['imageCount']}}</span>
                                         </div>
                                         <div
@@ -74,7 +73,7 @@ x-data="classSampleSort">
                                             title="Annotations that are labeled with this class"
                                             data-type="annotation-count"
                                             data-value={{$class['annotationCount']}}>
-                                            <x-icon name="o-tag" class="w-4 h-4 text-slate-400" />
+                                            <x-jam-pencil class="text-green-400 w-4 h-4"/>
                                             <span class="text-sm text-gray-200">{{$class['annotationCount']}}</span>
                                         </div>
                                     </div>

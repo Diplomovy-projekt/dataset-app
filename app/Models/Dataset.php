@@ -41,6 +41,10 @@ class Dataset extends Model
     {
         return $this->hasMany(Image::class);
     }
+    public function annotations()
+    {
+        return $this->hasManyThrough(AnnotationData::class, Image::class);
+    }
     public function metadataGroupedByType()
     {
         return $this->metadataValues()
