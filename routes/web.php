@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\Route;
 //    ->name('profile');
 
 require __DIR__.'/auth.php';
-Route::view('/', 'welcome')->name('welcome');
+Route::get('/', function () {
+    $statistics = \App\Utils\QueryUtil::getDatasetCounts();
+    return view('welcome', ['statistics' => $statistics]);
+})->name('welcome');
 Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
 Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
 Route::get('/builder', DatasetBuilder::class)->name('builder');

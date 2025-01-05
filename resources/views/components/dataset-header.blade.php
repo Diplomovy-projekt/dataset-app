@@ -16,27 +16,42 @@
                         {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
                     </p>
                 </div>
-                <div class="flex gap-3 text-slate-100">
-                    <div class="text-center bg-slate-700/40 rounded-lg p-2">
-                        <div class="text-2xl font-bold">{{$this->dataset['num_images'] ?? 'N/A'}}</div>
-                        <div class="text-xs text-slate-400">Images</div>
+                {{-- Statistics --}}
+                <div class="flex justify-between items-center bg-slate-800 rounded-lg px-4 py-2  space-x-5">
+                    <!-- Images -->
+                    <div class="flex items-center gap-1" title="Images">
+                        <x-icon name="o-photo" class="text-blue-400 w-5 h-5" />
+                        <div>
+                            <div class="text-xl font-bold text-slate-100">{{$this->dataset['num_images'] ?? 'N/A'}}</div>
+                        </div>
                     </div>
-                    <div class="text-center bg-slate-700/40 rounded-lg p-2">
-                        <div class="text-2xl font-bold">{{count($this->dataset['classes'])}}</div>
-                        <div class="text-xs text-slate-400">Labels</div>
+                    <!-- Annotations -->
+                    <div class="flex items-center gap-1" title="Annotations">
+                        <x-jam-pencil class="text-green-400 w-5 h-5"/>
+                        <div>
+                            <div class="text-xl font-bold text-slate-100">{{$this->dataset['annotationCount'] ?? 'N/A'}}</div>
+                        </div>
+                    </div>
+                    <!-- Classes -->
+                    <div class="flex items-center gap-1 cursor-pointer" @click.prevent="open = 'display-classes'" title="Classes">
+                        <x-icon name="o-tag" class="text-yellow-400 w-5 h-5"/>
+                        <div>
+                            <div class="text-xl font-bold text-slate-100">{{count($this->dataset['classes'])}}</div>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
+            {{-- Categories --}}
             <div class="mt-6 flex flex-wrap items-center gap-x-12 gap-y-4">
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-slate-400">Categories:</span>
                     @foreach($this->categories as $category)
-                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium">
-                {{$category['name']}} <!-- Accessing 'name' key from array -->
-            </span>
+                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium">{{$category['name']}}</span>
                     @endforeach
                 </div>
+                {{-- Metadata --}}
                 @foreach($this->metadata as $metadata)
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-slate-400">{{$metadata['name']}}:</span> <!-- Accessing 'type' and 'name' keys -->

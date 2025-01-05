@@ -8,11 +8,11 @@
 
     {{-- Thumbnail Section --}}
     <div class="relative h-48">
-        <img src="{{asset('storage/datasets/'.$dataset['unique_name']. '/thumbnails/' . $dataset['images'][0]['filename'])}}"
+        <img src="{{asset($dataset['thumbnail'])}}"
              alt="{{ $dataset['display_name'] }}"
              class="h-full w-full object-cover"
              loading="lazy">
-        <x-annotation-overlay :image="$dataset['images'][0]"></x-annotation-overlay>
+        <x-annotation-overlay :image="$dataset['images'][0] ?? null"></x-annotation-overlay>
     </div>
 
     {{-- Content Section --}}

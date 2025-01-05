@@ -14,6 +14,17 @@
                 {{-- Upload File Section--}}
                 <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="extend-dataset" />
 
+                {{-- Erorrs--}}
+                @if($errors)
+                    <x-dataset-errors></x-dataset-errors>
+                @endif
+
+                {{-- Progress bar--}}
+                <div class="flex items-center space-x-2 mt-4">
+                    <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
+                    <p class="text-sm font-medium text-gray-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
+                </div>
+
                 {{-- Submit Button--}}
                 <x-button
                     @click="uploadChunks"
@@ -23,13 +34,6 @@
                     <span x-show="!isUploading">Upload Dataset</span>
                     <span x-show="isUploading">Uploading...</span>
                 </x-button>
-                <div class="flex items-center space-x-2 mt-4">
-                    <!-- MaryUI Progress Bar -->
-                    <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
-
-                    <!-- Percentage Text -->
-                    <p class="text-sm font-medium text-yellow-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
-                </div>
             </div>
         </div>
     </x-modals.fixed-modal>

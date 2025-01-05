@@ -1,17 +1,13 @@
 window.addEventListener('alpine:init', ()=>{
     Alpine.data('chunkedUpload', (livewireComponent) => ({
         progress: 0,
-        isUploading: false, // Add upload state tracking
-
+        isUploading: false,
+        lock: livewireComponent.entangle('lockUpload'),
         get progressFormatted() {
             return this.progress.toFixed(2) + '%';
         },
 
         uploadChunks() {
-            console.log('UploadChunks function called', livewireComponent);
-            console.log(Livewire.getByName('upload-dataset'))
-            console.log(Livewire.getByName('App\\Livewire\\Forms\\UploadDataset'))
-            console.log(Livewire.getByName('upload-dataset.blade.php'))
             // Prevent multiple uploads
             if (this.isUploading) {
                 console.log('Upload already in progress');
@@ -63,9 +59,6 @@ window.addEventListener('alpine:init', ()=>{
 
                                 if (start < file.size) {
                                     this.livewireUploadChunk(file, start);
-                                } else {
-                                    // Upload is complete
-                                    this.isUploading = false;
                                 }
                             }
                         }

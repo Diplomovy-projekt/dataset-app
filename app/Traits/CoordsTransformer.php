@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 
-use App\Utils\Helper;
+use App\Utils\Util;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -32,7 +32,7 @@ trait CoordsTransformer
 
     public function normalizePolygon($segment, $imgWidth, $imgHeight)
     {
-        $segment = Helper::isJson($segment) ? json_decode($segment, true) : $segment;
+        $segment = Util::isJson($segment) ? json_decode($segment, true) : $segment;
         $normalizedPolygon = [];
 
         // Do this if $segment is our internal structure [['x' => x1, 'y' => y1], ...]
@@ -86,7 +86,7 @@ trait CoordsTransformer
         } elseif ($segment instanceof Model) {
             $segment = $segment->segmentation;
         }
-        $segment = Helper::isJson($segment) ? json_decode($segment, true) : $segment;
+        $segment = Util::isJson($segment) ? json_decode($segment, true) : $segment;
 
         $pixelizedPolygon = [];
 

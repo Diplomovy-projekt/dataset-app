@@ -2,10 +2,11 @@
 
 namespace App\Livewire\FullPages;
 
-use App\DatasetCrud\DatasetCrud;
+use App\DatasetActions\DatasetActions;
 use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
+use App\Utils\QueryUtil;
 use Livewire\Component;
 
 class Profile extends Component
@@ -14,10 +15,6 @@ class Profile extends Component
     public $datasets;
     public function render()
     {
-
-        //$imgProcessor = new ImageProcessor();
-        //$imgProcesses = $imgProcessor->createClassCropsForNewDataset('0193e9e1f169-0e05-76a2-aca1-8bacbc0dea97f26dac78');
-
         $this->loadDatasets();
         return view('livewire.full-pages.profile');
     }
@@ -28,6 +25,12 @@ class Profile extends Component
             $query->limit(1);
         }])->with('classes')->get();
         foreach($datasets as $key => $dataset){
+
+            if($dataset->images->isEmpty()){
+                $dataset->thumbnail = "placeholder-image.png";
+                continue;
+            }
+            $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $classes = $this->addColorsAndStateToClasses($dataset->classes);
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first(), $classes);
             $datasets[$key]['images'] = $processedImage;

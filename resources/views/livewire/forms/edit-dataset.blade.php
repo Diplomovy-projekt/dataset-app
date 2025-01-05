@@ -11,7 +11,9 @@
                     </h2>
                 </div>
                 {{-- Format Select--}}
-
+                <div>
+                    <input type="text" wire:model="displayName" class="mb-2 h-14 w-full border border-slate-900 bg-slate-800 rounded-md p-2" placeholder="Dataset Name">
+                </div>
                 <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
                 {{-- Submit Button--}}
                 <x-button

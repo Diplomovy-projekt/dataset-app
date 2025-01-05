@@ -41,6 +41,10 @@ class Dataset extends Model
     {
         return $this->hasMany(Image::class);
     }
+    public function annotations()
+    {
+        return $this->hasManyThrough(AnnotationData::class, Image::class);
+    }
     public function metadataGroupedByType()
     {
         return $this->metadataValues()
@@ -60,7 +64,6 @@ class Dataset extends Model
             });
     }
 
-
     public function metadataValues(): BelongsToMany
     {
         return $this->belongsToMany(MetadataValue::class, 'dataset_metadata');
@@ -68,5 +71,15 @@ class Dataset extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'dataset_categories');
+    }
+
+    public function updateImageCount($difference = null): void
+    {
+        if ($difference) {
+            $this->num_images += $difference;
+        } else {
+            $this->num_images = $this->images()->count();
+        }
+        $this->save();
     }
 }

@@ -5,7 +5,6 @@ namespace App\ImageService;
 use App\Configs\AppConfig;
 use App\Traits\CoordsTransformer;
 use App\Utils\Response;
-use Illuminate\Database\Eloquent\Model;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Geometry\Factories\PolygonFactory;
 use Intervention\Image\Geometry\Factories\RectangleFactory;
