@@ -16,27 +16,29 @@
                         {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
                     </p>
                 </div>
+                {{-- Images and Classes --}}
                 <div class="flex gap-3 text-slate-100">
                     <div class="text-center bg-slate-700/40 rounded-lg p-2">
                         <div class="text-2xl font-bold">{{$this->dataset['num_images'] ?? 'N/A'}}</div>
                         <div class="text-xs text-slate-400">Images</div>
                     </div>
-                    <div class="text-center bg-slate-700/40 rounded-lg p-2">
+                    <div @click.prevent="open = 'display-classes'"
+                         class="cursor-pointer text-center bg-slate-700/40 rounded-lg p-2">
                         <div class="text-2xl font-bold">{{count($this->dataset['classes'])}}</div>
-                        <div class="text-xs text-slate-400">Labels</div>
+                        <div class="text-xs text-slate-400">Classes</div>
                     </div>
                 </div>
             </div>
 
+            {{-- Categories --}}
             <div class="mt-6 flex flex-wrap items-center gap-x-12 gap-y-4">
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-slate-400">Categories:</span>
                     @foreach($this->categories as $category)
-                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium">
-                {{$category['name']}} <!-- Accessing 'name' key from array -->
-            </span>
+                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium">{{$category['name']}}</span>
                     @endforeach
                 </div>
+                {{-- Metadata --}}
                 @foreach($this->metadata as $metadata)
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-slate-400">{{$metadata['name']}}:</span> <!-- Accessing 'type' and 'name' keys -->

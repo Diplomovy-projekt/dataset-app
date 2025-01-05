@@ -26,4 +26,23 @@ class AnnotationClass extends Model
     {
         return $this->hasMany(AnnotationData::class);
     }
+
+    public function annotationsForClass(int $datasetId): int
+    {
+        return $this->annotations()
+            ->whereHas('class', function ($query) use ($datasetId) {
+                $query->where('dataset_id', $datasetId);
+            })
+            ->count();
+    }
+
+    public function imagesForClass(int $datasetId): int
+    {
+        return \App\Models\Image::whereHas('annotations', function ($query) use ($datasetId) {
+            $query->whereHas('class', function ($classQuery) use ($datasetId) {
+                $classQuery->where('id', $this->id)
+                    ->where('dataset_id', $datasetId);
+            });
+        })->distinct('id')->count();
+    }
 }

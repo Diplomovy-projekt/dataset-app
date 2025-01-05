@@ -1,59 +1,34 @@
-<div class="relative z-10"
-     x-data="{
-        openDropdown: false,
-        positionDropdown() {
-            const button = $el.querySelector('button');
-            const dropdown = $el.querySelector('[role=\'menu\']');
-            const buttonRect = button.getBoundingClientRect();
+@props([
+    'direction' => 'right' // can be 'left', 'right', 'top-left', 'top-right'
+])
 
-            // Get available space
-            const spaceBelow = window.innerHeight - buttonRect.bottom;
-            const spaceRight = window.innerWidth - buttonRect.right;
-
-            // Position dropdown
-            dropdown.style.position = 'fixed';
-            dropdown.style.top = `${buttonRect.bottom + 5}px`;
-
-            // Handle horizontal positioning
-            if (spaceRight < dropdown.offsetWidth && buttonRect.left > dropdown.offsetWidth) {
-                // Not enough space right, but enough space left
-                dropdown.style.right = `${window.innerWidth - buttonRect.right}px`;
-            } else {
-                // Default to align with left edge
-                dropdown.style.left = `${buttonRect.left}px`;
-            }
-
-            // Handle vertical positioning
-            if (spaceBelow < dropdown.offsetHeight && buttonRect.top > dropdown.offsetHeight) {
-                // Not enough space below, but enough space above
-                dropdown.style.top = `${buttonRect.top - dropdown.offsetHeight - 5}px`;
-            }
-        }
-     }"
-     @click.away="openDropdown = false">
-
-    {{-- Trigger Button --}}
+<div x-data="{openDropdown: false}" class="relative z-10">
+    <!-- Trigger Button -->
     <button
-        @click="openDropdown = !openDropdown; $nextTick(() => { if(openDropdown) positionDropdown() })"
+        @click="openDropdown = !openDropdown"
         class="p-2 rounded-full hover:bg-slate-800 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-100" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
         </svg>
     </button>
 
-    {{-- Dropdown Menu --}}
+    <!-- Dropdown Menu -->
     <div x-show="openDropdown"
+         @click.away="openDropdown = false"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="transform opacity-0 scale-95"
          x-transition:enter-end="transform opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="transform opacity-100 scale-100"
          x-transition:leave-end="transform opacity-0 scale-95"
-         @resize.window="if(open) positionDropdown()"
-         @scroll.window="if(open) positionDropdown()"
-         role="menu"
+         class="absolute z-20 w-48 mt-2
+            @if ($direction == 'right') start-1/2
+            @elseif ($direction == 'left') end-1/2
+            @elseif ($direction == 'top-left') left-0 bottom-full mb-2
+            @elseif ($direction == 'top-right') right-0 bottom-full mb-2
+            @endif"
          style="display: none;"
-         class="z-20 w-48">
+         role="menu">
         <div {{ $attributes->merge(['class' => 'bg-slate-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5']) }}>
             {{ $slot }}
         </div>

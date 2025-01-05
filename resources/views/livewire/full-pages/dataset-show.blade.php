@@ -16,12 +16,7 @@
         <div class="flex items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar />
             <x-category-dropdown />
-            <x-dropdown-menu class="w-50">
-                <x-dropdown-menu-item
-                    @click.prevent="open = 'display-classes'"
-                    :icon="@svg('eva-upload')->toHtml()">
-                    Extend Dataset
-                </x-dropdown-menu-item>
+            <x-dropdown-menu direction="left" class="w-50">
                 <x-dropdown-menu-item
                     @click.prevent="open = 'extend-dataset'"
                     :icon="@svg('eva-upload')->toHtml()">

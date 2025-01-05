@@ -1,7 +1,6 @@
-<div
+<div x-cloak
     x-data="{
         images: [],
-        fullImageSrc: '',
         overlayNode: '',
         currentIndex: 0,
         isOpen: false,
@@ -11,6 +10,11 @@
         previous() {
             this.currentIndex = this.currentIndex === 0 ? this.images.length - 1 : this.currentIndex - 1;
         },
+        close() {
+            this.images = [];
+            this.overlayNode = '';
+            this.isOpen = false;
+        },
         prepareImgAndOverlay(imageSrc, overlayId = null) {
         console.log(imageSrc);
             if (overlayId) {
@@ -18,15 +22,16 @@
                 if (overlayElement) {
                     this.overlayNode = overlayElement.cloneNode(true).outerHTML;
                 }
+            } else{
+                this.overlayNode = '';
             }
-            this.fullImageSrc = imageSrc;
             this.images.push(imageSrc);
             this.isOpen = true;
         }
     }"
     @keydown.right.window="next()"
     @keydown.left.window="previous()"
-    @keydown.escape.window="isOpen = false"
+    @keydown.escape.window="close()"
     @open-full-screen-image.window="prepareImgAndOverlay($event.detail.src, $event.detail.overlayId ?? null);"
 >
 
@@ -46,14 +51,13 @@
         {{-- Backdrop --}}
         <div
             class="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            @click="isOpen = false"
         ></div>
 
         {{-- Modal Content --}}
         <div class="relative h-full w-full flex items-center justify-center">
             {{-- Close Button --}}
             <button
-                @click="isOpen = false"
+                @click="close()"
                 class="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors text-white"
                 aria-label="Close modal"
             >

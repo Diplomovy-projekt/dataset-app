@@ -20,12 +20,13 @@ class ClassesSample extends Component
         foreach ($uniqueNames as $name) {
             $dataset = Dataset::where('unique_name', $name)->with('classes')->first();
             foreach($dataset->classes as $class) {
+                $class->annotationCount = $class->annotationsForClass($dataset->id);
+                $class->imageCount = $class->imagesForClass($dataset->id);
                 $images = Storage::disk('datasets')->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id);
                 $class->images = array_map(fn($image) => AppConfig::LINK_DATASETS_PATH . $image, $images);
             }
             $this->datasets[] = $dataset->toArray();
         }
-
     }
 
     public function render()
