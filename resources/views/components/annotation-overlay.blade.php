@@ -38,7 +38,7 @@
                          annotation-class="{{$annotation['class']['id']}}"
                          points="{{ $annotation['polygonString'] }}"
                          fill="transparent"
-                         stroke="{{ $annotation['class']['color']['stroke'] }}"
+                         stroke="{{ $annotation['class']['rgb'] }}"
                          stroke-width="{{$image['strokeWidth']}}"
                          opacity="1"
                          closed="true"
@@ -51,7 +51,7 @@
                       width="{{ $annotation['bbox']['width'] }}"
                       height="{{ $annotation['bbox']['height'] }}"
                       fill="transparent"
-                      stroke="{{ $annotation['class']['color']['stroke'] }}"
+                      stroke="{{ $annotation['class']['rgb'] }}"
                       stroke-width="{{$image['strokeWidth']}}"
                       opacity="1"
                 />

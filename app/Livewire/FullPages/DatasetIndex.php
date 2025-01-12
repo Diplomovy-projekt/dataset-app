@@ -19,12 +19,19 @@ class DatasetIndex extends Component
     }
     public function loadDatasets()
     {
-        $datasets = Dataset::with(['images' => function ($query) {
-            $query->limit(1);
-        }])->with('classes')->get();
+        $datasets = Dataset::with([
+            'images' => function ($query) {
+                $query->limit(1)->with(['annotations.class']);
+            },
+        ])->with('classes')->get();
         foreach($datasets as $key => $dataset){
-            $classes = $this->addColorsAndStateToClasses($dataset->classes);
-            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first(), $classes);
+
+            if($dataset->images->isEmpty()){
+                $dataset->thumbnail = "placeholder-image.png";
+                continue;
+            }
+            $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
+            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
             $datasets[$key]['images'] = $processedImage;
         }
         $this->datasets = $datasets->toArray();

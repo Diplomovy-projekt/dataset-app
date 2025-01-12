@@ -52,4 +52,17 @@ class FileUtil
         }
     }
 
+    public static function addUniqueSuffix(string $filename, string $suffix = null): string
+    {
+        if(!$filename) {
+            return '';
+        }
+        $pathInfo = pathinfo($filename);
+        $baseName = $pathInfo['filename'];
+        $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+
+        $uniqueSuffix = $suffix ?? uniqid('_da_', true);
+
+        return $pathInfo['dirname'] . '/' . $baseName . $uniqueSuffix . $extension;
+    }
 }

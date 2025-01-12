@@ -15,7 +15,7 @@ use App\Utils\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class ExtendDatasetStrategy implements DatasetSavingStrategyInterface
+class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyInterface
 {
     private $newImages = [];
     public function saveToDatabase($mappedData, $requestData): Response
@@ -34,40 +34,22 @@ class ExtendDatasetStrategy implements DatasetSavingStrategyInterface
             $classIds = [];
             $classesToSample = [];
             foreach ($classes['names'] as $categoryName) {
-                $category = AnnotationClass::updateOrCreate([
+                $class = AnnotationClass::updateOrCreate([
                     'dataset_id' => $dataset->id,
                     'name' => $categoryName,
                     'supercategory' => $classes['superCategory'] ?? null,
                 ]);
-                $classIds[] = $category->id;
-                if ($category->wasRecentlyCreated) {
-                    $classesToSample[] = $category->id; // Collect IDs of newly created records
+                $classIds[] = $class->id;
+                if ($class->wasRecentlyCreated) {
+                    $classesToSample[] = $class->id;
                 }
             }
 
-            // 3. Save Images and Annotations
-            foreach ($imageData as $img) {
-                $image = Image::create([
-                    'dataset_id' => $dataset->id,
-                    'filename' => $img['filename'],
-                    'width' => $img['width'],
-                    'height' => $img['height'],
-                    'size' => $img['size'],
-                ]);
+            // 3. Assign colors to classes
+            $this->assignColorsToClasses($classIds);
 
-                // 4. Save Annotations
-                foreach ($img['annotations'] as $annotation) {
-                    AnnotationData::create([
-                        'image_id' => $image->id,
-                        'annotation_class_id' => $classIds[$annotation['class_id']], // map to the correct class_id
-                        'x' => $annotation['x'],
-                        'y' => $annotation['y'],
-                        'width' => $annotation['width'],
-                        'height' => $annotation['height'],
-                        'segmentation' => $annotation['segmentation'],
-                    ]);
-                }
-            }
+            // 4. Save Images and Annotations
+            $this->saveImageWithAnnotations($imageData, $dataset->id, $classIds);
 
             return Response::success(data: ['classesToSample' => $classesToSample,]);
         } catch (\Exception $e) {

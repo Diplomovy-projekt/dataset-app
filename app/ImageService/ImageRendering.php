@@ -8,7 +8,7 @@ use App\Traits\CoordsTransformer;
 trait ImageRendering
 {
     use CoordsTransformer, ImageTransformer;
-    public function prepareImagesForSvgRendering($images, $classes)
+    public function prepareImagesForSvgRendering($images)
     {
         if(empty($images)) {
             return null;
@@ -19,8 +19,7 @@ trait ImageRendering
             $image->viewDims = ['width' => $image->width, 'height' => $image->height];//$this->calculateThumbnailDimensions($image->width, $image->height);
 
             $image->strokeWidth = $this->calculateBorderSize($image->width, $image->height);
-            $image->annotations->each(function ($annotation) use ($image, $classes) {
-                $annotation->class->color = $classes[$annotation->annotation_class_id]['color'];
+            $image->annotations->each(function ($annotation) use ($image) {
 
                 $annotation->bbox = $this->pixelizeBbox($annotation, $image->viewDims['width'], $image->viewDims['height']);
                 if ($annotation->segmentation) {
@@ -33,7 +32,7 @@ trait ImageRendering
         return $images;
     }
 
-    public function calculateThumbnailDimensions($originalWidth, $originalHeight, $maxDimension = AppConfig::MAX_THUMB_DIM)
+    /*public function calculateThumbnailDimensions($originalWidth, $originalHeight, $maxDimension = AppConfig::MAX_THUMB_DIM)
     {
         $originalWidth = (int) $originalWidth;
         $originalHeight = (int) $originalHeight;
@@ -44,7 +43,7 @@ trait ImageRendering
         $thumbHeight = $originalWidth >= $originalHeight ? intval($maxDimension / $aspectRatio) : $maxDimension;
 
         return ['width' => $thumbWidth, 'height' => $thumbHeight];
-    }
+    }*/
 
     private function transformPolygonToSvgString($segmentation): string
     {
@@ -56,27 +55,4 @@ trait ImageRendering
         return $svgString;
     }
 
-    public function addColorsAndStateToClasses($classes)
-    {
-        $idk =  $classes->mapWithKeys(function($class) {
-            $class->color = $this->generateRandomRgba();
-            $class->state = 'true';
-            return [
-                $class->id => $class
-            ];
-        })->toArray();
-        return $idk;
-    }
-
-    public function generateRandomRgba()
-    {
-        $r = rand(0, 255);
-        $g = rand(0, 255);
-        $b = rand(0, 255);
-
-        return [
-            'fill' => "rgba($r, $g, $b, 0.2)",
-            'stroke' => "rgba($r, $g, $b, 1)"
-        ];
-    }
 }

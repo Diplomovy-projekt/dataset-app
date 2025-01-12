@@ -4,7 +4,9 @@ namespace App\ImportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\Utils\FileUtil;
 use App\Utils\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
@@ -21,6 +23,9 @@ class YoloMapper
         // Get list of image and annotation files
         $images = collect(Storage::files($imageFolder));
         $annotations = collect(Storage::files($annotationFolder));
+
+        // Add unique identifier to each image
+        $this->addUniqueSuffixes($images, $annotations);
 
         $imageData = $this->parseAnnotationFiles($images, $annotations, $annotationTechnique);
 
@@ -54,7 +59,6 @@ class YoloMapper
 
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [
-                'img_folder' => YoloConfig::IMAGE_FOLDER,
                 'filename' => $imageFileName,
                 'width' => $imageWidth,
                 'height' => $imageHeight,
@@ -137,5 +141,30 @@ class YoloMapper
             'nc' => $annotationData['nc'] ?? null,
             'names' => $annotationData['names'] ?? [],
         ];
+    }
+
+    private function addUniqueSuffixes(Collection &$images, Collection &$annotations)
+    {
+        $images = $images->sort()->values();
+        $annotations = $annotations->sort()->values();
+
+        if ($images->count() !== $annotations->count()) {
+            throw new \Exception("Mismatched count: Images and annotations do not align.");
+        }
+
+        foreach ($images as $index => $image) {
+            $suffix = uniqid('_da_');
+
+            // Update the image
+            $newImagePath = FileUtil::addUniqueSuffix($image, $suffix);
+            Storage::move($image, FileUtil::addUniqueSuffix($image, $suffix));
+            $images[$index] = $newImagePath;
+
+            // Update the corresponding annotation
+            $annotation = $annotations[$index];
+            $newAnnotationPath = FileUtil::addUniqueSuffix($annotation, $suffix);
+            Storage::move($annotation, $newAnnotationPath);
+            $annotations[$index] = $newAnnotationPath;
+        }
     }
 }

@@ -15,7 +15,7 @@ use App\Utils\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class NewDatasetStrategy implements DatasetSavingStrategyInterface
+class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyInterface
 {
     public function saveToDatabase($mappedData, $requestData): Response
     {
@@ -23,7 +23,7 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
             $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
             // 1. Create Dataset
-            $requestDataset = Dataset::create([
+            $dataset = Dataset::create([
                 'user_id' => auth()->id() ?? "1",
                 'display_name' => $requestData['display_name'],
                 'unique_name' => $requestData['unique_name'],
@@ -35,47 +35,24 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
             ]);
             // 2. Save Classes
             $classIds = [];
-            $classesToSample = [];
             foreach ($classes['names'] as $categoryName) {
-                $category = AnnotationClass::updateOrCreate([
-                    'dataset_id' => $requestDataset->id,
+                $classIds[] = AnnotationClass::create([
+                    'dataset_id' => $dataset->id,
                     'name' => $categoryName,
                     'supercategory' => $classes['superCategory'] ?? null,
-                ]);
-                $classIds[] = $category->id;
-                if ($category->wasRecentlyCreated) {
-                    $classesToSample[] = $category->id;
-                }
+                ])->id;
             }
 
-            // 3. Save Images and Annotations
-            foreach ($imageData as $img) {
-                $image = Image::create([
-                    'dataset_id' => $requestDataset->id,
-                    'filename' => $img['filename'],
-                    'width' => $img['width'],
-                    'height' => $img['height'],
-                    'size' => $img['size'],
-                ]);
+            // 3. Assign colors to classes
+            $this->assignColorsToClasses($classIds);
 
-                // 4. Save Annotations
-                foreach ($img['annotations'] as $annotation) {
-                    AnnotationData::create([
-                        'image_id' => $image->id,
-                        'annotation_class_id' => $classIds[$annotation['class_id']], // map to the correct class_id
-                        'x' => $annotation['x'],
-                        'y' => $annotation['y'],
-                        'width' => $annotation['width'],
-                        'height' => $annotation['height'],
-                        'segmentation' => $annotation['segmentation'],
-                    ]);
-                }
-            }
+            // 4. Save Images and Annotations
+            $this->saveImageWithAnnotations($imageData, $dataset->id, $classIds);
 
             // 5. Save dataset metadata
             foreach ($requestData['metadata'] as $id => $value) {
                 DatasetMetadata::create([
-                    'dataset_id' => $requestDataset->id,
+                    'dataset_id' => $dataset->id,
                     'metadata_value_id' => $id,
                 ]);
             }
@@ -83,12 +60,12 @@ class NewDatasetStrategy implements DatasetSavingStrategyInterface
             // 6. Save dataset categories
             foreach ($requestData['categories'] as $id) {
                 DatasetCategory::create([
-                    'dataset_id' => $requestDataset->id,
+                    'dataset_id' => $dataset->id,
                     'category_id' => $id,
                 ]);
             }
 
-            return Response::success(data: ['classesToSample' => $classesToSample]);
+            return Response::success(data: ['classesToSample' => $classIds]);
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }

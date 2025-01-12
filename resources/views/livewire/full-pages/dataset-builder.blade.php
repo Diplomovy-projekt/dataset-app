@@ -51,7 +51,7 @@
                             @break
 
                         @case(2)
-                            <x-builder.origin-stage :originData="$originData" />
+                            <x-builder.origin-stage :metadataValues="$metadataValues" />
                             @break
 
                         @case(3)

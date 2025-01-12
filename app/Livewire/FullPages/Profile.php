@@ -3,6 +3,7 @@
 namespace App\Livewire\FullPages;
 
 use App\DatasetActions\DatasetActions;
+use App\DatasetCrud\DatasetCrud;
 use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
@@ -21,9 +22,11 @@ class Profile extends Component
 
     public function loadDatasets()
     {
-        $datasets = Dataset::with(['images' => function ($query) {
-            $query->limit(1);
-        }])->with('classes')->get();
+        $datasets = Dataset::with([
+            'images' => function ($query) {
+                $query->limit(1)->with(['annotations.class']);
+            },
+        ])->with('classes')->get();
         foreach($datasets as $key => $dataset){
 
             if($dataset->images->isEmpty()){
@@ -31,8 +34,7 @@ class Profile extends Component
                 continue;
             }
             $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
-            $classes = $this->addColorsAndStateToClasses($dataset->classes);
-            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first(), $classes);
+            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
             $datasets[$key]['images'] = $processedImage;
         }
         $this->datasets = $datasets->toArray();

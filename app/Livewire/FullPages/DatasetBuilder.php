@@ -25,8 +25,8 @@ class DatasetBuilder extends Component
     public $categories = [];
     public $selectedCategories = [];
 
-    public $originData = [];
-    public $selectedOriginData = [];
+    public $metadataValues = [];
+    public $selectedMetadataValues = [];
     public $skipTypes = [];
 
     public $datasets = [];
@@ -67,7 +67,7 @@ class DatasetBuilder extends Component
                 $this->categoriesFilter();
                 break;
             case 2:
-                $this->originDataFilter();
+                $this->metadataValuesFilter();
                 break;
             case 3:
                 $this->datasetsFilter();
@@ -89,30 +89,45 @@ class DatasetBuilder extends Component
         $this->categories = DatasetCategory::getAllUniqueCategories();
     }
 
-    private function originDataFilter()
+    private function metadataValuesFilter()
     {
-        $this->originData = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
+        $this->metadataValues = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
     }
 
     private function datasetsFilter()
     {
         $query = Dataset::with(['classes', 'datasetMetadata.metadataValue']);
-        $this->selectedOriginData = array_map(function($el){
+        $this->selectedMetadataValues = array_map(function($el){
             return json_decode($el);
-        }, $this->selectedOriginData);
+        }, $this->selectedMetadataValues);
 
 
         // Get all selected metadata values except for skipped types
-        $selectedMetadataValues = collect($this->selectedOriginData)
+        $selectedMetadataValues = collect($this->selectedMetadataValues)
             ->filter(function ($selected, $valueId) {
                 // Get metadata value and its type
                 $value = MetadataValue::find($valueId);
-                $typeName = $value->metadataType->name;
+                $typeId = $value->metadataType->id;
 
                 // Only include if type is not skipped and value is selected
-                return !($this->skipTypes[$typeName] ?? false) && $selected;
-            })
-            ->keys();
+                return !in_array($typeId, $this->skipTypes);
+            });
+
+        $groupedMetadata = [
+            'include' => [],
+            'exclude' => [],
+        ];
+        // Separate metadata values into include and exclude groups
+        foreach($selectedMetadataValues as $valueId => $include) {
+            if ($include) {
+                $groupedMetadata['include'][] = $valueId;
+            } else {
+                $groupedMetadata['exclude'][] = $valueId;
+            }
+        }
+
+        //TODO vyber take datasety iba, co splnaju vsetky include a ziadne exclude, nie len jedno, Preo tam je to havingRaw.
+        //TODO na frontente automaticky zaskrtni nieco? Lebo aktualne ak nic nezaskrtnut a neskipnu tak mozno bude problem
 
         // If there are any valid selected metadata values, filter datasets by them
         if ($selectedMetadataValues->isNotEmpty()) {

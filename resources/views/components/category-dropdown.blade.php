@@ -162,7 +162,7 @@
                         <div class="flex items-center space-x-2">
                             <!-- Class Color -->
                             <div class="w-4 h-4 rounded border border-white/50"
-                                 style="background-color: {{ $class['color']['fill'] }};">
+                                 style="background-color: {{ $class['rgb'] }};">
                             </div>
                             <!-- Radio Buttons -->
                             <div class="flex divide-x-0 border rounded-lg border-gray-300">

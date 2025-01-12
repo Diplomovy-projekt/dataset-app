@@ -37,11 +37,9 @@ class DatasetShow extends Component
             session()->flash('error', 'Dataset not found.');
             return redirect()->route('dataset.index');
         }
-        $classes = $this->addColorsAndStateToClasses($dataset->classes);
 
         $dataset->annotationCount = $dataset->annotations()->count();
         $this->dataset = $dataset->toArray();
-        $this->dataset['classes'] = $classes;
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
     }
@@ -63,14 +61,7 @@ class DatasetShow extends Component
             return Image::where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
-            $activeClassIds = collect($this->dataset['classes'])
-                ->where('state', 'true')  // Filter classes where state is 'true'
-                ->pluck('id')             // Get the IDs of those classes
-                ->toArray();
-            $dataset = Dataset::where('unique_name', $this->uniqueName)->first();
-            return $dataset->images()
-                ->with(['annotations' => fn($query) => $query->whereIn('annotation_class_id', $activeClassIds)->with('class')])
-                ->paginate($this->perPage);
+            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
         }
     }
     public function deleteDataset(DatasetActions $datasetService)
