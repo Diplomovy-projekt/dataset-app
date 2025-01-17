@@ -2,15 +2,22 @@
 
 namespace App\Livewire\FullPages;
 
+use App\Configs\AppConfig;
+use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
 use App\Models\MetadataType;
 use App\Models\MetadataValue;
+use App\Utils\QueryUtil;
+use App\Utils\Util;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use MongoDB\Driver\Query;
 
 class DatasetBuilder extends Component
 {
+    use ImageRendering;
     public $currentStage = 0;
     public $completedStages = [];
     public $stageData = [
@@ -87,6 +94,16 @@ class DatasetBuilder extends Component
     private function categoriesFilter()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();
+        $this->categories = $this->categories->map(function ($category) {
+            $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
+            $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
+            $image->imagePath = $image ? Util::constructPublicImgPath($datasetUniqueName, $image->filename) : AppConfig::PLACEHOLDER_IMG;
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'image' => $image->toArray(),
+            ];
+        })->toArray();
     }
 
     private function metadataValuesFilter()
@@ -94,10 +111,17 @@ class DatasetBuilder extends Component
         $this->metadataValues = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
     }
 
+    public function updatedSkipTypes()
+    {
+        $this->datasetsFilter();
+    }
+    public function updatedSelectedMetadataValues()
+    {
+        $this->datasetsFilter();
+    }
     private function datasetsFilter()
     {
-        $query = Dataset::with(['classes', 'datasetMetadata.metadataValue']);
-        $this->selectedMetadataValues = array_map(function($el){
+        $selectedMetadataValues = array_map(function($el){
             return json_decode($el);
         }, $this->selectedMetadataValues);
 
@@ -126,34 +150,51 @@ class DatasetBuilder extends Component
             }
         }
 
-        //TODO vyber take datasety iba, co splnaju vsetky include a ziadne exclude, nie len jedno, Preo tam je to havingRaw.
-        //TODO na frontente automaticky zaskrtni nieco? Lebo aktualne ak nic nezaskrtnut a neskipnu tak mozno bude problem
+        $query = DatasetMetadata::query();
+        // Include datasets with all `include` metadata IDs
+        if (!empty($groupedMetadata['include'])) {
+            $includeIds = $groupedMetadata['include'];
+            $requiredCount = count($includeIds);
 
-        // If there are any valid selected metadata values, filter datasets by them
-        if ($selectedMetadataValues->isNotEmpty()) {
-            $datasetIds = DatasetMetadata::whereIn('metadata_value_id', $selectedMetadataValues)
+            $query->whereIn('metadata_value_id', $includeIds)
+                ->select('dataset_id')
                 ->groupBy('dataset_id')
-                ->havingRaw('COUNT(DISTINCT metadata_value_id) = ?', [$selectedMetadataValues->count()])
-                ->pluck('dataset_id');
-
-            // Only apply the filter if valid dataset IDs were found
-            if ($datasetIds->isNotEmpty()) {
-                $query->whereIn('id', $datasetIds);
-            }
+                ->havingRaw('COUNT(DISTINCT metadata_value_id) = ?', [$requiredCount]);
         }
 
-        // Apply category filter if categories are selected
-        if (!empty($this->selectedCategories)) {
-            $query->whereIn('category_id', $this->selectedCategories);
+        // Exclude datasets with any `exclude` metadata IDs
+        if (!empty($groupedMetadata['exclude'])) {
+            $excludeIds = $groupedMetadata['exclude'];
+
+            $query->whereNotIn('dataset_id', function ($subquery) use ($excludeIds) {
+                $subquery->select('dataset_id')
+                    ->from('dataset_metadata')
+                    ->whereIn('metadata_value_id', $excludeIds);
+            });
         }
 
-        // Execute the query and assign the results to the datasets property
-        $this->datasets = $query->get();
+        // Apply selected categories filter from previous step
+        $query->whereIn('dataset_id', function ($subquery) {
+            $subquery->select('dataset_id')
+                ->from('dataset_categories')
+                ->whereIn('category_id', $this->selectedCategories);
+        });
+
+        $matchingDatasetIds = $query->pluck('dataset_id');
+        $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues'])->get();
+        foreach ($this->datasets as $dataset) {
+            $dataset->annotationCount = $dataset->annotations()->count();
+            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
+            $dataset->image->path = $dataset->image ? Util::constructPublicImgPath($dataset->unique_name, $dataset->image->filename) : AppConfig::PLACEHOLDER_IMG;
+        }
+        $this->datasets = $this->datasets->toArray();
     }
 
     private function classesFilter()
     {
-        dd($this->selectedDatasets);
+        $this->datasets = $this->datasets->filter(function($dataset){
+            return in_array($dataset->id, array_keys($this->selectedDatasets));
+        });
     }
 
     private function finalSelectionFilter()

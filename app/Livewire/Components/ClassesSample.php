@@ -12,8 +12,11 @@ class ClassesSample extends Component
 {
     public $datasets;
 
-    public function mount($uniqueNames)
+    public $selectedClasses = [];
+    private $selectable;
+    public function mount($uniqueNames, $selectable = false)
     {
+        $this->selectable = $selectable;
         if(!is_array($uniqueNames)) {
             $uniqueNames = [$uniqueNames];
         }

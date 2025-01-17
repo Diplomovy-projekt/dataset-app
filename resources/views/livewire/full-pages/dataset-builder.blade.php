@@ -37,42 +37,44 @@
     </div>
 
     <div id="builder" class="flex flex-col mx-auto py-4 gap-1 my-10">
-        @foreach($stageData as $index => $stage)
-            <div class="rounded-lg" wire:key="{{$index}}">
+        @foreach($stageData as $stageNumber => $stage)
+            <div class="rounded-lg" wire:key="{{$stageNumber}}">
                 <x-builder.main-accordion
-                    stageIndex="{{ $index }}"
+                    stageIndex="{{ $stageNumber }}"
                     :currentStage="$currentStage"
                     :completedStages="$completedStages"
                     :stageData="$stageData">
 
-                    @switch($index)
-                        @case(1)
-                            <x-builder.categories-stage :categories="$categories" />
-                            @break
+                    @if(in_array($stageNumber, $completedStages) || $currentStage == $stageNumber)
+                        @switch($stageNumber)
+                            @case(1)
+                                <x-builder.categories-stage :categories="$categories" />
+                                @break
 
-                        @case(2)
-                            <x-builder.origin-stage :metadataValues="$metadataValues" />
-                            @break
+                            @case(2)
+                                <x-builder.origin-stage :metadataValues="$metadataValues" />
+                                @break
 
-                        @case(3)
-                            <x-builder.datasets-stage :datasets="$datasets" />
-                            @break
+                            @case(3)
+                                <x-builder.datasets-stage :datasets="$datasets" />
+                                @break
 
-                        @case(4)
-                            <x-builder.classes-stage />
-                            @break
+                            @case(4)
+                                <x-builder.classes-stage />
+                                @break
 
-                        @case(5)
-                            <x-builder.final-stage />
-                            @break
+                            @case(5)
+                                <x-builder.final-stage />
+                                @break
 
-                        @case(6)
-                            <x-builder.download-stage />
-                            @break
+                            @case(6)
+                                <x-builder.download-stage />
+                                @break
 
-                        @default
-                            <p>Unknown Stage</p>
-                    @endswitch
+                            @default
+                                <p>Unknown Stage</p>
+                        @endswitch
+                    @endif
                 </x-builder.main-accordion>
             </div>
         @endforeach

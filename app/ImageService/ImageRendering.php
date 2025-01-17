@@ -16,14 +16,14 @@ trait ImageRendering
         $images = $images instanceof \Illuminate\Pagination\LengthAwarePaginator ? $images : collect([$images]);
 
         foreach ($images as $image) {
-            $image->viewDims = ['width' => $image->width, 'height' => $image->height];//$this->calculateThumbnailDimensions($image->width, $image->height);
+            //$image->viewDims = ['width' => $image->width, 'height' => $image->height];//$this->calculateThumbnailDimensions($image->width, $image->height);
 
             $image->strokeWidth = $this->calculateBorderSize($image->width, $image->height);
             $image->annotations->each(function ($annotation) use ($image) {
 
-                $annotation->bbox = $this->pixelizeBbox($annotation, $image->viewDims['width'], $image->viewDims['height']);
+                $annotation->bbox = $this->pixelizeBbox($annotation, $image->width, $image->height);
                 if ($annotation->segmentation) {
-                    $pixelizedSegment = $this->pixelizePolygon($annotation->segmentation, $image->viewDims['width'], $image->viewDims['height']);
+                    $pixelizedSegment = $this->pixelizePolygon($annotation->segmentation, $image->width, $image->height);
                     $annotation->polygonString = $this->transformPolygonToSvgString($pixelizedSegment);
                 }
             });

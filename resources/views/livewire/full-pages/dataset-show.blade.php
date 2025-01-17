@@ -53,7 +53,7 @@
             </x-dropdown-menu>
         </div>
     </div>
-    <div  class="flex flex-wrap justify-around gap-10">
+    <div  class="flex flex-wrap gap-10">
         {{-- Display images in a grid container --}}
         @foreach ($this->images as $image)
             <div x-data="{ imageId: {{ $image->id }} }"

@@ -7,6 +7,7 @@
 ])
 
 <div class="rounded-lg {{ $currentStage == $stageIndex ? 'mb-2' : 'mb-0' }} ">
+    {{--Header part, showed even when locked --}}
     <div class=" rounded-t-lg p-4 py-5 {{ $currentStage == $stageIndex ? 'pb-1 border-x border-t border-gray-700' : 'border border-gray-700' }} bg-gray-900">
         <h3 class="flex font-bold {{ $currentStage == $stageIndex ? 'text-gray-200 text-2xl' : 'text-gray-500 text-base' }}">
             @if(in_array($stageIndex, $completedStages))
@@ -22,9 +23,12 @@
         <div class="p-4 pt-1 shadow-md bg-gray-900 rounded-b-lg border-x border-b border-gray-700">
             <hr class="border border-gray-700">
             <p class="text-gray-400 pb-4">{{ $stageData[$stageIndex]['description'] ?? " " }}</p>
+            {{--MAIN SLOT CONTENT--}}
             {{ $slot }}
 
             <hr class="border border-gray-700 mt-2">
+
+            {{--BOTTOM BUTTONS --}}
             <div wire:loading.class="opacity-50 cursor-not-allowed"
                  wire:loading.attr="disabled"
                  wire:target="previousStage,nextStage"
