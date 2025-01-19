@@ -26,13 +26,13 @@
                 </div>
 
                 {{-- Submit Button--}}
+                <span x-text="lock ? 'Uploading...' : ''"></span>
                 <x-button
+                    type="submit"
+                    x-bind:disabled="lock"
+                    class="{{$this->lockUpload ? 'opacity-50 cursor-not-allowed' : ''}}"
                     @click="uploadChunks"
-                    x-bind:disabled="isUploading"
-                    x-bind:class="{ 'opacity-50 cursor-not-allowed': isUploading }"
                     text="Save">
-                    <span x-show="!isUploading">Upload Dataset</span>
-                    <span x-show="isUploading">Uploading...</span>
                 </x-button>
             </div>
         </div>

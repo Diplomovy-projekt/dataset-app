@@ -24,7 +24,7 @@
                 <x-annotation-overlay :image="$category['image']"></x-annotation-overlay>
             </div>
             {{-- Category name --}}
-            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gray-700 bg-opacity-70">
+            <div class="absolute bottom-0 left-0 right-0 p-2 bg-slate-800 bg-opacity-80">
                 <h3 class="text-lg font-semibold text-gray-200 truncate">
                     {{ $category['name'] }}
                 </h3>

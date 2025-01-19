@@ -1,3 +1,3 @@
-<div>
-    final stage
+<div >
+    <x-containers.images-container :images="$this->images"/>
 </div>

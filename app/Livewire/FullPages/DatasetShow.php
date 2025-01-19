@@ -28,7 +28,7 @@ class DatasetShow extends Component
     public function images()
     {
         $images = $this->fetchImages();
-        return $this->prepareImagesForSvgRendering($images, $this->dataset['classes']);
+        return $this->prepareImagesForSvgRendering($images);
     }
     public function mount()
     {
@@ -58,7 +58,7 @@ class DatasetShow extends Component
     private function fetchImages()
     {
         if ($this->searchTerm) {
-            return Image::where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
             return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);

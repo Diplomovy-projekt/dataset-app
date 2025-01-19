@@ -7,26 +7,25 @@ use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
-use App\Models\MetadataType;
+use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
 use App\Utils\Util;
-use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 use Livewire\Component;
-use MongoDB\Driver\Query;
 
 class DatasetBuilder extends Component
 {
     use ImageRendering;
-    public $currentStage = 0;
+    public $currentStage = 3;
     public $completedStages = [];
     public $stageData = [
         1 => ['title' => 'Select Categories', 'description' => 'Choose the categories relevant to your dataset for this project.'],
         2 => ['title' => 'Dataset Origin', 'description' => 'Specify the source or origin of the dataset you want to use.'],
         3 => ['title' => 'Datasets Selection', 'description' => 'Select the specific datasets required for your project.'],
-        4 => ['title' => 'Classes Selection', 'description' => 'Define the classes or labels applicable to your dataset.'],
-        5 => ['title' => 'Final Selection', 'description' => 'Review and confirm your selections before proceeding.'],
-        6 => ['title' => 'Download', 'description' => 'Download the final prepared dataset for your project.'],
+       /* 4 => ['title' => 'Classes Selection', 'description' => 'Define the classes or labels applicable to your dataset.'],*/
+        4 => ['title' => 'Final Selection', 'description' => 'Review and confirm your selections before proceeding.'],
+        5 => ['title' => 'Download', 'description' => 'Download the final prepared dataset for your project.'],
     ];
 
     public $categories = [];
@@ -42,11 +41,23 @@ class DatasetBuilder extends Component
     public $classes = [];
     public $selectedClasses = [];
 
-    public $finalSelection = [];
-    public $selectedFinalSelection = [];
+    public $images = [];
+    public $selectedImages = [];
 
+    #[On('add-selected')]
+    public function receiveSelected($selectedClasses)
+    {
+        $this->selectedClasses = $this->selectedClasses + $selectedClasses;
+    }
     public function render()
     {
+        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
+        foreach ($this->datasets as $dataset) {
+            $dataset->annotationCount = $dataset->annotations()->count();
+            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
+            $dataset->image = $dataset->image->toArray();
+        }
+        $this->datasets = $this->datasets->toArray();
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -79,13 +90,13 @@ class DatasetBuilder extends Component
             case 3:
                 $this->datasetsFilter();
                 break;
-            case 4:
+            case 9:
                 $this->classesFilter();
                 break;
-            case 5:
+            case 4:
                 $this->finalSelectionFilter();
                 break;
-            case 6:
+            case 5:
                 $this->downloadFilter();
                 break;
         }
@@ -97,7 +108,6 @@ class DatasetBuilder extends Component
         $this->categories = $this->categories->map(function ($category) {
             $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
             $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
-            $image->imagePath = $image ? Util::constructPublicImgPath($datasetUniqueName, $image->filename) : AppConfig::PLACEHOLDER_IMG;
             return [
                 'id' => $category->id,
                 'name' => $category->name,
@@ -181,24 +191,36 @@ class DatasetBuilder extends Component
         });
 
         $matchingDatasetIds = $query->pluck('dataset_id');
-        $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues'])->get();
+        $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues', 'categories'])->get();
+
         foreach ($this->datasets as $dataset) {
             $dataset->annotationCount = $dataset->annotations()->count();
-            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
-            $dataset->image->path = $dataset->image ? Util::constructPublicImgPath($dataset->unique_name, $dataset->image->filename) : AppConfig::PLACEHOLDER_IMG;
+            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
         }
         $this->datasets = $this->datasets->toArray();
     }
 
     private function classesFilter()
     {
-        $this->datasets = $this->datasets->filter(function($dataset){
+        dd($this->selectedClasses);
+        //$this->dispatch('send-to-dataset-builder');
+        /*$this->datasets = $this->datasets->filter(function($dataset){
             return in_array($dataset->id, array_keys($this->selectedDatasets));
-        });
+        });*/
     }
-
     private function finalSelectionFilter()
     {
+        //dd($this->selectedDatasets, $this->selectedClasses);
+        $classIds = array_keys(array_filter($this->selectedClasses, fn($value) => $value === true));
+        $images = Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
+            ->whereHas('annotations.class', function ($query) use ($classIds) {
+                $query->whereIn('id', $classIds);
+            })
+            ->with(['annotations' => function ($query) use ($classIds) {
+                $query->whereIn('annotation_class_id', $classIds); // Filter annotations to only include selected classes
+            }, 'annotations.class']) // Eager-load filtered annotations and their class
+            ->get();
+        $this->images = $this->prepareImagesForSvgRendering($images);
     }
 
     private function downloadFilter()

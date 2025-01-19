@@ -6,14 +6,19 @@ use App\Configs\AppConfig;
 use App\Models\Dataset;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\Modelable;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ClassesSample extends Component
 {
     public $datasets;
 
+    #[Modelable]
     public $selectedClasses = [];
-    private $selectable;
+    #[Locked]
+    public $selectable;
     public function mount($uniqueNames, $selectable = false)
     {
         $this->selectable = $selectable;
@@ -28,10 +33,13 @@ class ClassesSample extends Component
                 $images = Storage::disk('datasets')->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id);
                 $class->images = array_map(fn($image) => AppConfig::LINK_DATASETS_PATH . $image, $images);
             }
+            foreach($dataset->classes as $class) {
+                $this->selectedClasses[$class->id] = true;
+            }
             $this->datasets[] = $dataset->toArray();
         }
+        $this->dispatch('add-selected', selectedClasses: $this->selectedClasses);
     }
-
     public function render()
     {
         return view('livewire.components.classes-sample');

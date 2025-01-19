@@ -70,7 +70,7 @@ class Util
         ];
     }
 
-    public static function constructPublicImgPath($datasetUniqueName, $filename, $folder = AppConfig::IMG_THUMB_FOLDER) {
+    public static function constructImagePath($datasetUniqueName, $filename, $folder = AppConfig::IMG_THUMB_FOLDER) {
         return AppConfig::LINK_DATASETS_PATH . $datasetUniqueName . "/" . $folder . $filename;
     }
 }

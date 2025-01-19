@@ -1,4 +1,4 @@
-<div x-data="classSampleSort">
+<div x-data="classSampleSort(@this)">
     <x-modals.fixed-modal modalId="display-classes" class="sm:max-w-11/12">
 
         <!-- Modal Title -->
@@ -6,7 +6,7 @@
             <h1 class="text-2xl font-bold text-gray-200">Class Sample Preview</h1>
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
         </div>
-
+        <p class="text-gray-500 font-sm">Here you can choose which classes to include in your dataset.</p>
         @foreach($this->datasets as $dataset)
             <div class="mb-8">
                 <!-- Dataset Header -->
@@ -59,9 +59,7 @@
                                                 <input
                                                     type="checkbox"
                                                     class="sr-only peer"
-                                                    x-model="skip"
-                                                    {{-- value="{{$data['type']['id']}}"
-                                                     wire:model.live="skipTypes"--}}
+                                                    wire:model="selectedClasses.{{$class['id']}}"
                                                 >
                                                 <div
                                                     class="w-9 h-5 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"
@@ -127,9 +125,10 @@
 
 @script
 <script>
-    Alpine.data('classSampleSort', () => ({
+    Alpine.data('classSampleSort', (livewireComponent) => ({
         sortOrder: 'asc',
         sortType: 'class-name',
+        selectedClasses: livewireComponent.entangle('selectedClasses'),
         sortBy(sortBy = null) {
             this.sortType = sortBy ?? this.sortType;
             const classes = [...document.querySelectorAll('.group')];
