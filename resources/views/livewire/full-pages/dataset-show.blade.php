@@ -7,8 +7,8 @@
 
     <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"/>
     <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"/>
-    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']" :selectable="true"/>
-    <div class="flex flex-col mb-5 bg-slate-900/50">
+    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']"/>
+    <div class=" mb-5 bg-slate-900/50">
         <x-dataset-header></x-dataset-header>
         <div class="flex items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar />

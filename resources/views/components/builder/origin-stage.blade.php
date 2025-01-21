@@ -81,5 +81,9 @@
             </div>
         @endforeach
     </div>
-    <span class="">Current filter offers{{count($this->datasets)}} datasets</span>
+    <div class="text-gray-500">
+        <span class="font-medium">Current filter matches</span>
+        <span class="font-semibold text-blue-500">{{ count($this->datasets) }}</span>
+        <span class="font-medium">datasets</span>
+    </div>
 </div>

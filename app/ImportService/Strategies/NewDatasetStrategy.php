@@ -53,7 +53,7 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
             foreach ($requestData['metadata'] as $id => $value) {
                 DatasetMetadata::create([
                     'dataset_id' => $dataset->id,
-                    'metadata_value_id' => $id,
+                    'metadata_value_id' => $value,
                 ]);
             }
 

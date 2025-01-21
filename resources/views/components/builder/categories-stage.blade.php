@@ -18,7 +18,7 @@
                        focus:border-transparent focus:ring-2 focus:ring-indigo-500">
             {{-- Image --}}
             <div class="relative">
-                <img src="{{asset($category['image']['imagePath'])}}"
+                <img src="{{asset($category['image']['path'])}}"
                      alt="{{ $category['name'] }}"
                      class="h-full w-full object-cover group-hover:opacity-80 transition-opacity duration-300">
                 <x-annotation-overlay :image="$category['image']"></x-annotation-overlay>

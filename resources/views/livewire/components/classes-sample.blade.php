@@ -6,7 +6,9 @@
             <h1 class="text-2xl font-bold text-gray-200">Class Sample Preview</h1>
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
         </div>
-        <p class="text-gray-500 font-sm">Here you can choose which classes to include in your dataset.</p>
+        @if($this->selectable)
+            <p class="text-gray-500 font-sm">Here you can choose which classes to include in your dataset.</p>
+        @endif
         @foreach($this->datasets as $dataset)
             <div class="mb-8">
                 <!-- Dataset Header -->

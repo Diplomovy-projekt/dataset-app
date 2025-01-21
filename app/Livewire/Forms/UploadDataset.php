@@ -63,7 +63,6 @@ class UploadDataset extends Component
     public function finishImport(ZipManager $zipManager)
     {
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
-
         $payload = [
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),

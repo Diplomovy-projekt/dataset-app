@@ -50,7 +50,7 @@
     <button @click="open = !open"
             class="bg-slate-900/50 text-slate-300 px-4 py-2 rounded-lg border border-slate-700
                                    flex items-center gap-2 hover:bg-slate-800/50 transition-colors">
-        <span>Filter by category</span>
+        <span>Toggle classes</span>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
