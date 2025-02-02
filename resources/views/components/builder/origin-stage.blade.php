@@ -1,10 +1,7 @@
-@props([
-    'metadataValues'
-])
-<div >
+<div>
     <div class="flex flex-wrap justify-around p-4">
-        @foreach($metadataValues as $data)
-            <div wire:key="{{$data['type']['id']}}"
+        @foreach($this->metadataValues as $data)
+            <div wire:key="origin-stage-types-{{$data['type']['id']}}"
                 class="w-80" x-data="{ skip: false }">
                 <div class="bg-gray-800 rounded-lg p-4 mb-4">
                     <div class="flex items-center justify-between">
@@ -32,7 +29,7 @@
                 {{-- Values --}}
                 <div class="space-y-3" x-show="!skip" x-transition>
                     @forelse($data['values'] as $value)
-                        <div wire:key="{{$value['id']}}"
+                        <div wire:key="origin-stage-values-{{$value['id']}}"
                             class="bg-gray-700 rounded-lg p-3 flex items-center justify-between" x-data="{ selection: $wire.selectedMetadataValues[{{ $value['id'] }}] }" x-effect="selection = $wire.selectedMetadataValues[{{ $value['id'] }}]">
                             <span class="text-sm font-medium text-gray-200">{{ $value['value'] }}</span>
 

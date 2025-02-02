@@ -11,26 +11,54 @@ use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
 use App\Utils\Util;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class DatasetBuilder extends Component
 {
-    use ImageRendering;
+    use ImageRendering, WithPagination;
     #[Locked]
-    public $currentStage = 0;
+    public $currentStage = 3;
     #[Locked]
     public $completedStages = [];
     #[Locked]
     public $stageData = [
-        1 => ['title' => 'Select Categories', 'description' => 'Choose the categories relevant to your dataset for this project.'],
-        2 => ['title' => 'Dataset Origin', 'description' => 'Specify the source or origin of the dataset you want to use.'],
-        3 => ['title' => 'Datasets Selection', 'description' => 'Select the specific datasets required for your project.'],
-       /* 4 => ['title' => 'Classes Selection', 'description' => 'Define the classes or labels applicable to your dataset.'],*/
-        4 => ['title' => 'Final Selection', 'description' => 'Review and confirm your selections before proceeding.'],
-        5 => ['title' => 'Download', 'description' => 'Download the final prepared dataset for your project.'],
+        1 => [
+            'title' => 'Select Categories',
+            'description' => 'Choose the categories relevant to your dataset for this project.',
+            'component' => 'builder.categories-stage',
+            'method' => 'categoriesStage',
+        ],
+        2 => [
+            'title' => 'Dataset Origin',
+            'description' => 'Specify the source or origin of the dataset you want to use.',
+            'component' => 'builder.origin-stage',
+            'method' => 'originStage',
+        ],
+        3 => [
+            'title' => 'Datasets Selection',
+            'description' => 'Select the specific datasets required for your project.',
+            'component' => 'builder.datasets-stage',
+            'method' => 'datasetsStage',
+        ],
+        4 => [
+            'title' => 'Final Selection',
+            'description' => 'Select any images that you wish to EXCLUDE from your final dataset',
+            'component' => 'builder.final-stage',
+            'method' => 'finalStage',
+        ],
+        5 => [
+            'title' => 'Download',
+            'description' => 'Download the final prepared dataset for your project.',
+            'component' => 'builder.download-stage',
+            'method' => 'downloadFilter',
+        ],
     ];
+
+
     #[Locked]
     public $categories = [];
     public $selectedCategories = [];
@@ -41,13 +69,15 @@ class DatasetBuilder extends Component
     #[Locked]
     public $datasets = [];
     public $selectedDatasets = [];
-    #[Locked]
-    public $classes = [];
     public $selectedClasses = [];
-
-    public $images = [];
+    private $images = [];
     public $selectedImages = [];
-
+    #[Computed]
+    public function paginatedImages()
+    {
+        $images = $this->imagesQuery()->paginate(AppConfig::PER_PAGE);
+        return $this->prepareImagesForSvgRendering($images);
+    }
     #[On('add-selected')]
     public function receiveSelected($selectedClasses)
     {
@@ -55,13 +85,13 @@ class DatasetBuilder extends Component
     }
     public function render()
     {
-        /*$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
+        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
         foreach ($this->datasets as $dataset) {
             $dataset->annotationCount = $dataset->annotations()->count();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
             $dataset->image = $dataset->image->toArray();
         }
-        $this->datasets = $this->datasets->toArray();*/
+        $this->datasets = $this->datasets->toArray();
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -84,29 +114,14 @@ class DatasetBuilder extends Component
 
     private function applyStageFilters()
     {
-        switch ($this->currentStage){
-            case 1:
-                $this->categoriesFilter();
-                break;
-            case 2:
-                $this->metadataValuesFilter();
-                break;
-            case 3:
-                $this->datasetsFilter();
-                break;
-            case 9:
-                $this->classesFilter();
-                break;
-            case 4:
-                $this->finalSelectionFilter();
-                break;
-            case 5:
-                $this->downloadFilter();
-                break;
+        $stageDetails = $this->stageData[$this->currentStage] ?? null;
+
+        if ($stageDetails && method_exists($this, $stageDetails['method'])) {
+            $this->{$stageDetails['method']}();
         }
     }
 
-    private function categoriesFilter()
+    private function categoriesStage()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();
         $this->categories = $this->categories->map(function ($category) {
@@ -120,21 +135,20 @@ class DatasetBuilder extends Component
         })->toArray();
     }
 
-    private function metadataValuesFilter()
+    private function originStage()
     {
         $this->metadataValues = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
-        $this->datasets = DatasetCategory::whereIn('category_id', $this->selectedCategories)->select('dataset_id as id')->get()->toArray();
     }
 
     public function updatedSkipTypes()
     {
-        $this->datasetsFilter();
+        $this->datasetsStage();
     }
     public function updatedSelectedMetadataValues()
     {
-        $this->datasetsFilter();
+        $this->datasetsStage();
     }
-    private function datasetsFilter()
+    private function datasetsStage()
     {
         // Get all selected metadata values except for skipped types
         $selectedMetadataValues = collect($this->selectedMetadataValues)
@@ -182,31 +196,28 @@ class DatasetBuilder extends Component
         $this->datasets = $this->datasets->toArray();
     }
 
-    private function classesFilter()
+    private function finalStage()
     {
-        dd($this->selectedClasses);
-        //$this->dispatch('send-to-dataset-builder');
-        /*$this->datasets = $this->datasets->filter(function($dataset){
-            return in_array($dataset->id, array_keys($this->selectedDatasets));
-        });*/
+        //$this->images = $this->imagesQuery()->get()->toArray();
     }
-    private function finalSelectionFilter()
+    private function imagesQuery()
     {
-        //dd($this->selectedDatasets, $this->selectedClasses);
         $classIds = array_keys(array_filter($this->selectedClasses, fn($value) => $value === true));
-        $images = Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
+
+        return Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
             ->whereHas('annotations.class', function ($query) use ($classIds) {
                 $query->whereIn('id', $classIds);
             })
             ->with(['annotations' => function ($query) use ($classIds) {
-                $query->whereIn('annotation_class_id', $classIds); // Filter annotations to only include selected classes
-            }, 'annotations.class']) // Eager-load filtered annotations and their class
-            ->get();
-        $this->images = $this->prepareImagesForSvgRendering($images);
+                $query->whereIn('annotation_class_id', $classIds);
+            }, 'annotations.class']);
     }
 
     private function downloadFilter()
     {
+        $this->images = $this->imagesQuery()->get()->toArray();
+        // Exclude images that are selected
+        $this->images = array_filter($this->images, fn($image) => !in_array($image['id'], $this->selectedImages));
     }
 
 }

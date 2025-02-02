@@ -1,40 +1,53 @@
+@props(
+    [
+        'inputAction' => 'add',
+    ]
+)
 <div>
     <div x-data="{
-            hoveredImageIndex: null,
             open: ''
          }"
          class="grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 justify-items-center">
-        @foreach ($images as $image)
-            <div wire:key="{{$image['filename']}}"
+        @foreach ($this->paginatedImages as $image)
+            <div wire:key="builder-img-grid-container-{{$image['filename']}}"
                  x-data="{ imageId: {{ $image->id }} }"
                  @mouseenter="hoveredImageIndex = {{ $image->id }}"
                  @mouseleave="hoveredImageIndex = null"
                  class="">
-                <div class="relative w-full" wire:key="{{$image['filename']}}">
+                <div class="relative w-full group">
                     <x-images.annotated-image :image="$image" class="h-36 w-36"/>
-                    <div
-                        x-show="hoveredImageIndex === {{ $image->id }} || selectedImages.includes({{ strval($image->id) }})"
-                        class="absolute -top-0 -right-0">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                class="peer sr-only"
-                                @change="selectedImages.includes({{ $image->id }})
-                                        ? selectedImages = selectedImages.filter(id => id !== {{ $image->id }})
-                                        : selectedImages.push({{ $image->id }})"
-                                :checked="selectedImages.includes({{ $image->id }})"
-                            />
-                            <div class="w-5 h-5 bg-black/30 rounded border-2 border-blue-500 peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-300"></div>
-                        </label>
-                    </div>
+                        <input
+                            type="checkbox"
+                            value="{{ $image->id }}"
+                            wire:model="selectedImages"
+                            class="peer appearance-none absolute top-1 right-1 w-5 h-5 rounded-sm  bg-gray-500 border-gray-400 border-2 opacity-0
+                                group-hover:opacity-100 checked:opacity-100 transition-opacity cursor-pointer {{ $inputAction === 'add'
+                                ? 'checked:bg-blue-500 checked:border-blue-600'
+                                : 'checked:bg-red-500 checked:border-red-600'}}"
+                        />
+                        <div class="absolute top-1 right-1 w-5 h-5 opacity-0 group-hover:opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
+                            @if($inputAction === 'add')
+                                <!-- Checkmark SVG -->
+                                <svg class="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                                </svg>
+                            @else
+                                <!-- X mark SVG -->
+                                <svg class="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            @endif
+                        </div>
                 </div>
                 <x-misc.tooltip :filename="$image->filename" />
             </div>
         @endforeach
     </div>
 
-    @if ($this->images instanceof \Illuminate\Pagination\Paginator || $this->images instanceof \Illuminate\Pagination\LengthAwarePaginator)
-        {{ $this->images->links() }}
+    @if ($this->paginatedImages instanceof \Illuminate\Pagination\Paginator || $this->paginatedImages instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        <div class="my-4">
+            {{ $this->paginatedImages->links() }}
+        </div>
     @endif
     <x-images.full-screen-image/>
 </div>

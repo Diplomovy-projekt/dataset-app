@@ -10,7 +10,7 @@
             <p class="text-gray-500 font-sm">Here you can choose which classes to include in your dataset.</p>
         @endif
         @foreach($this->datasets as $dataset)
-            <div class="mb-8">
+            <div class="mb-8" wire:key="livewire-classes-sample-comp-{{$dataset['unique_name']}}">
                 <!-- Dataset Header -->
                 <div class="flex items-center justify-between bg-gradient-to-r from-slate-800 to-slate-900 p-4 rounded-t-xl border-b border-slate-700">
                     <div class="flex items-center gap-3">
@@ -50,7 +50,7 @@
                 <!-- Classes Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-slate-900/50 rounded-b-xl">
                     @foreach($dataset['classes'] as $class)
-                        <div id="class-sample-{{$class['id']}}" class="bg-slate-800 rounded-lg hover:bg-slate-750 transition-all duration-200 group" wire:key="{{$class['id']}}">
+                        <div id="class-sample-{{$class['id']}}" class="bg-slate-800 rounded-lg hover:bg-slate-750 transition-all duration-200 group" wire:key="nested-classes-in-samples-{{$class['id']}}">
                             <!-- Class Header -->
                             <div class="p-4 border-b border-slate-700">
                                 <div class="flex items-center justify-between">
@@ -102,7 +102,7 @@
                             <div class="p-4">
                                 <div class="grid grid-cols-4 gap-2">
                                     @foreach($class['images'] as $image)
-                                        <div class="relative group/image" wire:key="{{$image}}">
+                                        <div class="relative group/image" wire:key="path-of-image-in-classes-sample{{$image}}">
                                             <img src="{{asset($image)}}"
                                                  class="w-12 rounded-md border border-slate-700 group-hover/image:border-blue-500 transition-all"
                                                  loading="lazy"

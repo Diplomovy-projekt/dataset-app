@@ -34,11 +34,11 @@ class ImportComponentFactory {
         $namespace = "App\\ImportService\\Mappers";
 
         // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}Mapper";
+        $className = "{$namespace}\\From{$classBaseName}";
 
         // Check if the class exists
         if (!class_exists($className)) {
-            return Response::error("Mapper {$className} does not exist.");
+            return Response::error("Mappers {$className} does not exist.");
         }
 
         return new $className();

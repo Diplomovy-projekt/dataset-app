@@ -1,3 +1,3 @@
-<div x-data="{selectedImages: []}">
-    <x-containers.images-container :images="$this->images"/>
+<div>
+    <x-containers.images-container :images="$this->images" inputAction="exclude"/>
 </div>

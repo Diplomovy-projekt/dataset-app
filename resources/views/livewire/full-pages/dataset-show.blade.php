@@ -1,7 +1,5 @@
 <div x-data="{
-        hoveredImageIndex: null,
         open: '',
-        selectedImages: [],
      }"
      class="container mx-auto pt-3">
 
@@ -50,5 +48,5 @@
             </x-dropdown-menu>
         </div>
     </div>
-    <x-containers.images-container :images="$this->images"/>
+    <x-containers.images-container :images="$this->paginatedImages"/>
 </div>

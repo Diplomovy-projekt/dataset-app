@@ -20,4 +20,13 @@ class YoloConfig
     public const TXT_EXTENSION = 'txt';
     public const IMAGE_FOLDER = 'images';
     public const LABELS_FOLDER = 'labels';
+
+    public static function getFolderStructure(): array
+    {
+        return [
+            self::DATA_YAML => null,
+            self::IMAGE_FOLDER => [],
+            self::LABELS_FOLDER => [],
+        ];
+    }
 }

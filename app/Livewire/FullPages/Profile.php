@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\DatasetActions\DatasetActions;
 use App\DatasetCrud\DatasetCrud;
+use App\ExportService\ExportService;
 use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
@@ -14,9 +15,10 @@ class Profile extends Component
 {
     use ImageRendering;
     public $datasets;
-    public function render()
+    public function render(ExportService $es)
     {
         $this->loadDatasets();
+        $es->handleExport([], 'yolo');
         return view('livewire.full-pages.profile');
     }
 
@@ -38,14 +40,5 @@ class Profile extends Component
             $datasets[$key]['images'] = $processedImage;
         }
         $this->datasets = $datasets->toArray();
-    }
-
-    public function deleteDataset(DatasetCrud $datasetService, $id)
-    {
-        $result = $datasetService->deleteDataset($id);
-        if($result->isSuccessful()){
-            $this->loadDatasets();
-        }
-
     }
 }

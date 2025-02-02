@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
-class YoloMapper
+class FromYolo
 {
     public function parse(string $folderName, $annotationTechnique): Response
     {

@@ -14,12 +14,13 @@ use Illuminate\Support\Facades\Storage;
 class DatasetActions
 {
     use ImageProcessor;
+
     public function deleteDataset($unique_name): Response
     {
         try {
             $dataset = Dataset::where('unique_name', $unique_name)->first();
             $dataset->delete();
-            if(Storage::disk('datasets')->exists($dataset->unique_name)) {
+            if (Storage::disk('datasets')->exists($dataset->unique_name)) {
                 Storage::disk('datasets')->deleteDirectory($dataset->unique_name);
             }
             return Response::success('Dataset deleted successfully');
@@ -69,8 +70,7 @@ class DatasetActions
         $classCounts = [];
         // We are creating crops for classes in batches of 10% images because most likely
         // we will get AppConfig::SAMPLES_COUNT crops per class sooner than parsing through whole dataset
-        try
-        {
+        try {
             for ($i = 0; $i < 10; $i++) {
                 $offset = $i * $batchSize;
                 // Fetch images in the batch with annotations belonging to classes to sample
@@ -99,7 +99,7 @@ class DatasetActions
                     break;
                 }
             }
-        } catch(DatasetImportException $e){
+        } catch (DatasetImportException $e) {
             return Response::error($e->getMessage(), $e->getData());
         }
         return Response::success("Class crops created successfully");
@@ -111,5 +111,14 @@ class DatasetActions
         foreach ($classes as $class) {
             $class->delete();
         }
+    }
+
+    public function buildDataset($images): Response
+    {
+        //build new custom dataset from images. images contain annotations and classes.
+
+
+        return Response::success();
+
     }
 }

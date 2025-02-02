@@ -1,5 +1,5 @@
-
 <div class="mx-auto px-4 py-8">
+
     <div class="shadow-xl py-12">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-5xl font-extrabold text-gray-200 mb-8 tracking-tight leading-tight">
@@ -40,42 +40,15 @@
 
     <div id="builder" class="flex flex-col mx-auto py-4 gap-1 my-10">
         @foreach($stageData as $stageNumber => $stage)
-            <div class="rounded-lg" wire:key="{{$stageNumber}}">
+            <div class="rounded-lg" wire:key="livewire-builder-{{$stageNumber}}">
                 <x-builder.main-accordion
                     stageIndex="{{ $stageNumber }}"
                     :currentStage="$currentStage"
                     :completedStages="$completedStages"
                     :stageData="$stageData">
 
-                    @if(in_array($stageNumber, $completedStages) || $currentStage == $stageNumber)
-                        @switch($stageNumber)
-                            @case(1)
-                                <x-builder.categories-stage :categories="$categories" />
-                                @break
-
-                            @case(2)
-                                <x-builder.origin-stage :metadataValues="$metadataValues" />
-                                @break
-
-                            @case(3)
-                                <x-builder.datasets-stage :datasets="$datasets" />
-                                @break
-
-                            @case(9)
-                                <x-builder.classes-stage />
-                                @break
-
-                            @case(4)
-                                <x-builder.final-stage />
-                                @break
-
-                            @case(5)
-                                <x-builder.download-stage />
-                                @break
-
-                            @default
-                                <p>Unknown Stage</p>
-                        @endswitch
+                    @if($currentStage == $stageNumber)
+                        <x-dynamic-component :component="$stage['component']"/>
                     @endif
                 </x-builder.main-accordion>
             </div>

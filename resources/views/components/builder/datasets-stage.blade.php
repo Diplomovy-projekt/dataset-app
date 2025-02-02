@@ -1,7 +1,7 @@
 <div class="container mx-auto px-4 py-4">
     <div class="space-y-3">
-        @forelse($datasets as $dataset)
-            <div wire:key="datasets-{{ $dataset['id'] }}"
+        @forelse($this->datasets as $dataset)
+            <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
                  @click="checked = !checked">
@@ -34,7 +34,7 @@
                             <div class="flex gap-3">
                                 <div x-data="{open: false}"
                                      class="flex-shrink-0 px-3 py-1.5 bg-blue-500 text-gray-200 text-sm rounded-lg hover:bg-blue-600 transition-all duration-200">
-                                    <livewire:components.classes-sample :key="$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses"/>
+                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses"/>
                                     <button @click.prevent="open = 'display-classes'">Select classes</button>
                                 </div>
                                 <a wire:navigate href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
@@ -55,13 +55,13 @@
                             <!-- Dataset Properties -->
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
                                 @foreach($dataset['categories'] as $category)
-                                    <div wire:key="{{ $category['id'] }}"
+                                    <div wire:key="dataset-categories-{{ $category['id'] }}"
                                          class="flex-shrink-0 bg-blue-500/20 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
                                         {{ $category['name'] }}
                                     </div>
                                 @endforeach
                                 @forelse($dataset['metadata_values'] as $metadata)
-                                    <div wire:key="{{ $metadata['id'] }}"
+                                    <div wire:key="dataset-metadata-{{ $metadata['id'] }}"
                                         class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
                                         {{ $metadata['value'] }}
                                     </div>

@@ -1,6 +1,5 @@
 @props([
     'stageIndex',
-    'stageTitle',
     'currentStage',
     'completedStages' => [],
     'stageData'
@@ -40,7 +39,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50"
                                 wire:target="previousStage,nextStage"
-                                class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex">
+                                class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex transition-colors duration-300 hover:bg-gray-400">
                             <x-bi-arrow-up-circle class="w-6 h-6 pr-1" />
                             Previous Stage
                         </button>
@@ -64,7 +63,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50"
                                 wire:target="previousStage,nextStage"
-                                class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex">
+                                class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex transition-colors duration-300 hover:bg-blue-600">
                             <x-bi-arrow-down-circle class="w-6 h-6 pr-1"/>
                             Next Stage
                         </button>

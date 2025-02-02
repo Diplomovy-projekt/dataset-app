@@ -24,8 +24,10 @@ class DatasetShow extends Component
     public $metadata = [];
     public $categories = [];
     public $modalStyle;
+    public $selectedImages = [];
+
     #[Computed]
-    public function images()
+    public function paginatedImages()
     {
         $images = $this->fetchImages();
         return $this->prepareImagesForSvgRendering($images);
@@ -46,6 +48,9 @@ class DatasetShow extends Component
 
     public function render()
     {
+        /*foreach($this->images as $image){
+            $this->selectedImages[] = strval($image->id);
+        }*/
         return view('livewire.full-pages.dataset-show');
     }
 
@@ -72,9 +77,9 @@ class DatasetShow extends Component
         }
     }
 
-    public function deleteImages(DatasetActions $datasetService, $ids)
+    public function deleteImages(DatasetActions $datasetService)
     {
-        $result = $datasetService->deleteImages($this->uniqueName, $ids);
+        $result = $datasetService->deleteImages($this->uniqueName, $this->selectedImages);
         if($result->isSuccessful()){
             $this->mount();
         }
