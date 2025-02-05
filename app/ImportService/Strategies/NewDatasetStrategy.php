@@ -47,7 +47,7 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
             $this->assignColorsToClasses($classIds);
 
             // 4. Save Images and Annotations
-            $this->saveImageWithAnnotations($imageData, $dataset->id, $classIds);
+            $this->saveImageWithAnnotations($imageData, $dataset, $classIds);
 
             // 5. Save dataset metadata
             foreach ($requestData['metadata'] as $id => $value) {

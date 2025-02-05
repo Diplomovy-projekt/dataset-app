@@ -18,7 +18,6 @@ class Profile extends Component
     public function render(ExportService $es)
     {
         $this->loadDatasets();
-        $es->handleExport([], 'yolo');
         return view('livewire.full-pages.profile');
     }
 

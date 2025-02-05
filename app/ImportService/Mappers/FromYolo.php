@@ -47,6 +47,12 @@ class FromYolo
             $annotationFileName = pathinfo($annotationFile, PATHINFO_FILENAME);
 
             // Find the corresponding image file
+            foreach($images as $image) {
+                $imageFileName = pathinfo($image, PATHINFO_FILENAME);
+                if ($imageFileName === $annotationFileName) {
+                    break;
+                }
+            }
             $imageFile = $images->first(fn($image) => pathinfo($image, PATHINFO_FILENAME) === $annotationFileName);
             if (!$imageFile) {
                 continue;
@@ -157,7 +163,7 @@ class FromYolo
 
             // Update the image
             $newImagePath = FileUtil::addUniqueSuffix($image, $suffix);
-            Storage::move($image, FileUtil::addUniqueSuffix($image, $suffix));
+            Storage::move($image, $newImagePath);
             $images[$index] = $newImagePath;
 
             // Update the corresponding annotation

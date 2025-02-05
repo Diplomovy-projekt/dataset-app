@@ -49,7 +49,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $this->assignColorsToClasses($classIds);
 
             // 4. Save Images and Annotations
-            $this->saveImageWithAnnotations($imageData, $dataset->id, $classIds);
+            $this->saveImageWithAnnotations($imageData, $dataset, $classIds);
 
             return Response::success(data: ['classesToSample' => $classesToSample,]);
         } catch (\Exception $e) {

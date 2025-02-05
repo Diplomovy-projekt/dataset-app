@@ -3,6 +3,7 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
+use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
@@ -11,6 +12,7 @@ use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
 use App\Utils\Util;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -72,6 +74,8 @@ class DatasetBuilder extends Component
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
+    public $exportFormat = '';
+    public $availableFormats = [];
     #[Computed]
     public function paginatedImages()
     {
@@ -85,13 +89,18 @@ class DatasetBuilder extends Component
     }
     public function render()
     {
-        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
+        //$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
+        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
+            ->orderBy('id', 'desc')
+            ->limit(6) // Get only the last two
+            ->get();
         foreach ($this->datasets as $dataset) {
             $dataset->annotationCount = $dataset->annotations()->count();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
             $dataset->image = $dataset->image->toArray();
         }
         $this->datasets = $this->datasets->toArray();
+        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -112,12 +121,23 @@ class DatasetBuilder extends Component
         }
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function applyStageFilters()
     {
         $stageDetails = $this->stageData[$this->currentStage] ?? null;
 
         if ($stageDetails && method_exists($this, $stageDetails['method'])) {
-            $this->{$stageDetails['method']}();
+            //$this->{$stageDetails['method']}();
+            $method = $stageDetails['method'];
+
+            // Resolve method dependencies
+            $reflection = new \ReflectionMethod($this, $method);
+            $parameters = $reflection->getParameters();
+            $dependencies = array_map(fn($param) => app($param->getType()?->getName()), $parameters);
+
+            $this->{$method}(...$dependencies);
         }
     }
 
@@ -199,6 +219,7 @@ class DatasetBuilder extends Component
     private function finalStage()
     {
         //$this->images = $this->imagesQuery()->get()->toArray();
+        $ad = 5;
     }
     private function imagesQuery()
     {
@@ -213,11 +234,24 @@ class DatasetBuilder extends Component
             }, 'annotations.class']);
     }
 
-    private function downloadFilter()
+    private function downloadFilter(ExportService $exportService)
+    {
+        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
+        // TODO create statistic info, categories, metadata, etc
+    }
+
+    public function downloadCustomDataset(ExportService $exportService)
     {
         $this->images = $this->imagesQuery()->get()->toArray();
         // Exclude images that are selected
         $this->images = array_filter($this->images, fn($image) => !in_array($image['id'], $this->selectedImages));
+
+        // Export the dataset
+        $response = $exportService->handleExport($this->images, $this->exportFormat);
+        if($response->isSuccessful()) {
+            return Storage::disk('datasets')->download($response->data['dataset_path']);
+        }
+        return back()->with('error', $response->message);
     }
 
 }

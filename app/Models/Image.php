@@ -12,6 +12,7 @@ class Image extends Model
     use HasFactory;
     protected $fillable = [
         'dataset_id',
+        'path',
         'filename',
         'width',
         'height',
