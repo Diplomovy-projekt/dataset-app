@@ -5,12 +5,12 @@
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
                  @click="checked = !checked">
-                <div class="p-4 flex gap-4">
+                <div x-data="{ isChecked: false }"
+                     class="p-4 flex gap-4">
                     <!-- Left section -->
                     <div class="flex gap-4">
                         <div class="" @click.stop>
                             <input type="checkbox"
-                                   name="selected_datasets[]"
                                    value="{{ $dataset['id'] }}"
                                    wire:model="selectedDatasets.{{$dataset['id']}}"
                                    class="w-5 h-5 text-blue-500 bg-slate-700 rounded border-slate-600 focus:ring-blue-500 focus:ring-offset-slate-800">
@@ -32,11 +32,24 @@
                                 </span>
                             </div>
                             <div class="flex gap-3">
-                                <div x-data="{open: false}"
-                                     class="flex-shrink-0 px-3 py-1.5 bg-blue-500 text-gray-200 text-sm rounded-lg hover:bg-blue-600 transition-all duration-200">
-                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses"/>
-                                    <button @click.prevent="open = 'display-classes'">Select classes</button>
+                                {{--Classes preview button--}}
+                                <div x-data="{open: false}">
+                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses.{{$dataset['id']}}"/>
+                                    <button @click.prevent="open = 'display-classes'"
+                                            :disabled="isChecked"
+                                            :class="[
+                                                    'flex-shrink-0',
+                                                    'px-3',
+                                                    'py-1.5',
+                                                    isChecked === true ? 'bg-slate-600 border border-slate-500 cursor-not-allowed  opacity-50' : 'bg-blue-500 hover:bg-blue-600 border border-blue-400',
+                                                    'text-sm text-slate-200',
+                                                    'rounded-lg',
+                                                    'transition-all',
+                                                    'duration-200'
+                                                ]"
+                                            :title="isChecked === false ? 'Select Dataset to select classes' : ''">Select classes</button>
                                 </div>
+                                {{-- Dataset preview button--}}
                                 <a wire:navigate href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
                                     class="flex-shrink-0 px-3 py-1.5 bg-blue-600/20 text-blue-400 text-sm rounded-lg hover:bg-blue-700/70 transition-all duration-200">
                                     Preview Dataset
@@ -50,7 +63,7 @@
                         <!-- Stats and Properties -->
                         <div class="flex flex-col gap-2">
                             <!-- Stats -->
-                            <x-dataset-stats :dataset="$dataset" class="text-base" svgSize="w-5 h-5"/>
+                            <x-dataset.dataset-stats :stats="$dataset['stats']" class="text-base" svgSize="w-5 h-5"/>
 
                             <!-- Dataset Properties -->
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">

@@ -40,7 +40,7 @@ class DatasetShow extends Component
             return redirect()->route('dataset.index');
         }
 
-        $dataset->annotationCount = $dataset->annotations()->count();
+        $dataset->stats = $dataset->getStats();
         $this->dataset = $dataset->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
@@ -48,9 +48,6 @@ class DatasetShow extends Component
 
     public function render()
     {
-        /*foreach($this->images as $image){
-            $this->selectedImages[] = strval($image->id);
-        }*/
         return view('livewire.full-pages.dataset-show');
     }
 

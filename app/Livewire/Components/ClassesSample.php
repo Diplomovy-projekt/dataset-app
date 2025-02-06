@@ -38,7 +38,7 @@ class ClassesSample extends Component
             }
             $this->datasets[] = $dataset->toArray();
         }
-        $this->dispatch('add-selected', selectedClasses: $this->selectedClasses);
+        $this->dispatch('add-selected', selectedClasses: $this->selectedClasses, datasetId: $dataset->id);
     }
     public function render()
     {

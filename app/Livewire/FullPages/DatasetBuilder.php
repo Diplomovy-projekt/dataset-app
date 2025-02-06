@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -74,8 +75,10 @@ class DatasetBuilder extends Component
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
+    #[Validate('required')]
     public $exportFormat = '';
     public $availableFormats = [];
+    public $finalDataset = [];
     #[Computed]
     public function paginatedImages()
     {
@@ -83,9 +86,11 @@ class DatasetBuilder extends Component
         return $this->prepareImagesForSvgRendering($images);
     }
     #[On('add-selected')]
-    public function receiveSelected($selectedClasses)
+    public function receiveSelected($selectedClasses, $datasetId)
     {
-        $this->selectedClasses = $this->selectedClasses + $selectedClasses;
+        //$this->selectedClasses = $this->selectedClasses + $selectedClasses;
+        $this->selectedClasses[$datasetId] = $selectedClasses;
+
     }
     public function render()
     {
@@ -95,7 +100,7 @@ class DatasetBuilder extends Component
             ->limit(6) // Get only the last two
             ->get();
         foreach ($this->datasets as $dataset) {
-            $dataset->annotationCount = $dataset->annotations()->count();
+            $dataset->stats = $dataset->getStats();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
             $dataset->image = $dataset->image->toArray();
         }
@@ -210,10 +215,11 @@ class DatasetBuilder extends Component
         $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues', 'categories'])->get();
 
         foreach ($this->datasets as $dataset) {
-            $dataset->annotationCount = $dataset->annotations()->count();
+            $dataset->stats = $dataset->getStats();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
         }
         $this->datasets = $this->datasets->toArray();
+        $this->selectedImages = [];
     }
 
     private function finalStage()
@@ -223,12 +229,15 @@ class DatasetBuilder extends Component
     }
     private function imagesQuery()
     {
-        $classIds = array_keys(array_filter($this->selectedClasses, fn($value) => $value === true));
+        $classIds = $this->getSelectedClassesForSelectedDatasets();
 
         return Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
+            ->whereNotIn('id', $this->selectedImages ?? [])
+            // Only include images that has annotations with selected classes
             ->whereHas('annotations.class', function ($query) use ($classIds) {
                 $query->whereIn('id', $classIds);
             })
+            // Include only annotations with selected classes for the images
             ->with(['annotations' => function ($query) use ($classIds) {
                 $query->whereIn('annotation_class_id', $classIds);
             }, 'annotations.class']);
@@ -237,21 +246,39 @@ class DatasetBuilder extends Component
     private function downloadFilter(ExportService $exportService)
     {
         $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
-        // TODO create statistic info, categories, metadata, etc
+        $this->images = $this->imagesQuery()->get()->toArray();
+
+        $this->finalDataset['stats'] = [
+            'numImages' => count($this->images),
+            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
+            'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $this->images)),
+        ];
     }
 
     public function downloadCustomDataset(ExportService $exportService)
     {
+        $this->validate();
         $this->images = $this->imagesQuery()->get()->toArray();
-        // Exclude images that are selected
-        $this->images = array_filter($this->images, fn($image) => !in_array($image['id'], $this->selectedImages));
 
         // Export the dataset
         $response = $exportService->handleExport($this->images, $this->exportFormat);
-        if($response->isSuccessful()) {
-            return Storage::disk('datasets')->download($response->data['dataset_path']);
+        if ($response->isSuccessful()) {
+            return response()->streamDownload(function () use ($response) {
+                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
+            }, basename($response->data['datasetFolder']));
         }
+
         return back()->with('error', $response->message);
     }
 
+    private function getSelectedClassesForSelectedDatasets(): array
+    {
+        $eligiblePerDataset = array_intersect_key($this->selectedClasses, $this->selectedDatasets);
+        // Flatten the arrays and merge them
+        $classIds = [];
+        foreach($eligiblePerDataset as $datasetId => $classes) {
+            $classIds = $classIds + array_filter($classes);
+        }
+        return array_keys($classIds);
+    }
 }

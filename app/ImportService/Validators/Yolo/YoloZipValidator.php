@@ -87,7 +87,7 @@ class YoloZipValidator
 
         // Filter out invalid label files
         $invalidLabels = $labels->filter(function ($label) {
-            return !in_array(pathinfo($label, PATHINFO_EXTENSION), (array)YoloConfig::TXT_EXTENSION);
+            return !in_array(pathinfo($label, PATHINFO_EXTENSION), (array)YoloConfig::LABEL_EXTENSION);
         });
 
         if ($invalidLabels->isNotEmpty()) {

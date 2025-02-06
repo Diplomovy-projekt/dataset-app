@@ -17,7 +17,7 @@
                     </p>
                 </div>
                 {{-- Statistics --}}
-                <x-dataset-stats :dataset="$this->dataset" class="px-4 py-2 text-xl"/>
+                <x-dataset.dataset-stats :stats="$this->dataset['stats']" class="px-4 py-2 text-xl"/>
             </div>
 
             {{-- Categories --}}
