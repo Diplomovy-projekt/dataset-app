@@ -3,6 +3,7 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
+use App\DatasetActions\DatasetActions;
 use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
@@ -79,6 +80,7 @@ class DatasetBuilder extends Component
     public $exportFormat = '';
     public $availableFormats = [];
     public $finalDataset = [];
+    public $failedDownload = [];
     #[Computed]
     public function paginatedImages()
     {
@@ -255,20 +257,18 @@ class DatasetBuilder extends Component
         ];
     }
 
-    public function downloadCustomDataset(ExportService $exportService)
+    public function downloadCustomDataset(DatasetActions $datasetActions)
     {
         $this->validate();
         $this->images = $this->imagesQuery()->get()->toArray();
 
         // Export the dataset
-        $response = $exportService->handleExport($this->images, $this->exportFormat);
-        if ($response->isSuccessful()) {
-            return response()->streamDownload(function () use ($response) {
-                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
-            }, basename($response->data['datasetFolder']));
+        $response = $datasetActions->downloadDataset($this->images, $this->exportFormat);
+        if(!$response->isSuccessful()) {
+            $this->failedDownload['message'] = $response->getMessage();
+            $this->failedDownload['data'] = $response->getData();
         }
 
-        return back()->with('error', $response->message);
     }
 
     private function getSelectedClassesForSelectedDatasets(): array

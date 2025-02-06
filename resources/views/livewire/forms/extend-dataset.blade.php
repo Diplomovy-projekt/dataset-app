@@ -16,7 +16,7 @@
 
                 {{-- Erorrs--}}
                 @if($errors)
-                    <x-dataset-errors></x-dataset-errors>
+                    <x-dataset.dataset-errors></x-dataset.dataset-errors>
                 @endif
 
                 {{-- Progress bar--}}

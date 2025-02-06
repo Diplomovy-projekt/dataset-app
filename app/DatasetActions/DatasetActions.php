@@ -4,6 +4,7 @@ namespace App\DatasetActions;
 
 use App\Configs\AppConfig;
 use App\Exceptions\DatasetImportException;
+use App\ExportService\ExportService;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
 use App\Models\Dataset;
@@ -113,6 +114,19 @@ class DatasetActions
         }
     }
 
+
+    public function downloadDataset($images, $exportFormat)
+    {
+
+        $response = ExportService::handleExport($images, $exportFormat);
+        if ($response->isSuccessful()) {
+            return response()->streamDownload(function () use ($response) {
+                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
+            }, basename($response->data['datasetFolder']));
+        }
+
+        return Response::error($response->message);
+    }
     public function buildDataset($images): Response
     {
         //build new custom dataset from images. images contain annotations and classes.

@@ -18,7 +18,6 @@ abstract class BaseMapper
             foreach($image['annotations'] as $annotation) {
                 $dbClassId = $annotation['class']['id'];
 
-                $idk = dirname($annotationPath);
                 File::ensureDirectoryExists($annotationPath);
 
                 if (!isset($this->classMap[$dbClassId])) {

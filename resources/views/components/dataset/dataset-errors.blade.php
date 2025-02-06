@@ -1,3 +1,7 @@
+@props([
+    'errorMessage' => 'Error occurred',
+    'errorData' => []
+])
 <div>
     <div x-data="{ isOpen: true }" class="my-4 bg-slate-800/50 border border-red-500/50 rounded-lg shadow-lg overflow-hidden">
         {{-- Clickable Error Header --}}
@@ -9,7 +13,7 @@
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                           clip-rule="evenodd" />
                 </svg>
-                <h3 class="font-medium text-red-400">{{ $this->errors['message'] }}</h3>
+                <h3 class="font-medium text-red-400">{{ $errorMessage }}</h3>
             </div>
 
             {{-- Toggle Arrow --}}
@@ -26,7 +30,7 @@
         </div>
 
         {{-- Collapsible Error Details --}}
-        @if(isset($this->errors['data']) && count($this->errors['data']) > 0)
+        @if(isset($errorData) && count($errorData) > 0)
             <div x-show="isOpen"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 transform -translate-y-2"
@@ -36,7 +40,7 @@
                  x-transition:leave-end="opacity-0 transform -translate-y-2"
                  class="px-4 py-3">
                 <ul class="space-y-2">
-                    @foreach($this->errors['data'] as $error)
+                    @foreach($errorData as $error)
                         <li class="flex items-center text-slate-300 text-sm">
                             <span class="mr-2">•</span>
                             {{ $error }}

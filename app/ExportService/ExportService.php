@@ -10,22 +10,14 @@ use Illuminate\Support\Facades\Storage;
 
 class ExportService
 {
-    /**
-     * @var \App\Utils\Response|mixed|object
-     */
-    private mixed $mapper;
-    /**
-     * @var \App\Utils\Response|mixed|object
-     */
-    private mixed $config;
 
-    public function handleExport($images, $format)
+    public static function handleExport($images, $format)
     {
-        $this->mapper = ExportComponentFactory::createMapper($format);
+        $mapper = ExportComponentFactory::createMapper($format);
 
         try {
             $datasetFolder = uniqid('custom_dataset_build_');
-            $this->mapper->handle($images, $datasetFolder);
+            $mapper->handle($images, $datasetFolder);
 
             $absolutePath = Storage::disk('datasets')->path($datasetFolder);
             ZipManager::createZipFromFolder($absolutePath);
