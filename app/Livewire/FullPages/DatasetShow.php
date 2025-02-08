@@ -37,6 +37,7 @@ class DatasetShow extends Component
     public mixed $progress;
     public array $failedDownload = [];
     public string $downloadLink = '';
+    public string $filePath = '';
 
     #[Computed]
     public function paginatedImages()
@@ -94,20 +95,20 @@ class DatasetShow extends Component
         $images = Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->get();
         $response = ExportService::handleExport($images, $this->exportFormat);
         $this->exportDataset = $response->data['datasetFolder'];
-        $filePath = storage_path("app/public/datasets/{$this->exportDataset}");
+        $this->filePath = storage_path("app/public/datasets/{$this->exportDataset}");
 
-        if (!file_exists($filePath)) {
+        if (!file_exists($this->filePath)) {
             abort(404, "File not found.");
         }
 
-        $fileSize = filesize($filePath);
+        $fileSize = filesize($this->filePath);
         $chunkSize = 1024 * 1024; // 1MB per chunk
         $bytesSent = 0;
 
         $this->progress = 0; // Reset progress when starting the download
 
-        return response()->stream(function () use ($filePath, $chunkSize, &$bytesSent, $fileSize) {
-            $handle = fopen($filePath, 'rb');
+        return response()->stream(function () use ($chunkSize, &$bytesSent, $fileSize) {
+            $handle = fopen($this->filePath, 'rb');
 
             while (!feof($handle)) {
                 $chunk = fread($handle, $chunkSize);
@@ -116,11 +117,11 @@ class DatasetShow extends Component
                 $bytesSent += $chunkSize;
                 // Update the progress in session
                 $this->progress = round(($bytesSent / $fileSize) * 100, 2);
-                session()->put("download_progress_{$filePath}", $this->progress);
+                session()->put("download_progress_{$this->filePath}", $this->progress);
             }
 
             fclose($handle);
-            session()->forget("download_progress_{$filePath}");
+            session()->forget("download_progress_{$this->filePath}");
         }, 200, [
             "Content-Type" => "application/zip",
             "Content-Length" => $fileSize,

@@ -1,6 +1,5 @@
-<div x-data="{
-        open: '',
-     }"
+<div
+     x-data="datasetShow(@this)"
      class="container mx-auto pt-3">
 
     <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"/>
@@ -39,14 +38,16 @@
                 </x-dataset.dataset-errors>
             @endif
             <!-- Added Download Button -->
-            <button wire:click="startDownload"
+            <button wire:click="startDownload" id="download-btn"
                     class="w-64 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
                 <x-eva-download class="w-4 h-4"/>
                 Download
             </button>
-            <div wire:poll.1500ms="updateProgress"> <!-- Poll every 500ms -->
+            {{--<div wire:poll.1500ms="updateProgress"> <!-- Poll every 500ms -->
                 <span>{{ $this->progress ?? null }}</span>
-            </div>
+            </div>--}}
+            <x-download-progress :filePath="$this->exportDataset"></x-download-progress>
+
         </div>
     </x-modals.fixed-modal>
     <div class=" mb-5 bg-slate-900/50">
@@ -95,3 +96,37 @@
     </div>
     <x-containers.images-container :images="$this->paginatedImages"/>
 </div>
+
+
+
+@script
+<script>
+    Alpine.data('datasetShow', (livewireComponent, filePath) =>({
+        open: '',
+        filePath: filePath,
+        init() {
+            console.log('Dataset Show Component Initialized', this.filePath);
+
+            /*document.getElementById('download-btn').addEventListener('click', () => { // ✅ Arrow function keeps `this`
+                console.log('Download button clicked', this.filePath);
+                setTimeout(() => this.checkProgress(), 2000);
+            });*/
+        },
+        checkProgress() {
+            console.log("Inside checkProgress", this.filePath);
+            //fetch('/download/progress?filePath={{ storage_path("app/public/datasets/{$this->exportDataset}") }}')
+            fetch('/download/progress?filePath='+this.filePath)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Inside fetch",data);
+                    document.getElementById('progress-bar').value = data.progress;
+                    document.getElementById('progress-text').innerText = data.progress + '%';
+                    if (data.progress < 100) {
+                        setTimeout(this.checkProgress, 1000);
+                    }
+                });
+        }
+    }));
+
+</script>
+@endscript

@@ -1,4 +1,5 @@
-<div class="container mx-auto px-4 py-4">
+<div x-data="datasetsStage(@this)"
+     class="container mx-auto py-4">
     <div class="space-y-3">
         @forelse($this->datasets as $dataset)
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
@@ -23,39 +24,41 @@
 
                     <!-- Main Content -->
                     <div class="flex-1 min-w-0">
-                        <!-- Top row with title, tag, and button -->
-                        <div class="flex items-center justify-between gap-4 mb-2">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <h3 class="text-lg font-semibold text-white truncate">{{ $dataset['display_name'] }}</h3>
-                                <span class="px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
+                        <!-- Top row with title, tag, and buttons -->
+                        <div class="flex flex-col md:flex-row justify-between gap-4 mb-2">
+                            <div class="flex flex-col md:flex-row md:items-center gap-3 flex-1 min-w-0">
+                                <div class="min-w-0">
+                                    <h3 class="text-lg font-semibold text-white truncate">{{ $dataset['display_name'] }}</h3>
+                                </div>
+                                <span class="w-fit px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
                                     {{ $dataset['annotation_technique'] }}
                                 </span>
                             </div>
-                            <div class="flex gap-3">
+                            <div class="flex flex-col md:flex-row gap-3">
                                 {{--Classes preview button--}}
                                 <div x-data="{open: false}">
                                     <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses.{{$dataset['id']}}"/>
-                                    <button @click.prevent="open = 'display-classes'"
-                                            :disabled="isChecked"
-                                            :class="[
-                                                    'flex-shrink-0',
-                                                    'px-3',
-                                                    'py-1.5',
-                                                    isChecked === true ? 'bg-slate-600 border border-slate-500 cursor-not-allowed  opacity-50' : 'bg-blue-500 hover:bg-blue-600 border border-blue-400',
-                                                    'text-sm text-slate-200',
-                                                    'rounded-lg',
-                                                    'transition-all',
-                                                    'duration-200'
+                                    <button
+                                        @click.prevent="open = 'display-classes'"
+                                        :disabled="!selectedDatasets[{{$dataset['id']}}]"
+                                        :class="[
+                                                'w-fit flex-shrink-0 px-3 py-1.5 text-sm text-slate-200 rounded-lg transition-all duration-200',
+                                                selectedDatasets[{{$dataset['id']}}]
+                                                    ? 'bg-blue-500 hover:bg-blue-600 border border-blue-400'
+                                                    : 'bg-slate-600 border border-slate-500 cursor-not-allowed opacity-50'
                                                 ]"
-                                            :title="isChecked === false ? 'Select Dataset to select classes' : ''">Select classes</button>
+                                        :title="selectedDatasets[{{$dataset['id']}}] ? '' : 'Select Dataset to select classes'">
+                                        Select classes
+                                    </button>
                                 </div>
                                 {{-- Dataset preview button--}}
                                 <a wire:navigate href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
-                                    class="flex-shrink-0 px-3 py-1.5 bg-blue-600/20 text-blue-400 text-sm rounded-lg hover:bg-blue-700/70 transition-all duration-200">
+                                   class="w-fit flex-shrink-0 px-3 py-1.5 bg-blue-600/20 text-blue-400 text-sm rounded-lg hover:bg-blue-700/70 transition-all duration-200">
                                     Preview Dataset
                                 </a>
                             </div>
                         </div>
+
 
                         <!-- Description -->
                         <p class="text-sm text-gray-400 line-clamp-2 mb-3 break-all">{{$dataset['description']}}</p>
@@ -69,7 +72,7 @@
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
                                 @foreach($dataset['categories'] as $category)
                                     <div wire:key="dataset-categories-{{ $category['id'] }}"
-                                         class="flex-shrink-0 bg-blue-500/20 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
+                                         class="flex-shrink-0 bg-blue-500/80 px-2 py-1 rounded text-sm text-blue-200 whitespace-nowrap">
                                         {{ $category['name'] }}
                                     </div>
                                 @endforeach
@@ -94,3 +97,11 @@
     </div>
     <x-images.full-screen-image/>
 </div>
+
+@script
+    <script>
+        Alpine.data('datasetsStage', (livewireComponent) => ({
+            selectedDatasets: livewireComponent.entangle('selectedDatasets')
+        }));
+    </script>
+@endscript

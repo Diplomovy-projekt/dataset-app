@@ -72,7 +72,8 @@ class DatasetBuilder extends Component
     public $skipTypes = [];
     #[Locked]
     public $datasets = [];
-    public $selectedDatasets = [];
+    public array $selectedDatasets = [
+    ];
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
@@ -177,6 +178,7 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
+        dd($this->selectedDatasets);
         // Get all selected metadata values except for skipped types
         $selectedMetadataValues = collect($this->selectedMetadataValues)
             ->filter(function ($selected, $valueId) {
