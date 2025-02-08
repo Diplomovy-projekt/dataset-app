@@ -178,7 +178,6 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
-        dd($this->selectedDatasets);
         // Get all selected metadata values except for skipped types
         $selectedMetadataValues = collect($this->selectedMetadataValues)
             ->filter(function ($selected, $valueId) {
@@ -228,8 +227,6 @@ class DatasetBuilder extends Component
 
     private function finalStage()
     {
-        //$this->images = $this->imagesQuery()->get()->toArray();
-        $ad = 5;
     }
     private function imagesQuery()
     {

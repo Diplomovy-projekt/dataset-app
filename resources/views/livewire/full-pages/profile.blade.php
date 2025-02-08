@@ -9,7 +9,7 @@
     <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <div class="flex flex-wrap sm:gap-5 pt-5">
         @forelse($datasets as $dataset)
-            <x-dataset.dataset-card :dataset="$dataset"></x-dataset-card>
+            <x-dataset.dataset-card :dataset="$dataset"></x-dataset.dataset-card>
         @empty
         @endforelse
     </div>
