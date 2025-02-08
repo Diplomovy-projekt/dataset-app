@@ -51,6 +51,9 @@ class ZipManager
         return false;
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function createZipFromFolder($folderPath)
     {
         // Initialize ZipArchive object
@@ -78,10 +81,14 @@ class ZipManager
             $relativePath = substr($filePath, strlen($folderPath) + 1);
 
             // Add file to the ZIP archive
-            $zip->addFile($filePath, $relativePath);
+            if (!$zip->addFile($filePath, $relativePath)) {
+                throw new \Exception("Failed to add file to ZIP: $filePath");
+            }
         }
 
         // Close the ZIP file
-        $zip->close();
+        if (!$zip->close()) {
+            throw new \Exception('Failed to finalize ZIP file');
+        }
     }
 }

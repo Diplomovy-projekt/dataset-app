@@ -2,22 +2,23 @@
     {{-- Dataset Header Section --}}
     <div class="bg-slate-900/50 backdrop-blur-sm rounded-lg">
         <div class="p-6">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="flex gap-3 items-center">
-                        <h2 class="text-2xl font-bold text-slate-100">
-                           {{ $this->dataset['display_name'] }}
+            <div class="flex-col justify-between items-start">
+                <div class="flex flex-col sm:flex-row sm:justify-between gap-3 items-start sm:items-center w-full">
+                    <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                        <h2 class="text-2xl font-bold text-slate-100 truncate flex-shrink min-w-0">
+                            {{ $this->dataset['display_name'] }}
                         </h2>
                         <span class="flex-shrink-0 grow-0 px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $this->dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
                             {{ $this->dataset['annotation_technique'] }}
                         </span>
                     </div>
-                    <p class="mt-2 text-sm text-slate-400 max-w-2xl">
-                        {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
-                    </p>
+                    <x-dataset.dataset-stats :stats="$this->dataset['stats']" class="px-4 py-2 text-xl"/>
                 </div>
+
                 {{-- Statistics --}}
-                <x-dataset.dataset-stats :stats="$this->dataset['stats']" class="px-4 py-2 text-xl"/>
+                <p class="mt-2 text-sm text-slate-400 max-w-2xl">
+                    {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
+                </p>
             </div>
 
             {{-- Categories --}}

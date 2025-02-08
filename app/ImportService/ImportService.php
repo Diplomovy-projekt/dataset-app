@@ -55,7 +55,7 @@ class ImportService
             if (!$savedToDb->isSuccessful()) {
                 throw new DatasetImportException($savedToDb->message);
             }
-            throw new DatasetImportException(message: "Failed to save dataset to database");
+
             // Move images to public storage
             $imagesMoved = $this->moveImagesToPublicDataset(
                 sourceFolder: $requestData['unique_name'],

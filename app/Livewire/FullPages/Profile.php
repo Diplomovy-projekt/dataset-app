@@ -2,11 +2,13 @@
 
 namespace App\Livewire\FullPages;
 
+use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
 use App\DatasetCrud\DatasetCrud;
 use App\ExportService\ExportService;
 use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
+use App\Jobs\DeleteTempFile;
 use App\Models\Dataset;
 use App\Utils\QueryUtil;
 use Livewire\Component;

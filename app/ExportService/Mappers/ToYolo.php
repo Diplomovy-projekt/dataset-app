@@ -32,9 +32,6 @@ class ToYolo extends BaseMapper
         });
 
         $yamlData = [
-            'train' => 'images/train',
-            'val' => 'images/val',
-            'test' => 'images/test', // Optional
             'nc' => count($this->classMap),
             'names' => array_column($this->classMap, 'name'),
         ];

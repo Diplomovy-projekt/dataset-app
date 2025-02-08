@@ -16,11 +16,16 @@ class ExportService
         $mapper = ExportComponentFactory::createMapper($format);
 
         try {
+            //1. Create and map the dataset folder
             $datasetFolder = uniqid('custom_dataset_build_');
             $mapper->handle($images, $datasetFolder);
 
+            //2. Create a zip file from the dataset folder
             $absolutePath = Storage::disk('datasets')->path($datasetFolder);
             ZipManager::createZipFromFolder($absolutePath);
+
+            //3. Delete the dataset folder
+            Storage::disk('datasets')->deleteDirectory($datasetFolder);
 
             return Response::success(data: ['datasetFolder' => $datasetFolder.'.zip']);
         }catch (\Exception $e) {
