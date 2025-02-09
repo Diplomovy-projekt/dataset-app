@@ -1,12 +1,12 @@
 @props([
     'stageIndex',
-    'stageTitle',
     'currentStage',
     'completedStages' => [],
     'stageData'
 ])
 
 <div class="rounded-lg {{ $currentStage == $stageIndex ? 'mb-2' : 'mb-0' }} ">
+    {{--Header part, showed even when locked --}}
     <div class=" rounded-t-lg p-4 py-5 {{ $currentStage == $stageIndex ? 'pb-1 border-x border-t border-gray-700' : 'border border-gray-700' }} bg-gray-900">
         <h3 class="flex font-bold {{ $currentStage == $stageIndex ? 'text-gray-200 text-2xl' : 'text-gray-500 text-base' }}">
             @if(in_array($stageIndex, $completedStages))
@@ -19,12 +19,15 @@
     </div>
 
     @if($currentStage == $stageIndex)
-        <div class="p-4 pt-1 shadow-md bg-gray-900 rounded-b-lg border-x border-b border-gray-700">
+        <div class="p-1 sm:p-4 pt-1 shadow-md bg-gray-900 rounded-b-lg border-x border-b border-gray-700">
             <hr class="border border-gray-700">
             <p class="text-gray-400 pb-4">{{ $stageData[$stageIndex]['description'] ?? " " }}</p>
+            {{--MAIN SLOT CONTENT--}}
             {{ $slot }}
 
             <hr class="border border-gray-700 mt-2">
+
+            {{--BOTTOM BUTTONS --}}
             <div wire:loading.class="opacity-50 cursor-not-allowed"
                  wire:loading.attr="disabled"
                  wire:target="previousStage,nextStage"
@@ -36,7 +39,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50"
                                 wire:target="previousStage,nextStage"
-                                class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex">
+                                class="bg-gray-300 text-black pr-4 pl-2 py-2 rounded-lg flex transition-colors duration-300 hover:bg-gray-400">
                             <x-bi-arrow-up-circle class="w-6 h-6 pr-1" />
                             Previous Stage
                         </button>
@@ -60,7 +63,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50"
                                 wire:target="previousStage,nextStage"
-                                class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex">
+                                class="bg-blue-500 text-white pr-4 pl-2 py-2 rounded-lg flex transition-colors duration-300 hover:bg-blue-600">
                             <x-bi-arrow-down-circle class="w-6 h-6 pr-1"/>
                             Next Stage
                         </button>

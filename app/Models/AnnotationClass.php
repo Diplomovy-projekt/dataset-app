@@ -13,6 +13,7 @@ class AnnotationClass extends Model
 
     protected $fillable = [
         'dataset_id',
+        'rgb',
         'name',
         'supercategory'
     ];

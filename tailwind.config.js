@@ -24,7 +24,7 @@ export default {
                 'sm': '576px',   // sm breakpoint
                 'md': '768px',   // md breakpoint
                 'lg': '992px',   // lg breakpoint
-                'xl': '1200px',  // xl breakpoint
+                'xl': '1140px',  // xl breakpoint
             },
             container: {
                 center: true, // Centers the container

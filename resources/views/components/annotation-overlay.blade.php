@@ -1,8 +1,8 @@
 @props([
     'image',
 ])
-@if(isset($image) && !empty($image))
-    <svg id="svg-{{$image['filename']}}" width="100%" height="100%" viewBox="0 0 {{$image['viewDims']['width']}} {{$image['viewDims']['height']}}"
+@if(!empty($image))
+    <svg id="svg-{{$image['filename']}}" width="100%" height="100%" viewBox="0 0 {{$image['width']}} {{$image['height']}}"
          class="absolute top-0 left-0 w-full h-full pointer-events-none"
          preserveAspectRatio="xMidYMid slice">
         <defs>
@@ -38,7 +38,7 @@
                          annotation-class="{{$annotation['class']['id']}}"
                          points="{{ $annotation['polygonString'] }}"
                          fill="transparent"
-                         stroke="{{ $annotation['class']['color']['stroke'] }}"
+                         stroke="{{ $annotation['class']['rgb'] }}"
                          stroke-width="{{$image['strokeWidth']}}"
                          opacity="1"
                          closed="true"
@@ -51,7 +51,7 @@
                       width="{{ $annotation['bbox']['width'] }}"
                       height="{{ $annotation['bbox']['height'] }}"
                       fill="transparent"
-                      stroke="{{ $annotation['class']['color']['stroke'] }}"
+                      stroke="{{ $annotation['class']['rgb'] }}"
                       stroke-width="{{$image['strokeWidth']}}"
                       opacity="1"
                 />

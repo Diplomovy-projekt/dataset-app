@@ -36,7 +36,7 @@ class UploadDataset extends Component
     public $description;
 
     # Chunked upload
-    public $chunkSize = 1000000;//20000000; // 20 MB
+    public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE;
     public $fileChunk;
     public $displayName;
     public $uniqueName;
@@ -63,12 +63,11 @@ class UploadDataset extends Component
     public function finishImport(ZipManager $zipManager)
     {
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
-
         $payload = [
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $this->selectedFormat,
-            'metadata' => $this->selectedMetadata,
+            'metadata' => array_merge(...array_column($this->selectedMetadata, 'metadataValues')),
             'technique' => $this->selectedTechnique,
             'categories' => $this->selectedCategories,
             'description' => $this->description,

@@ -29,4 +29,7 @@ class AppConfig
     public const CLASS_IMG_FOLDER = 'class-images/';
     public const CLASS_SAMPLE_PREFIX = 'sample_';
     public const SAMPLES_COUNT = 3;
+    public const UPLOAD_CHUNK_SIZE = 20000000.; // 1MB
+    public const PLACEHOLDER_IMG = 'placeholder-image.png';
+    public const PER_PAGE = 25;
 }

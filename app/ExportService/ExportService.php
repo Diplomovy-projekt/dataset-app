@@ -2,7 +2,40 @@
 
 namespace App\ExportService;
 
+use App\Configs\AppConfig;
+use App\ExportService\Factory\ExportComponentFactory;
+use App\FileManagement\ZipManager;
+use App\Utils\Response;
+use Illuminate\Support\Facades\Storage;
+
 class ExportService
 {
 
+    public static function handleExport($images, $format)
+    {
+        $mapper = ExportComponentFactory::createMapper($format);
+
+        try {
+            //1. Create and map the dataset folder
+            $datasetFolder = uniqid('custom_dataset_build_');
+            $mapper->handle($images, $datasetFolder);
+
+            //2. Create a zip file from the dataset folder
+            $absolutePath = Storage::disk('datasets')->path($datasetFolder);
+            ZipManager::createZipFromFolder($absolutePath);
+
+            //3. Delete the dataset folder
+            Storage::disk('datasets')->deleteDirectory($datasetFolder);
+
+            return Response::success(data: ['datasetFolder' => $datasetFolder.'.zip']);
+        }catch (\Exception $e) {
+            if(Storage::disk('datasets')->exists($datasetFolder)) {
+                Storage::disk('datasets')->deleteDirectory($datasetFolder);
+            }
+            if(Storage::disk('datasets')->exists($datasetFolder.'.zip')) {
+                Storage::disk('datasets')->delete($datasetFolder.'.zip');
+            }
+            return Response::error("An error occurred while exporting the dataset: " . $e->getMessage());
+        }
+    }
 }

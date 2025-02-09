@@ -35,6 +35,7 @@ class DatasetMetadata extends Model
             })
             ->with(['metadataValue.metadataType']) // Load related metadataType
             ->get()
+            ->unique(fn($datasetMetadata) => $datasetMetadata->metadataValue->id)
             ->groupBy(fn($datasetMetadata) => $datasetMetadata->metadataValue->metadataType->name)
             ->map(function ($group, $metadataTypeName) {
                 return [

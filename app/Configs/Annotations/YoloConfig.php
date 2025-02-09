@@ -17,7 +17,8 @@ class YoloConfig
      *     └── annotation2.txt
      */
     public const DATA_YAML = 'data.yaml';
-    public const TXT_EXTENSION = 'txt';
+    public const LABEL_EXTENSION = 'txt';
     public const IMAGE_FOLDER = 'images';
     public const LABELS_FOLDER = 'labels';
+
 }

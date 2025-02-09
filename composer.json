@@ -25,7 +25,8 @@
         "livewire/volt": "^1.0",
         "mansoor/blade-lets-icons": "^1.0",
         "postare/blade-mdi": "^1.1",
-        "robsontenorio/mary": "^1.40"
+        "robsontenorio/mary": "^1.40",
+        "symfony/yaml": "^7.2"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "*",

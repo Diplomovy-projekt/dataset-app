@@ -82,4 +82,16 @@ class Dataset extends Model
         }
         $this->save();
     }
+    public function getStats()
+    {
+        // Get the number of annotations, images and classes
+        $numAnnotations = $this->annotations()->count();
+        $numImages = $this->num_images;
+        $numClasses = $this->classes()->count();
+        return [
+            'numAnnotations' => $numAnnotations,
+            'numImages' => $numImages,
+            'numClasses' => $numClasses,
+        ];
+    }
 }

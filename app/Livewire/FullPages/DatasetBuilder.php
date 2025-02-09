@@ -2,44 +2,119 @@
 
 namespace App\Livewire\FullPages;
 
+use App\Configs\AppConfig;
+use App\DatasetActions\DatasetActions;
+use App\ExportService\ExportService;
+use App\ImageService\ImageRendering;
+use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
-use App\Models\MetadataType;
+use App\Models\Image;
 use App\Models\MetadataValue;
+use App\Utils\QueryUtil;
+use App\Utils\Util;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class DatasetBuilder extends Component
 {
-    public $currentStage = 0;
+    use ImageRendering, WithPagination;
+    #[Locked]
+    public $currentStage = 3;
+    #[Locked]
     public $completedStages = [];
+    #[Locked]
     public $stageData = [
-        1 => ['title' => 'Select Categories', 'description' => 'Choose the categories relevant to your dataset for this project.'],
-        2 => ['title' => 'Dataset Origin', 'description' => 'Specify the source or origin of the dataset you want to use.'],
-        3 => ['title' => 'Datasets Selection', 'description' => 'Select the specific datasets required for your project.'],
-        4 => ['title' => 'Classes Selection', 'description' => 'Define the classes or labels applicable to your dataset.'],
-        5 => ['title' => 'Final Selection', 'description' => 'Review and confirm your selections before proceeding.'],
-        6 => ['title' => 'Download', 'description' => 'Download the final prepared dataset for your project.'],
+        1 => [
+            'title' => 'Select Categories',
+            'description' => 'Choose the categories relevant to your dataset for this project.',
+            'component' => 'builder.categories-stage',
+            'method' => 'categoriesStage',
+        ],
+        2 => [
+            'title' => 'Dataset Origin',
+            'description' => 'Specify the source or origin of the dataset you want to use.',
+            'component' => 'builder.origin-stage',
+            'method' => 'originStage',
+        ],
+        3 => [
+            'title' => 'Datasets Selection',
+            'description' => 'Select the specific datasets required for your project.',
+            'component' => 'builder.datasets-stage',
+            'method' => 'datasetsStage',
+        ],
+        4 => [
+            'title' => 'Final Selection',
+            'description' => 'Select any images that you wish to EXCLUDE from your final dataset',
+            'component' => 'builder.final-stage',
+            'method' => 'finalStage',
+        ],
+        5 => [
+            'title' => 'Download',
+            'description' => 'Download the final prepared dataset for your project.',
+            'component' => 'builder.download-stage',
+            'method' => 'downloadFilter',
+        ],
     ];
 
+
+    #[Locked]
     public $categories = [];
     public $selectedCategories = [];
-
-    public $originData = [];
-    public $selectedOriginData = [];
+    #[Locked]
+    public $metadataValues = [];
+    public $selectedMetadataValues = [];
     public $skipTypes = [];
-
+    #[Locked]
     public $datasets = [];
-    public $selectedDatasets = [];
-
-    public $classes = [];
+    public array $selectedDatasets = [
+    ];
     public $selectedClasses = [];
+    private $images = [];
+    public $selectedImages = [];
+    #[Validate('required')]
+    public $exportFormat = '';
+    public $availableFormats = [];
+    public $finalDataset = [
+        'stats' => [],
+        'metadataValues' => [],
+        'categories' => [],
+    ];
+    public $failedDownload = [];
+    #[Computed]
+    public function paginatedImages()
+    {
+        $images = $this->imagesQuery()->paginate(AppConfig::PER_PAGE);
+        return $this->prepareImagesForSvgRendering($images);
+    }
+    #[On('add-selected')]
+    public function receiveSelected($selectedClasses, $datasetId)
+    {
+        //$this->selectedClasses = $this->selectedClasses + $selectedClasses;
+        $this->selectedClasses[$datasetId] = $selectedClasses;
 
-    public $finalSelection = [];
-    public $selectedFinalSelection = [];
-
+    }
     public function render()
     {
+        //$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
+        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
+            ->orderBy('id', 'desc')
+            ->limit(6) // Get only the last two
+            ->get();
+
+        foreach ($this->datasets as $dataset) {
+            $dataset->stats = $dataset->getStats();
+            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
+            $dataset->image = $dataset->image->toArray();
+        }
+        $this->datasets = $this->datasets->toArray();
+        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -60,93 +135,178 @@ class DatasetBuilder extends Component
         }
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function applyStageFilters()
     {
-        switch ($this->currentStage){
-            case 1:
-                $this->categoriesFilter();
-                break;
-            case 2:
-                $this->originDataFilter();
-                break;
-            case 3:
-                $this->datasetsFilter();
-                break;
-            case 4:
-                $this->classesFilter();
-                break;
-            case 5:
-                $this->finalSelectionFilter();
-                break;
-            case 6:
-                $this->downloadFilter();
-                break;
+        $stageDetails = $this->stageData[$this->currentStage] ?? null;
+
+        if ($stageDetails && method_exists($this, $stageDetails['method'])) {
+            //$this->{$stageDetails['method']}();
+            $method = $stageDetails['method'];
+
+            // Resolve method dependencies
+            $reflection = new \ReflectionMethod($this, $method);
+            $parameters = $reflection->getParameters();
+            $dependencies = array_map(fn($param) => app($param->getType()?->getName()), $parameters);
+
+            $this->{$method}(...$dependencies);
         }
     }
 
-    private function categoriesFilter()
+    private function categoriesStage()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();
+        $this->categories = $this->categories->map(function ($category) {
+            $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
+            $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'image' => $image->toArray(),
+            ];
+        })->toArray();
     }
 
-    private function originDataFilter()
+    private function originStage()
     {
-        $this->originData = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
+        $this->metadataValues = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
     }
 
-    private function datasetsFilter()
+    public function updatedSkipTypes()
     {
-        $query = Dataset::with(['classes', 'datasetMetadata.metadataValue']);
-        $this->selectedOriginData = array_map(function($el){
-            return json_decode($el);
-        }, $this->selectedOriginData);
-
-
+        $this->datasetsStage();
+    }
+    public function updatedSelectedMetadataValues()
+    {
+        $this->datasetsStage();
+    }
+    private function datasetsStage()
+    {
         // Get all selected metadata values except for skipped types
-        $selectedMetadataValues = collect($this->selectedOriginData)
+        $selectedMetadataValues = collect($this->selectedMetadataValues)
             ->filter(function ($selected, $valueId) {
-                // Get metadata value and its type
                 $value = MetadataValue::find($valueId);
-                $typeName = $value->metadataType->name;
+                $typeId = $value->metadataType->id;
 
                 // Only include if type is not skipped and value is selected
-                return !($this->skipTypes[$typeName] ?? false) && $selected;
+                return !in_array($typeId, $this->skipTypes);
             })
-            ->keys();
+            ->map(fn($encodedValue) => json_decode($encodedValue));;
 
-        // If there are any valid selected metadata values, filter datasets by them
-        if ($selectedMetadataValues->isNotEmpty()) {
-            $datasetIds = DatasetMetadata::whereIn('metadata_value_id', $selectedMetadataValues)
+        // Separate metadata values into include and exclude groups
+        $groupedMetadata = [
+            'include' => $selectedMetadataValues->filter()->keys()->all(),
+            'exclude' => $selectedMetadataValues->reject()->keys()->all(),
+        ];
+
+        // Include datasets with all `include` metadata IDs
+        $query = DatasetMetadata::query();
+        if (!empty($groupedMetadata['include'])) {
+            $query->whereIn('metadata_value_id', $groupedMetadata['include'])
+                ->select('dataset_id')
                 ->groupBy('dataset_id')
-                ->havingRaw('COUNT(DISTINCT metadata_value_id) = ?', [$selectedMetadataValues->count()])
-                ->pluck('dataset_id');
-
-            // Only apply the filter if valid dataset IDs were found
-            if ($datasetIds->isNotEmpty()) {
-                $query->whereIn('id', $datasetIds);
-            }
+                ->havingRaw('COUNT(DISTINCT metadata_value_id) = ?', [count($groupedMetadata['include'])]);
         }
 
-        // Apply category filter if categories are selected
-        if (!empty($this->selectedCategories)) {
-            $query->whereIn('category_id', $this->selectedCategories);
+        if (!empty($groupedMetadata['exclude'])) {
+            $query->whereNotIn('dataset_id', function ($subquery) use ($groupedMetadata) {
+                $subquery->select('dataset_id')
+                    ->from('dataset_metadata')
+                    ->whereIn('metadata_value_id', $groupedMetadata['exclude']);
+            });
+        }
+        $datasetMetadataIds = $query->pluck('dataset_id');
+        $datasetCategoryIds = DatasetCategory::whereIn('category_id', $this->selectedCategories)->pluck('dataset_id as id');
+        $matchingDatasetIds = $query->getQuery()->wheres ? $datasetMetadataIds->intersect($datasetCategoryIds) : $datasetCategoryIds;
+
+        $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues', 'categories'])->get();
+
+        foreach ($this->datasets as $dataset) {
+            $dataset->stats = $dataset->getStats();
+            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
+        }
+        $this->datasets = $this->datasets->toArray();
+        $this->selectedImages = [];
+    }
+
+    private function finalStage()
+    {
+        $this->finalDataset['stats'] = $this->getCustomStats();
+    }
+    private function imagesQuery()
+    {
+        $classIds = $this->getSelectedClassesForSelectedDatasets();
+
+        return Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
+            ->whereNotIn('id', $this->selectedImages ?? [])
+            // Only include images that has annotations with selected classes
+            ->whereHas('annotations.class', function ($query) use ($classIds) {
+                $query->whereIn('id', $classIds);
+            })
+            // Include only annotations with selected classes for the images
+            ->with(['annotations' => function ($query) use ($classIds) {
+                $query->whereIn('annotation_class_id', $classIds);
+            }, 'annotations.class']);
+    }
+
+    private function downloadFilter(ExportService $exportService)
+    {
+        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
+        $this->images = $this->imagesQuery()->get()->toArray();
+
+        $this->finalDataset['stats'] = $this->getCustomStats();
+        $datasetIds = array_keys($this->selectedDatasets);
+        $this->finalDataset['categories'] = Category::whereIn('id', function ($query) use ($datasetIds) {
+            $query->select('category_id')
+                ->from('dataset_categories')
+                ->whereIn('dataset_id', $datasetIds);
+        })->get(['id', 'name'])->toArray();
+
+        $this->finalDataset['metadataValues'] = MetadataValue::whereIn('id', function ($query) use ($datasetIds) {
+            $query->select('metadata_value_id')
+                ->from('dataset_metadata')
+                ->whereIn('dataset_id', $datasetIds);
+        })->get(['id', 'value'])->toArray();
+    }
+
+    public function downloadCustomDataset()
+    {
+        $this->validate();
+        $this->images = $this->imagesQuery()->get()->toArray();
+
+        // Export the dataset
+        $response = ExportService::handleExport($this->images, $this->exportFormat);
+        if(!$response->isSuccessful()) {
+            $this->failedDownload['message'] = $response->getMessage();
+            $this->failedDownload['data'] = $response->getData();
+        } else {
+            return response()->streamDownload(function () use ($response) {
+                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
+            }, $response->data['datasetFolder']);
         }
 
-        // Execute the query and assign the results to the datasets property
-        $this->datasets = $query->get();
     }
 
-    private function classesFilter()
+    private function getSelectedClassesForSelectedDatasets(): array
     {
-        dd($this->selectedDatasets);
+        $eligiblePerDataset = array_intersect_key($this->selectedClasses, $this->selectedDatasets);
+        // Flatten the arrays and merge them
+        $classIds = [];
+        foreach($eligiblePerDataset as $datasetId => $classes) {
+            $classIds = $classIds + array_filter($classes);
+        }
+        return array_keys($classIds);
     }
 
-    private function finalSelectionFilter()
+    private function getCustomStats()
     {
+        $images = $this->imagesQuery()->get()->toArray();
+        return [
+            'numImages' => count($images),
+            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
+            'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $images)),
+        ];
     }
-
-    private function downloadFilter()
-    {
-    }
-
 }

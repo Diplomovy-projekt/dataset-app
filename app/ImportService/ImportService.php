@@ -79,7 +79,7 @@ class ImportService
             }
 
             DB::commit();
-            return Response::success("Dataset imported successfully");
+            return Response::success();
         } catch (DatasetImportException $e){
             $this->strategy->handleRollback($requestData);
             return Response::error($e->getMessage(), $e->getData());

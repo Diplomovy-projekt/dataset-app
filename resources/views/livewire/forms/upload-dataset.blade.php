@@ -26,7 +26,10 @@
                     <p class="text-sm font-medium text-gray-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
                 </div>
                 @if($errors)
-                    <x-dataset-errors></x-dataset-errors>
+                    <x-dataset.dataset-errors
+                        :errorMessage="$this->errors['message']"
+                        :errorData="$this->errors['data']">
+                    </x-dataset.dataset-errors>
                 @endif
 
                 <span x-text="lock ? 'Uploading...' : ''"></span>

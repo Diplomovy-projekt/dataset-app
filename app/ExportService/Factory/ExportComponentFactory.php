@@ -1,30 +1,11 @@
 <?php
 
-namespace App\ImportService;
+namespace App\ExportService\Factory;
 
 use App\Utils\Response;
-use Exception;
 
-class ImportComponentFactory {
-    public static function createValidator(string $format, string $type): object
-    {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
-        $type = ucfirst(strtolower($type)) . 'Validator';
-
-        // Determine the namespace based on the type
-        $namespace = "App\\ImportService\\Validators";
-
-        // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}\\{$classBaseName}{$type}";
-
-        // Check if the class exists
-        if (!class_exists($className)) {
-            return Response::error("Validator {$className} does not exist.");
-        }
-
-        return new $className();
-    }
+class ExportComponentFactory
+{
 
     public static function createMapper(string $format): object
     {
@@ -32,14 +13,14 @@ class ImportComponentFactory {
         $classBaseName = ucfirst(strtolower($format));
 
         // Determine the namespace for the mapper
-        $namespace = "App\\ImportService\\Mappers";
+        $namespace = "App\\ExportService\\Mappers";
 
         // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}Mapper";
+        $className = "{$namespace}\\To{$classBaseName}";
 
         // Check if the class exists
         if (!class_exists($className)) {
-            return Response::error("Mapper {$className} does not exist.");
+            return Response::error("Mappers {$className} does not exist.");
         }
 
         return new $className();

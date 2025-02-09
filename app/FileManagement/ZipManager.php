@@ -5,11 +5,13 @@ namespace App\FileManagement;
 use App\Configs\AppConfig;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ZipArchive;
 
 class ZipManager
 {
-    public function processZipFile($file): Response
+    public  function processZipFile($file): Response
     {
         if (!$file->getClientOriginalExtension() == 'zip') {
             return Response::error('Invalid file format. Please upload a zip file.');
@@ -49,4 +51,44 @@ class ZipManager
         return false;
     }
 
+    /**
+     * @throws \Exception
+     */
+    public static function createZipFromFolder($folderPath)
+    {
+        // Initialize ZipArchive object
+        $zip = new ZipArchive();
+        $zipPath = $folderPath . '.zip';
+        // Open the ZIP file for writing
+        if ($zip->open($zipPath , ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new \Exception('Failed to create ZIP file');
+        }
+
+        // Recursively add files from the folder
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($folderPath),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($iterator as $file) {
+            // Skip directories
+            if ($file->isDir()) {
+                continue;
+            }
+
+            // Get the file path relative to the folder
+            $filePath = $file->getRealPath();
+            $relativePath = substr($filePath, strlen($folderPath) + 1);
+
+            // Add file to the ZIP archive
+            if (!$zip->addFile($filePath, $relativePath)) {
+                throw new \Exception("Failed to add file to ZIP: $filePath");
+            }
+        }
+
+        // Close the ZIP file
+        if (!$zip->close()) {
+            throw new \Exception('Failed to finalize ZIP file');
+        }
+    }
 }

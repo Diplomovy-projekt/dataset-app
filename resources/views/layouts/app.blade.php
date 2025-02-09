@@ -26,7 +26,7 @@
         <div class="container mx-auto">
             <div class="flex justify-between items-center">
                 <div>
-                    <p>&copy; 2021 Dataset App. All Rights Reserved.</p>
+                    <p>&copy; 2025 Dataset Builder.</p>
                 </div>
                 <div>
                     <a href="#" class="text-white hover:text-gray-200">Privacy Policy</a>

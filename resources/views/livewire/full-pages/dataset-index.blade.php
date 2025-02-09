@@ -8,7 +8,7 @@
         <!-- Dataset Card Container -->
         <div class="flex flex-wrap sm:gap-5 pt-5">
             @foreach($datasets as $dataset)
-                <x-dataset-card :dataset="$dataset"></x-dataset-card>
+                <x-dataset.dataset-card :dataset="$dataset"></x-dataset-card>
             @endforeach
         </div>
     </div>

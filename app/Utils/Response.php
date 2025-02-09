@@ -20,6 +20,10 @@ class Response
     {
         return $this->success === true;
     }
+    public function getMessage()
+    {
+        return $this->message;
+    }
 
     public static function success($message = null, $data = null): Response
     {
@@ -29,5 +33,10 @@ class Response
     public static function error($message = null, $data = null): Response
     {
         return new self(false, $message, $data);
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 }

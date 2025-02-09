@@ -1,7 +1,6 @@
 window.addEventListener('alpine:init', ()=>{
     Alpine.data('chunkedUpload', (livewireComponent) => ({
         progress: 0,
-        isUploading: false,
         lock: livewireComponent.entangle('lockUpload'),
         get progressFormatted() {
             return this.progress.toFixed(2) + '%';
@@ -9,7 +8,7 @@ window.addEventListener('alpine:init', ()=>{
 
         uploadChunks() {
             // Prevent multiple uploads
-            if (this.isUploading) {
+            if (this.lock) {
                 console.log('Upload already in progress');
                 return;
             }
@@ -18,15 +17,15 @@ window.addEventListener('alpine:init', ()=>{
             if (fileInput.files[0]) {
                 const file = fileInput.files[0];
                 this.progress = 0;
-                this.isUploading = true; // Set upload state to true
 
-                livewireComponent.$set('fileSize', file.size, true);
-                livewireComponent.$set('displayName', file.name, true);
-                livewireComponent.$set('uniqueName', this.generateUUIDv7() + '.' + file.name.split('.').pop(), true);
+                livewireComponent.$set('fileSize', file.size);
+                livewireComponent.$set('displayName', file.name);
+                livewireComponent.$set('uniqueName', this.generateUUIDv7() + '.' + file.name.split('.').pop());
+                livewireComponent.$set('lockUpload', true);
 
                 this.livewireUploadChunk(file, 0).catch(() => {
                     // Handle any errors that occur during upload
-                    this.isUploading = false;
+                    this.lock = false;
                     this.progress = 0;
                 });
             }
@@ -44,10 +43,13 @@ window.addEventListener('alpine:init', ()=>{
                     livewireComponent.$upload(
                         'fileChunk',
                         chunkFile,
-                        () => resolve(), // finish
+                        (resolve) => {
+                            console.error('Resolve:', resolve);
+                            livewireComponent.$set('lockUpload', false, true);
+                        },
                         (error) => {
                             console.error('Upload error:', error);
-                            this.isUploading = false; // Reset on error
+                            livewireComponent.$set('lockUpload', false);
                             reject(error);
                         },
                         (event) => {
@@ -65,7 +67,7 @@ window.addEventListener('alpine:init', ()=>{
                     );
                 });
             } catch (error) {
-                this.isUploading = false;
+                this.lock = false;
                 throw error;
             }
         },
