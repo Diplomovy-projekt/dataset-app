@@ -1,4 +1,4 @@
-<div x-data="{ navLinks: false }" class="bg-hcportal-primary drop-shadow-md opacity-100 relative z-40">
+<div x-data="{ navLinks: false }" class="bg-hcportal-primary drop-shadow-md opacity-100 relative z-20">
     <nav class="container border-gray-200 h-[105px]">
         <div class="flex flex-wrap items-center justify-between mx-auto mt-3">
             <a href="{{route('welcome')}}" class="flex items-center gap-5">

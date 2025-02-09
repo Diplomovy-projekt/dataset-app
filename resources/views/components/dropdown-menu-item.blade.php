@@ -5,13 +5,13 @@
 ])
 
 @php
-    $classes = 'z-50 flex items-center w-full px-4 py-2 text-sm leading-5 text-left transition duration-150 ease-in-out ' .
+    $classes = ' flex items-center w-full px-4 py-2 text-sm leading-5 text-left transition duration-150 ease-in-out ' .
                ($danger
                    ? 'text-red-600 hover:bg-red-400/30'
                    : 'text-gray-300 hover:bg-gray-800') .
                ($href ? ' block' : '');
 @endphp
-<div class="z-50 relative">
+<div class=" relative">
     @if ($href)
         <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
             @if ($icon)
