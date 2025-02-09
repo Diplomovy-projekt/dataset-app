@@ -3,7 +3,7 @@
     'buttonText' => null // Default to 3 dots if not provided
 ])
 
-<div x-data="{openDropdown: false}" class="relative z-20">
+<div x-data="{openDropdown: false}" class="relative">
     <!-- Trigger Button -->
     <button
         @click="openDropdown = !openDropdown"
@@ -26,7 +26,7 @@
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="transform opacity-100 scale-100"
          x-transition:leave-end="transform opacity-0 scale-95"
-         class="absolute  w-60 mt-2
+         class="absolute z-20 w-60 mt-2
             @if ($direction == 'right') start-1/2
             @elseif ($direction == 'left') end-1/2
             @elseif ($direction == 'top-left') left-0 bottom-full mb-2

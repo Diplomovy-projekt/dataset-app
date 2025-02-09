@@ -5,9 +5,9 @@
      x-transition:leave="transition-opacity ease-in duration-200"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="fixed inset-0 flex items-center justify-center z-30 w-full h-full overflow-hidden bg-black bg-opacity-50 backdrop-blur-sm">
+     class="fixed inset-0 flex items-center justify-center z-50 w-full h-full overflow-hidden bg-black bg-opacity-50 backdrop-blur-sm">
     <div id="modalContent"
-         {{ $attributes->merge(['class' => 'relative z-40 text-white bg-slate-800 my-10 mx-auto max-h-[90%] overflow-auto rounded shadow-lg p-2 sm:p-5 pt-10 box-border']) }}
+         {{ $attributes->merge(['class' => 'relative z-50 text-white bg-slate-800 my-10 mx-auto max-h-[90%] overflow-auto rounded shadow-lg p-2 sm:p-5 pt-10 box-border']) }}
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="scale-50 opacity-0"
          x-transition:enter-end="scale-100 opacity-100"

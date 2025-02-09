@@ -46,8 +46,6 @@
             {{--<div wire:poll.1500ms="updateProgress"> <!-- Poll every 500ms -->
                 <span>{{ $this->progress ?? null }}</span>
             </div>--}}
-            {{--<x-download-progress :filePath="$this->exportDataset"></x-download-progress>--}}
-
         </div>
     </x-modals.fixed-modal>
     <div class=" mb-5 bg-slate-900/50">
