@@ -1,5 +1,5 @@
 <div>
-    <div class="flex flex-wrap justify-around p-4">
+    <div class="flex flex-wrap justify-around py-4">
         @foreach($this->metadataValues as $data)
             <div wire:key="origin-stage-types-{{$data['type']['id']}}"
                 class="w-80" x-data="{ skip: false }">

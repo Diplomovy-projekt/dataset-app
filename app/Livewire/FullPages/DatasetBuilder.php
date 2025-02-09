@@ -6,6 +6,7 @@ use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
 use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
+use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
@@ -80,7 +81,11 @@ class DatasetBuilder extends Component
     #[Validate('required')]
     public $exportFormat = '';
     public $availableFormats = [];
-    public $finalDataset = [];
+    public $finalDataset = [
+        'stats' => [],
+        'metadataValues' => [],
+        'categories' => [],
+    ];
     public $failedDownload = [];
     #[Computed]
     public function paginatedImages()
@@ -102,6 +107,7 @@ class DatasetBuilder extends Component
             ->orderBy('id', 'desc')
             ->limit(6) // Get only the last two
             ->get();
+
         foreach ($this->datasets as $dataset) {
             $dataset->stats = $dataset->getStats();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
@@ -227,6 +233,7 @@ class DatasetBuilder extends Component
 
     private function finalStage()
     {
+        $this->finalDataset['stats'] = $this->getCustomStats();
     }
     private function imagesQuery()
     {
@@ -249,23 +256,35 @@ class DatasetBuilder extends Component
         $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         $this->images = $this->imagesQuery()->get()->toArray();
 
-        $this->finalDataset['stats'] = [
-            'numImages' => count($this->images),
-            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
-            'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $this->images)),
-        ];
+        $this->finalDataset['stats'] = $this->getCustomStats();
+        $datasetIds = array_keys($this->selectedDatasets);
+        $this->finalDataset['categories'] = Category::whereIn('id', function ($query) use ($datasetIds) {
+            $query->select('category_id')
+                ->from('dataset_categories')
+                ->whereIn('dataset_id', $datasetIds);
+        })->get(['id', 'name'])->toArray();
+
+        $this->finalDataset['metadataValues'] = MetadataValue::whereIn('id', function ($query) use ($datasetIds) {
+            $query->select('metadata_value_id')
+                ->from('dataset_metadata')
+                ->whereIn('dataset_id', $datasetIds);
+        })->get(['id', 'value'])->toArray();
     }
 
-    public function downloadCustomDataset(DatasetActions $datasetActions)
+    public function downloadCustomDataset()
     {
         $this->validate();
         $this->images = $this->imagesQuery()->get()->toArray();
 
         // Export the dataset
-        $response = $datasetActions->downloadDataset($this->images, $this->exportFormat);
+        $response = ExportService::handleExport($this->images, $this->exportFormat);
         if(!$response->isSuccessful()) {
             $this->failedDownload['message'] = $response->getMessage();
             $this->failedDownload['data'] = $response->getData();
+        } else {
+            return response()->streamDownload(function () use ($response) {
+                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
+            }, $response->data['datasetFolder']);
         }
 
     }
@@ -279,5 +298,15 @@ class DatasetBuilder extends Component
             $classIds = $classIds + array_filter($classes);
         }
         return array_keys($classIds);
+    }
+
+    private function getCustomStats()
+    {
+        $images = $this->imagesQuery()->get()->toArray();
+        return [
+            'numImages' => count($images),
+            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
+            'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $images)),
+        ];
     }
 }

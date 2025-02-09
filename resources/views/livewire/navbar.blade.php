@@ -27,14 +27,14 @@
                  class="border md:border-0 border-gray-800 rounded-md mx-4 -mt-4 md:m-0 w-fit md:flex md:w-auto absolute md:relative top-[105px] right-0 md:top-0 md:left-auto bg-hcportal-primary md:bg-transparent p-4 md:p-0">
                 <ul class="items-start divide-y md:divide-y-0 flex flex-col md:flex-row md:space-x-8 md:items-center text-lg font-medium">
 
-                    <li class="w-full"><a wire:navigate href="{{route('builder')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0">BUILDER</a></li>
-                    <li class="w-full"><a wire:navigate href="{{route('dataset.index')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0">DATASETS</a></li>
-                    <li class="w-full"><a wire:navigate href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0">PROFILE</a></li>
+                    <li class="w-full"><a wire:navigate href="{{route('builder')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">BUILDER</a></li>
+                    <li class="w-full"><a wire:navigate href="{{route('dataset.index')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">DATASETS</a></li>
+                    <li class="w-full"><a wire:navigate href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">PROFILE</a></li>
 
                     <!-- Admin dropdown -->
                     <div x-data="{ adminSubMenu: false }" class="relative w-full">
                         <button @click="adminSubMenu = !adminSubMenu" @click.away="adminSubMenu = false"
-                                class="flex items-center py-2 pl-3 pr-4 text-white rounded md:p-0">
+                                class="flex items-center py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">
                             <span>ADMIN</span>
                             <svg class="w-4 h-4 ml-1 transition-transform duration-200" :class="{'rotate-180': adminSubMenu}"
                                  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -53,10 +53,10 @@
                     </div>
 
                     @guest
-                        <li class="w-full"><a wire:navigate href="{{route('welcome')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0">LOGIN</a></li>
+                        <li class="w-full"><a wire:navigate href="{{route('welcome')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">LOGIN</a></li>
                     @endguest
                     @auth
-                        <li class="w-full"><a href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0">PROFILE</a></li>
+                        <li class="w-full"><a href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">PROFILE</a></li>
                     @endauth
                 </ul>
             </div>
