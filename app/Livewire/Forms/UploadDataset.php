@@ -36,7 +36,7 @@ class UploadDataset extends Component
     public $description;
 
     # Chunked upload
-    public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE;
+    public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE['10MB'];
     public $fileChunk;
     public $displayName;
     public $uniqueName;

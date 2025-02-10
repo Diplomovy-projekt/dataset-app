@@ -31,7 +31,7 @@ class ExtendDataset extends Component
     public $selectedTechnique;
 
     # Chunked upload
-    public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE;
+    public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE['10MB'];
     public $fileChunk;
     public $displayName;
     public $uniqueName;

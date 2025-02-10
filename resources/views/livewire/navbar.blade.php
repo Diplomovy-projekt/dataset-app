@@ -46,7 +46,7 @@
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:leave="transition ease-in duration-75"
                              class="absolute -left-20 mt-2 w-60 py-2 bg-white rounded-md shadow-xl dark:bg-gray-800">
-                            <a wire:navigate href="{{route('admin')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                            <a wire:navigate href="{{route('admin.dashboard')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
                             <a wire:navigate href="{{route('admin.users')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">User Management</a>
                             <a wire:navigate href="{{route('admin.datasets')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dataset Management</a>
                         </div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\FullPages\AdminDashboard;
 use App\Livewire\FullPages\AdminDatasets;
 use App\Livewire\FullPages\AdminUsers;
 use App\Livewire\FullPages\DatasetBuilder;
@@ -27,7 +28,7 @@ Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
 Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
 Route::get('/builder', DatasetBuilder::class)->name('builder');
 Route::get('/profile', Profile::class)->name('profile');
-Route::get('/admin', AdminUsers::class)->name('admin');
+Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
 Route::get('/admin/users', AdminUsers::class)->name('admin.users');
 Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
 
