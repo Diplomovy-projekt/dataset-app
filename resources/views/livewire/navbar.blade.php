@@ -29,7 +29,6 @@
 
                     <li class="w-full"><a wire:navigate href="{{route('builder')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">BUILDER</a></li>
                     <li class="w-full"><a wire:navigate href="{{route('dataset.index')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">DATASETS</a></li>
-                    <li class="w-full"><a wire:navigate href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">PROFILE</a></li>
 
                     <!-- Admin dropdown -->
                     <div x-data="{ adminSubMenu: false }" class="relative w-full">
@@ -45,7 +44,7 @@
                         <div x-show="adminSubMenu"
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:leave="transition ease-in duration-75"
-                             class="absolute -left-20 mt-2 w-60 py-2 bg-white rounded-md shadow-xl dark:bg-gray-800">
+                             class="text-base divide-y absolute -left-20 mt-2 w-60 py-2 bg-white rounded-md shadow-xl dark:bg-gray-800">
                             <a wire:navigate href="{{route('admin.dashboard')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
                             <a wire:navigate href="{{route('admin.users')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">User Management</a>
                             <a wire:navigate href="{{route('admin.datasets')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dataset Management</a>
@@ -53,10 +52,28 @@
                     </div>
 
                     @guest
-                        <li class="w-full"><a wire:navigate href="{{route('welcome')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">LOGIN</a></li>
+                        <li class="w-full"><a wire:navigate href="{{route('login')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">LOGIN</a></li>
                     @endguest
                     @auth
-                        <li class="w-full"><a href="{{route('profile')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">PROFILE</a></li>
+                        <!-- Profile dropdown -->
+                        <div x-data="{ userSubMenu: false }" class="relative w-full">
+                            <button @click="userSubMenu = !userSubMenu" @click.away="userSubMenu = false"
+                                    class="flex items-center py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">
+                                <span>PROFILE</span>
+                                <svg class="w-4 h-4 ml-1 transition-transform duration-200" :class="{'rotate-180': userSubMenu}"
+                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+
+                            <div x-show="userSubMenu"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 class="text-base divide-y absolute -left-28 mt-2 w-44 py-2 bg-white rounded-md shadow-xl dark:bg-gray-800">
+                                <a wire:navigate href="{{route('profile')}}" class=" block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">MY DATASETS</a>
+                                <a wire:navigate href="{{route('profile.settings')}}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">SETTINGS</a>
+                                <a type="button" wire:click="logout" class="cursor-pointer block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">LOGOUT</a>
+                            </div>
                     @endauth
                 </ul>
             </div>

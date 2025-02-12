@@ -1,9 +1,14 @@
-<div class="flex-1 relative items-center">
+@props(
+    [
+        'searchTitle' => 'Search...',
+    ]
+)
+<div class="flex-1 relative items-center bg-transparent w-full">
     <input type="text"
            wire:model="searchTerm"
-           placeholder="Search images..."
-           class="w-full bg-slate-900/50 text-slate-100 rounded-lg pl-10 pr-4 py-2
-                                  border border-slate-700 focus:outline-none focus:border-blue-500/50">
+           placeholder="{{ $searchTitle }}"
+           class="w-full bg-transparent text-slate-100 rounded-lg pl-10 pr-4 py-2
+                                  border-b border-slate-700 focus:outline-none focus:border-blue-500/50">
     <button wire:click="search"  class="absolute left-3 top-2.5 h-5 w-5 text-slate-500">
         <svg class="h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="11" cy="11" r="8"></circle>

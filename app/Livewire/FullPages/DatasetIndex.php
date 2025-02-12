@@ -17,6 +17,7 @@ class DatasetIndex extends Component
         $this->loadDatasets();
         return view('livewire.full-pages.dataset-index');
     }
+
     public function loadDatasets()
     {
         $datasets = Dataset::with([
@@ -32,7 +33,8 @@ class DatasetIndex extends Component
             }
             $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            $datasets[$key]['images'] = $processedImage;
+            $dataset->images = $processedImage;
+            $dataset->stats = $dataset->getStats();
         }
         $this->datasets = $datasets->toArray();
     }

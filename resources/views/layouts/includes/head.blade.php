@@ -10,4 +10,4 @@
 @yield('additional_head')
 @livewireScripts
 @livewireStyles
-<script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.4.0/dist/livewire-sortable.js"></script>
+{{--<script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.4.0/dist/livewire-sortable.js"></script>--}}

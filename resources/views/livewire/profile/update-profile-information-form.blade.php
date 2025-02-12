@@ -62,34 +62,46 @@ new class extends Component
     }
 }; ?>
 
-<section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
+<section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </header>
+    <x-misc.header-with-line title="Profile Information" info="Update your account's profile information and email address."/>
 
-    <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
+
+    <!-- Form -->
+    <form wire:submit="updateProfileInformation" class="space-y-4">
+        <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <label for="name" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Name') }}</label>
+            <input
+                wire:model="name"
+                id="name"
+                name="name"
+                type="text"
+                class="w-full p-2 bg-slate-700 border border-slate-600 text-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+                required
+                autofocus
+                autocomplete="name"
+            >
+            <x-input-error :messages="$errors->get('name')" class="mt-1 text-sm text-red-500" />
         </div>
 
+        <!-- Email -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <label for="email" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Email') }}</label>
+            <input
+                wire:model="email"
+                id="email"
+                name="email"
+                type="email"
+                class="w-full p-2 bg-slate-700 border border-slate-600 text-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+                required
+                autocomplete="username"
+            >
+            <x-input-error :messages="$errors->get('email')" class="mt-1 text-sm text-red-500" />
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
-
+                <div class="mt-2 text-sm text-gray-400">
+                    <p>{{ __('Your email address is unverified.') }}
                         <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
@@ -104,12 +116,15 @@ new class extends Component
             @endif
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            <x-action-message class="me-3" on="profile-updated">
+        <!-- Save Button -->
+        <div class="flex justify-end">
+            <x-primary-button>
+                {{ __('Save') }}
+            </x-primary-button>
+            <x-action-message class="text-sm text-green-500 ml-3" on="profile-updated">
                 {{ __('Saved.') }}
             </x-action-message>
         </div>
     </form>
 </section>
+

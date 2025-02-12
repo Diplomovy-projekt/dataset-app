@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Configs\AppConfig;
 use App\Mail\UserInvitationMail;
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -29,21 +30,28 @@ class InviteUser extends Component
             'role' => 'required|in:admin,user',
         ]);
 
-        $password = Str::random(12);
-
+        $this->checkExpiredInvite();
         try {
-            /*$user = User::create([
-                'name' => $this->email,
+            $token = Str::random(64);
+            $invitation = Invitation::create([
                 'email' => $this->email,
-                'password' => Hash::make($password),
                 'role' => $this->role,
-            ]);*/
-            Mail::to($this->email)->send(new UserInvitationMail($this->email, $password, $this->role));
+                'token' => $token,
+            ]);
+            Mail::to($this->email)->send(new UserInvitationMail($invitation));
             session()->flash('success', 'Invitation sent successfully!');
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to send invitation. Please try again.');
         }
         $this->reset();
 
+    }
+
+    private function checkExpiredInvite()
+    {
+        $invitation = Invitation::where('email', $this->email)->first();
+        if ($invitation && $invitation->created_at->addHours(AppConfig::URL_EXPIRATION)->isPast()) {
+            $invitation->delete();
+        }
     }
 }

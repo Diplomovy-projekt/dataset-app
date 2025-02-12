@@ -77,10 +77,7 @@
 
 <div x-data="userManagement(@this)" class="p-6">
     <!-- Header Section -->
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-200">User Management</h1>
-        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
-    </div>
+    <x-misc.header-with-line title="User Management"/>
 
     <!-- Table Section -->
     <div class="bg-slate-800 rounded-xl overflow-hidden">

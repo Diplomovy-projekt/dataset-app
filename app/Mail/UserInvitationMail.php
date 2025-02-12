@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,18 +14,14 @@ class UserInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $email;
-    public string $password;
-    public string $role;
+    public Model $invitation;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(string $email, string $password, string $role)
+    public function __construct(Model $invitation)
     {
-        $this->email = $email;
-        $this->password = $password;
-        $this->role = $role;
+        $this->invitation = $invitation;
     }
 
     /**
@@ -45,9 +42,9 @@ class UserInvitationMail extends Mailable
         return new Content(
             view: 'emails.user-invitation',
             with: [
-                'email' => $this->email,
-                'password' => $this->password,
-                'role' => $this->role,
+                'email' => $this->invitation->email,
+                'role' => $this->invitation->role,
+                'url' => url('/register/' . $this->invitation->token)
             ]
         );
     }

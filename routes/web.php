@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Forms\Register;
 use App\Livewire\FullPages\AdminDashboard;
 use App\Livewire\FullPages\AdminDatasets;
 use App\Livewire\FullPages\AdminUsers;
@@ -19,21 +20,34 @@ use Illuminate\Support\Facades\Session;
 //    ->middleware(['auth'])
 //    ->name('profile');
 
+////////////////////////////////////////////////////////////////////////////////
+///                     AUTH ROUTES
+////////////////////////////////////////////////////////////////////////////////
 require __DIR__.'/auth.php';
+Route::get('/register/{token}', Register::class)->name('register');
+////////////////////////////////////////////////////////////////////////////////
+///                     MISC ROUTES
+////////////////////////////////////////////////////////////////////////////////
 Route::get('/', function () {
     $statistics = \App\Utils\QueryUtil::getDatasetCounts();
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
+////////////////////////////////////////////////////////////////////////////////
+///                     DATASET ROUTES
+////////////////////////////////////////////////////////////////////////////////
 Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
 Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
 Route::get('/builder', DatasetBuilder::class)->name('builder');
+////////////////////////////////////////////////////////////////////////////////
+///                     PROFILE ROUTES
+////////////////////////////////////////////////////////////////////////////////
 Route::get('/profile', Profile::class)->name('profile');
+Route::get('/profile/settings', function () {
+    return view('profile-settings');
+})->name('profile.settings');
+////////////////////////////////////////////////////////////////////////////////
+///                     ADMIN ROUTES
+////////////////////////////////////////////////////////////////////////////////
 Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
 Route::get('/admin/users', AdminUsers::class)->name('admin.users');
 Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
-
-Route::get('/download/progress', function () {
-    $filePath = request('filePath');
-    $progress = Session::get("download_progress_{$filePath}", 0);
-    return response()->json(['progress' => $progress]);
-});
