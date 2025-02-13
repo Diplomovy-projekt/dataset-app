@@ -38,9 +38,9 @@ new class extends Component
 
     <!-- Modal -->
     <x-modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable>
-        <form wire:submit="deleteUser" class="space-y-4 p-6">
-            <h2 class="text-lg font-medium text-gray-900">{{ __('Are you sure you want to delete your account?') }}</h2>
-            <p class="mt-2 text-sm text-gray-600">{{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}</p>
+        <form wire:submit="deleteUser" class="space-y-6 p-6 bg-slate-800 rounded-lg shadow-xl">
+            <h2 class="text-lg font-medium text-white">{{ __('Are you sure you want to delete your account?') }}</h2>
+            <p class="mt-2 text-sm text-gray-300">{{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}</p>
 
             <!-- Password Field -->
             <div>
@@ -50,7 +50,7 @@ new class extends Component
                     id="password"
                     name="password"
                     type="password"
-                    class="mt-1 block w-3/4 p-2 bg-slate-700 border border-slate-600 text-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+                    class="mt-1 block w-full p-2 bg-slate-700 border border-slate-600 text-gray-200 rounded-md focus:outline-none focus:border-blue-500"
                     placeholder="{{ __('Password') }}"
                 />
                 <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm text-red-500" />

@@ -3,14 +3,21 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
+use App\Mail\UserInvitationMail;
+use App\Models\Invitation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class AdminUsers extends Component
 {
-    public $authRoles = AppConfig::AUTH_ROLES;
+    public array $authRoles = AppConfig::AUTH_ROLES;
+    public int $pendingInvitesCount;
+    public int $expiredInvitesCount;
 
     use WithPagination;
 
@@ -23,7 +30,7 @@ class AdminUsers extends Component
         ['label' => 'Actions', 'field' => 'action', 'sortable' => false, 'width' => 'w-16'],
     ];
 
-    public $sortColumn = 'display_name';
+    public $sortColumn = 'name';
     public $sortDirection = 'asc';
 
     #[Computed]
@@ -32,6 +39,36 @@ class AdminUsers extends Component
         return User::withCount('datasets')
             ->orderBy($this->sortColumn, $this->sortDirection)
             ->paginate(AppConfig::PER_PAGE);
+    }
+    #[Computed]
+    public function pendingInvites()
+    {
+        $invitations = Invitation::pending()->get();
+        $idk = $invitations->count();
+        $this->pendingInvitesCount = $invitations->count();
+        return $invitations;
+    }
+    #[Computed]
+    public function expiredInvites()
+    {
+        $expiredInvites = Invitation::expired()->notUsed()->get();
+        $this->expiredInvitesCount = $expiredInvites->count();
+        return $expiredInvites;
+    }
+    public function mount()
+    {
+        $this->dispatch('flash-msg', [
+            'type' => 'success',
+            'message' => 'Invitation sent successfully!'
+        ]);
+    }
+    public function render()
+    {
+        $this->dispatch('flash-msg', [
+            'type' => 'success',
+            'message' => 'Invitation sent successfully!'
+        ]);
+        return view('livewire.full-pages.admin-users');
     }
     public function sortBy($column)
     {
@@ -48,5 +85,79 @@ class AdminUsers extends Component
     {
         $user = User::find($id);
         $user->update(['role' => $role]);
+        unset($this->paginatedUsers);
     }
+
+    public function deactivateUser($id)
+    {
+        $user = User::find($id);
+        $user->update(['is_active' => 'false']);
+        unset($this->paginatedUsers);
+    }
+
+    public function deleteUser($id)
+    {
+        if(auth()->id() == $id){
+            session()->flash('error', 'You cannot delete yourself!');
+            return;
+        }
+        try {
+            DB::beginTransaction();
+
+            $user = User::find($id);
+            // Update the datasets owner to the current admin
+            $user->datasets()->update(['user_id' => auth()->id()]);
+            $user->delete();
+            Invitation::where('email', $user->email)->delete();
+
+            DB::commit();
+            session()->flash('success', 'User deleted successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to delete user. Please try again.');
+        }
+        unset($this->paginatedUsers);
+    }
+
+    public function resendInvitation($invitationId)
+    {
+        $invitation = Invitation::notUsed()
+            ->where('id', $invitationId)
+            ->first();
+
+        if (!$invitation) {
+            session()->flash('error', 'Invitation not found.');
+            return;
+        }
+
+        $token = Str::random(64);
+        $invitation->update(['token' => $token]);
+
+        try {
+            Mail::to($invitation->email)->send(new UserInvitationMail($invitation));
+            session()->flash('success', 'Invitation resent successfully!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to send invitation email.');
+        }
+        unset($this->pendingInvites);
+    }
+
+    public function cancelInvitation($invitationId)
+    {
+        $invitation = Invitation::notUsed()
+            ->where('id', $invitationId)
+            ->first();
+
+        if (!$invitation) {
+            session()->flash('error', 'Invitation is either already used or not found.');
+            return;
+        }
+
+        if ($invitation->delete()) {
+            session()->flash('success', 'Invitation cancelled successfully!');
+        } else {
+            session()->flash('error', 'Failed to cancel invitation. Please try again.');
+        }
+        unset($this->pendingInvites);
+    }
+
 }

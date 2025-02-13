@@ -16,7 +16,7 @@ class AdminDatasets extends Component
         ['label' => 'Display Name', 'field' => 'display_name', 'sortable' => true, 'width' => 'w-64'],
         ['label' => 'Categories', 'field' => 'categories', 'sortable' => false, 'width' => 'w-20'],
         ['label' => 'Annotation Technique', 'field' => 'annotation_technique', 'sortable' => true, 'width' => 'w-18'],
-        ['label' => 'Owner', 'field' => 'owner_id', 'sortable' => false, 'width' => 'w-18'],
+        ['label' => 'Owner', 'field' => 'user_id', 'sortable' => false, 'width' => 'w-18'],
         ['label' => 'Visibility', 'field' => 'is_public', 'sortable' => true, 'width' => 'w-16'],
         ['label' => 'Pending Changes', 'field' => 'pending_changes', 'sortable' => false, 'width' => 'w-14'],
         ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-14'],

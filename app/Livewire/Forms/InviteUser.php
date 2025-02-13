@@ -30,7 +30,12 @@ class InviteUser extends Component
             'role' => 'required|in:admin,user',
         ]);
 
-        $this->checkExpiredInvite();
+        if ($this->checkIfUserExists()) {
+            return;
+        }
+
+        $this->deleteExpiredInvite();
+
         try {
             $token = Str::random(64);
             $invitation = Invitation::create([
@@ -39,7 +44,10 @@ class InviteUser extends Component
                 'token' => $token,
             ]);
             Mail::to($this->email)->send(new UserInvitationMail($invitation));
-            session()->flash('success', 'Invitation sent successfully!');
+            $this->dispatch('flash-msg', [
+                'type' => 'success',
+                'message' => 'Invitation sent successfully!'
+            ]);
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to send invitation. Please try again.');
         }
@@ -47,11 +55,21 @@ class InviteUser extends Component
 
     }
 
-    private function checkExpiredInvite()
+    private function deleteExpiredInvite()
     {
-        $invitation = Invitation::where('email', $this->email)->first();
-        if ($invitation && $invitation->created_at->addHours(AppConfig::URL_EXPIRATION)->isPast()) {
+        $invitation = Invitation::where('email', $this->email)->expired()->first();
+        if($invitation){
             $invitation->delete();
         }
+    }
+
+    private function checkIfUserExists()
+    {
+        if (User::where('email', $this->email)->exists()) {
+            session()->flash('error', 'User already exists with this email.');
+            $this->reset();
+            return true; // Indicate that user exists
+        }
+        return false;
     }
 }

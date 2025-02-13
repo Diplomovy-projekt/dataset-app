@@ -45,5 +45,6 @@ class AppConfig
         'admin' => 'Admin',
     ];
 
-    public const URL_EXPIRATION = 24; // Hours
+    public const URL_EXPIRATION_VALUE = 5;
+    public const URL_EXPIRATION_UNIT = 'seconds';
 }

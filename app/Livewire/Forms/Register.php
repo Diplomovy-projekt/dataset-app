@@ -43,29 +43,32 @@ class Register extends Component
         ]);
 
         try {
-            $invitation = Invitation::where('token', $this->token)->firstOrFail();
-            if($invitation->created_at->addHours(AppConfig::URL_EXPIRATION)->isPast()){
-                $invitation->delete();
-                session()->flash('error', 'Invitation link has expired.');
-                return redirect()->route('login');
-            }
+            $invitation = Invitation::where('token', $this->token)
+                ->notUsed()
+                ->notExpired()
+                ->firstOrFail();
 
             DB::beginTransaction();
+
             $user = User::create([
                 'name' => $this->name,
                 'email' => $invitation->email,
                 'password' => Hash::make($this->password),
                 'role' => $invitation->role,
+                'is_active' => true,
             ]);
+
             $invitation->used = true;
             $invitation->save();
+
             auth()->login($user);
+
             DB::commit();
 
             return redirect()->route('profile');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Failed to register. Please try again.');
+            session()->flash('error', 'Failed to register. Your invitation may have expired.');
         }
     }
 

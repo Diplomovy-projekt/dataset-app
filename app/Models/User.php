@@ -26,7 +26,14 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'is_active'
     ];
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
 
     public function datasets(): HasMany
     {
