@@ -9,8 +9,8 @@
 
 <!-- Full height container to ensure footer stays at the bottom -->
 <div class="bg-gradient-to-b from-[#243240] to-slate-900 flex flex-col min-h-screen">
-{{-- bg-gradient-to-b from-[#2c3e50] to-[#0f172a] --}}
-{{-- bg-gradient-to-b from-[#243240] to-slate-900 --}}
+    {{-- bg-gradient-to-b from-[#243240] to-slate-900 CURRENT --}}
+    {{--  bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 CLAUDE--}}
     <!-- Navbar (fixed at the top) -->
     <nav class="">
         <livewire:navbar />

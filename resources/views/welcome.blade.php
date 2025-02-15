@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class=" bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+    <div class="
     rounded-2xl shadow-xl my-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-24 sm:pb-12">
             <!-- Hero Section -->
@@ -32,7 +32,7 @@
 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-16">
-                    <a href="{{ route('builder') }}"
+                    <a wire:navigate href="{{ route('builder') }}"
                        class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-semibold text-gray-200 transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                         <div class="flex items-center justify-center gap-3">
                             <span>Create Your Own Dataset</span>
@@ -42,7 +42,7 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('dataset.index') }}"
+                    <a wire:navigate href="{{ route('dataset.index') }}"
                        class="px-8 py-4 bg-slate-700 rounded-xl font-semibold text-gray-200 border border-slate-600 hover:bg-slate-600 transition-all duration-300">
                         View Our Datasets
                     </a>

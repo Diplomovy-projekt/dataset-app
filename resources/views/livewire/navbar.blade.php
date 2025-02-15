@@ -1,7 +1,7 @@
 <div x-data="{ navLinks: false }" class="bg-hcportal-primary drop-shadow-md opacity-100 relative z-20">
     <nav class="container border-gray-200 h-[105px]">
-        <div class="flex flex-wrap items-center justify-between mx-auto mt-3">
-            <a href="{{route('welcome')}}" class="flex items-center gap-5">
+        <div class="flex flex-wrap items-center justify-between mx-auto mt-0">
+            <a wire:navigate href="{{route('welcome')}}" class="flex items-center gap-5">
                 <img src="{{asset('v1.png')}}" class="w-[101px] h-[101px] p-2 rounded-3xl" type="image/x-icon"/>
                 <span class="hidden lg:block self-center font-bold text-2xl whitespace-nowrap text-white">
                     DATASET BUILDER
