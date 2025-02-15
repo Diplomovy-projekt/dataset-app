@@ -41,13 +41,17 @@ Route::get('/builder', DatasetBuilder::class)->name('builder');
 ////////////////////////////////////////////////////////////////////////////////
 ///                     PROFILE ROUTES
 ////////////////////////////////////////////////////////////////////////////////
-Route::get('/profile', Profile::class)->name('profile');
-Route::get('/profile/settings', function () {
-    return view('profile-settings');
-})->name('profile.settings');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', Profile::class)->name('profile');
+    Route::get('/profile/settings', function () {
+        return view('profile-settings');
+    })->name('profile.settings');
+});
 ////////////////////////////////////////////////////////////////////////////////
 ///                     ADMIN ROUTES
 ////////////////////////////////////////////////////////////////////////////////
-Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
-Route::get('/admin/users', AdminUsers::class)->name('admin.users');
-Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
+    Route::get('/admin/users', AdminUsers::class)->name('admin.users');
+    Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
+});

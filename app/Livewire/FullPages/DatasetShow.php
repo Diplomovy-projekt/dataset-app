@@ -14,6 +14,7 @@ use App\Models\DatasetCategory;
 use App\Models\Image;
 use App\Models\MetadataValue;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -76,6 +77,7 @@ class DatasetShow extends Component
     }
     public function deleteDataset(DatasetActions $datasetService)
     {
+        Gate::authorize('delete-dataset', $this->dataset['id']);
         $result = $datasetService->deleteDataset($this->uniqueName);
         if($result->isSuccessful()){
             return redirect()->route('profile');
@@ -84,6 +86,7 @@ class DatasetShow extends Component
 
     public function deleteImages(DatasetActions $datasetService)
     {
+        Gate::authorize('delete-dataset', $this->dataset['id']);
         $result = $datasetService->deleteImages($this->uniqueName, $this->selectedImages);
         if($result->isSuccessful()){
             $this->mount();

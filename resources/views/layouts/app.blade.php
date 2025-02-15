@@ -39,7 +39,6 @@
 
 </div>
 
-<x-reusable.flash-message />
 </body>
 
 </html>

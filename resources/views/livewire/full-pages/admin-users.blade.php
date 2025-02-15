@@ -1,52 +1,6 @@
 <div x-data="userManagement(@this)" class="p-6">
     <!-- Header Section -->
-    <div x-data="{
-    notifications: [],
-    add(message) {
-        this.notifications.push({
-            id: Date.now(),
-            type: message.type,
-            message: message.message
-        });
-        setTimeout(() => this.remove(this.notifications[0].id), 3000);
-    },
-    remove(id) {
-        this.notifications = this.notifications.filter(notification => notification.id !== id);
-    }
-}"
-         @notify.window="add($event.detail)"
-         class="fixed top-4 right-4 z-50">
-
-        <template x-for="notification in notifications" :key="notification.id">
-            <div x-show="true"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform translate-x-8"
-                 x-transition:enter-end="opacity-100 transform translate-x-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 transform translate-x-0"
-                 x-transition:leave-end="opacity-0 transform translate-x-8"
-                 :class="{
-                'bg-green-500': notification.type === 'success',
-                'bg-red-500': notification.type === 'error'
-                'bg-yellow-500': notification.type === 'warning'
-             }"
-                 class="mb-4 p-4 rounded-lg text-white shadow-lg">
-                <div class="flex items-center gap-3">
-                    <template x-if="notification.type === 'success'">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </template>
-                    <template x-if="notification.type === 'error'">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </template>
-                    <span x-text="notification.message"></span>
-                </div>
-            </div>
-        </template>
-    </div>
+    <x-notif></x-notif>
 
     <x-misc.header-with-line title="User Management"/>
 
@@ -121,7 +75,8 @@
                 <thead x-data="{ sortField: $wire.entangle('sortColumn'), sortDirection: $wire.entangle('sortDirection')}">
                 <tr>
                     @foreach($headers as $header)
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-200 {{ $header['width'] }}">
+                        <th wire:key="admin-user-management-header-{{ $header['field'] }}"
+                            class="px-6 py-3 text-left text-sm font-semibold text-gray-200 {{ $header['width'] }}">
                             @if($header['sortable'])
                                 <button class="flex items-center gap-2 hover:text-blue-400 transition-colors"
                                         wire:click="sortBy('{{ $header['field'] }}')">
@@ -148,6 +103,7 @@
                 @foreach($this->paginatedUsers as $user)
                     <tr wire:key="admin-user-management-{{ $user['id'] }}"
                         class="hover:bg-slate-750 transition-colors">
+                        {{-- Name --}}
                         <td class="px-6 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="bg-blue-500/10 p-2 rounded-lg">
@@ -156,9 +112,11 @@
                                 <span class="text-gray-200">{{ $user['name'] }}</span>
                             </div>
                         </td>
+                        {{-- Email --}}
                         <td class="px-6 py-3">
                             <span class="text-gray-200">{{ $user['email'] }}</span>
                         </td>
+                        {{-- Role --}}
                         <td class="px-6 py-3">
                             <div x-data="{ role: '{{ $user['role'] }}' }">
                                 <select class="bg-slate-700 text-gray-200 rounded-lg px-2 py-1"
@@ -170,19 +128,21 @@
                                 </select>
                             </div>
                         </td>
-
+                        {{-- Status --}}
                         <td class="px-6 py-3">
                             <span class="px-2 py-1 text-xs rounded-full"
                                   :class="{
-                                      'bg-green-500/10 text-green-400': '{{ $user['is_active'] }}' === 'true',
-                                      'bg-red-500/10 text-red-400': '{{ $user['is_active'] }}' === 'false'
+                                      'bg-green-500/10 text-green-400': '{{ $user['is_active'] }}' === '1',
+                                      'bg-red-500/10 text-red-400': '{{ $user['is_active'] }}' === '0'
                                   }">
-                                {{ $user['is_active'] === 'true' ? 'Active' : 'Inactive' }}
+                                {{ $user['is_active'] === '1' ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
+                        {{-- Datasets --}}
                         <td class="px-6 py-3">
                             <span class="text-gray-200">{{ $user['datasets_count'] }}</span>
                         </td>
+
                         <td class="px-6 py-3">
                             <x-dropdown-menu direction="left" class="w-50">
                                 <x-dropdown-menu-item
@@ -200,11 +160,11 @@
                                 <div class="border-t border-gray-300"></div>
 
                                 <x-dropdown-menu-item
-                                    wire:click="deactivateUser({{ $user['id'] }})"
-                                    wire:confirm="This action will deactivate user and keep datasets under their ownership. Can be reactivated later"
-                                    danger
-                                    :icon="@svg('mdi-account-lock-outline')->toHtml()">
-                                    Deactivate User
+                                    wire:click="toggleActiveUser({{ $user['id'] }})"
+                                    wire:confirm="This action will {{ $user['is_active'] ? 'deactivate' : 'activate' }} user and keep datasets under their ownership. Can be changed later"
+                                    :danger="$user['is_active']"
+                                    :icon="($user['is_active'] ? svg('mdi-account-lock-outline') : svg('mdi-account-check-outline'))->toHtml()">
+                                    {{ $user['is_active'] ? 'Deactivate User' : 'Activate User' }}
                                 </x-dropdown-menu-item>
 
                                 <x-dropdown-menu-item
@@ -225,7 +185,8 @@
         <!-- Pending Invitations -->
         <div x-show="activeTab === 'pending'" class="divide-y divide-slate-700">
             @foreach($this->pendingInvites as $invite)
-                <div class="p-4 hover:bg-slate-750 transition-colors">
+                <div wire:key="admin-user-management-pending-{{ $invite['id'] }}"
+                     class="p-4 hover:bg-slate-750 transition-colors">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="bg-yellow-500/10 p-2 rounded-lg">
@@ -237,15 +198,18 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <button wire:click="resendInvitation({{ $invite['id'] }})"
-                                    class="px-3 py-1.5 text-sm bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-colors">
+                            <x-misc.button
+                                wire:click="resendInvitation({{ $invite['id'] }})"
+                                color="blue"
+                                size="sm">
                                 Resend Invitation
-                            </button>
-                            <button wire:click="cancelInvitation({{ $invite['id'] }})"
-                                    wire:confirm="Are you sure you want to cancel this invitation?"
-                                    class="px-3 py-1.5 text-sm bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors">
+                            </x-misc.button>
+                            <x-misc.button
+                                wire:click="cancelInvitation({{ $invite['id'] }})"
+                                color="red"
+                                size="sm">
                                 Cancel Invitation
-                            </button>
+                            </x-misc.button>
                         </div>
                     </div>
                 </div>
@@ -256,7 +220,7 @@
         <!-- Expired Invitations -->
         <div x-show="activeTab === 'expired'" class="divide-y divide-slate-700">
             @foreach($this->expiredInvites as $invite)
-                <div class="p-4 hover:bg-slate-750 transition-colors">
+                <div wire:key="admin-user-management-expired-{{ $invite['id'] }}" class="p-4 hover:bg-slate-750 transition-colors">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="bg-red-500/10 p-2 rounded-lg">
@@ -267,14 +231,18 @@
                                 <div class="text-sm text-gray-400">Invited {{ $invite['last_active'] }} days ago</div>
                             </div>
                         </div>
-                        <button wire:click="resendInvitation({{ $invite['id'] }})"
-                                class="px-3 py-1.5 text-sm bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-colors">
+
+                        <x-misc.button
+                            wire:click="resendInvitation({{ $invite['id'] }})"
+                            color="blue"
+                            size="sm">
                             Resend Invitation
-                        </button>
+                        </x-misc.button>
                     </div>
                 </div>
             @endforeach
         </div>
+
     </div>
     <!-- Pagination -->
     <div class="mt-4">

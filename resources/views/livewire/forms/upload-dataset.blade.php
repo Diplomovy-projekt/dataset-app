@@ -36,7 +36,7 @@
                 <x-button
                     type="submit"
                     x-bind:disabled="lock"
-                    class="{{$this->lockUpload ? 'opacity-50 cursor-not-allowed' : ''}}"
+                    x-bind:class="lock ? 'opacity-50 cursor-not-allowed' : ''"
                     @click="uploadChunks"
                     text="Save">
                 </x-button>

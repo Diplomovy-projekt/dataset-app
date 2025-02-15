@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use App\Traits\DatasetImportHelper;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -57,6 +58,7 @@ class ExtendDataset extends Component
 
     public function finishImport(ZipManager $zipManager): void
     {
+        Gate::authorize('update-dataset', $this->editingDataset->unique_name);
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
 
         $payload = [
@@ -84,6 +86,7 @@ class ExtendDataset extends Component
 
     public function updatedFileChunk()
     {
+        Gate::authorize('update-dataset', $this->dataset['id']);
         $this->validateDataset();
         $this->chunkUpload();
     }

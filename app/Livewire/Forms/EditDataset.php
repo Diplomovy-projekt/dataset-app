@@ -6,6 +6,7 @@ use App\Configs\AppConfig;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -39,6 +40,7 @@ class EditDataset extends Component
 
     public function updateDatasetInfo()
     {
+        Gate::authorize('update-dataset', $this->editingDataset->unique_name);
         $this->editingDataset->description = $this->description;
         $this->editingDataset->display_name = $this->displayName;
         $ids = array_merge(...array_column($this->selectedMetadata, 'metadataValues'));

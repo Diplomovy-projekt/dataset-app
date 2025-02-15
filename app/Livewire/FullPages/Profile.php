@@ -23,13 +23,16 @@ class Profile extends Component
         return view('livewire.full-pages.profile');
     }
 
-    public function loadDatasets()
+    private function loadDatasets()
     {
-        $datasets = Dataset::with([
+        $datasets = Dataset::where('user_id', auth()->id()) // Filter datasets by the authenticated user's ID
+        ->with([
             'images' => function ($query) {
                 $query->limit(1)->with(['annotations.class']);
             },
-        ])->with('classes')->get();
+        ])
+            ->with('classes')
+            ->get();
         foreach($datasets as $key => $dataset){
 
             if($dataset->images->isEmpty()){

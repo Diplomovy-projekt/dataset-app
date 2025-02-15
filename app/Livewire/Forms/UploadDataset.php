@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use App\Traits\DatasetImportHelper;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -62,6 +63,7 @@ class UploadDataset extends Component
 
     public function finishImport(ZipManager $zipManager)
     {
+        Gate::authorize('post-dataset');
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
         $payload = [
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
@@ -87,6 +89,7 @@ class UploadDataset extends Component
             $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
             $this->errors['message'] = $datasetImported->message;
             $this->lockUpload = false;
+            $this->reset($this->finalFile, $this->fileChunk, $this->displayName, $this->uniqueName, $this->fileSize);
         }
     }
 

@@ -1,13 +1,14 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+    <div class=" bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+    rounded-2xl shadow-xl my-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-24 sm:pb-12">
             <!-- Hero Section -->
             <div class="text-center">
                 <h1 class="text-4xl sm:text-6xl font-bold text-gray-200 leading-tight mb-8 tracking-wide bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
                     Discover, Create, and Elevate Your Datasets
                 </h1>
 
-                <div class="max-w-4xl mx-auto bg-slate-800/50 rounded-xl p-8 backdrop-blur-sm mb-12">
+                <div class="max-w-4xl mx-auto rounded-xl p-8 backdrop-blur-sm mb-12">
                     <p class="text-xl sm:text-2xl text-gray-300 leading-relaxed">
                         Unlock the potential of your research with custom datasets. Whether you're exploring, building, or analyzing, our intuitive platform helps you create the exact data you need.
                     </p>
@@ -48,7 +49,7 @@
                 </div>
 
                 <!-- Features Section -->
-                <div class="max-w-5xl mx-auto">
+                {{--<div class="max-w-5xl mx-auto">
                     <h2 class="text-2xl font-bold text-gray-200 mb-10">
                         <span class="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
                             Why Choose Us?
@@ -86,7 +87,7 @@
                             <p class="text-gray-400">Detailed analytics and visualization tools</p>
                         </div>
                     </div>
-                </div>
+                </div>--}}
             </div>
         </div>
     </div>

@@ -13,7 +13,7 @@
                 Select Annotation Format
             </h2>
 
-            <!-- Your Original Select with minor enhancements -->
+            <!-- Download modal -->
             <div class="relative w-64 mx-auto">
                 <select wire:model="exportFormat" class="w-full appearance-none px-3 py-1.5 pr-8 bg-slate-700 text-gray-300 text-sm rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-slate-500 transition-colors">
                     <option value="" disabled selected>Select Format</option>
@@ -37,7 +37,7 @@
                     :errorData="$this->failedDownload['data']">
                 </x-dataset.dataset-errors>
             @endif
-            <!-- Added Download Button -->
+            <!-- Download Button -->
             <button wire:click="startDownload" id="download-btn"
                     class="w-64 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
                 <x-eva-download class="w-4 h-4"/>
@@ -56,24 +56,10 @@
                 <x-class-dropdown />
                 <x-dropdown-menu direction="left" class="w-50">
                     <x-dropdown-menu-item
-                        @click.prevent="open = 'extend-dataset'"
-                        :icon="@svg('eva-upload')->toHtml()">
-                        Extend Dataset
-                    </x-dropdown-menu-item>
-                    <x-dropdown-menu-item
-                        @click.prevent.stop="open = 'edit-dataset'"
-                        :icon="@svg('eos-edit')->toHtml()">
-                        Edit Dataset info
-                    </x-dropdown-menu-item>
-
-                    <x-dropdown-menu-item
                         @click.prevent.stop="open = 'download-dataset'"
                         :icon="@svg('eva-download')->toHtml()">
                         Download Dataset
                     </x-dropdown-menu-item>
-
-                    <div class="border-t border-gray-300"></div>
-
                     <x-dropdown-menu-item
                         wire:click="deleteDataset({{ $dataset['id'] }})"
                         wire:confirm="This will permanently delete the dataset"
@@ -81,14 +67,41 @@
                         :icon="@svg('mdi-trash-can-outline')->toHtml()">
                         Delete Dataset
                     </x-dropdown-menu-item>
-                    <x-dropdown-menu-item
-                        wire:click="deleteImages(selectedImages)"
-                        wire:confirm="Are you sure you want to delete these images?"
-                        danger
-                        :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                        Delete Images
-                    </x-dropdown-menu-item>
+                    @auth
+                        @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
+                            <x-dropdown-menu-item
+                                @click.prevent="open = 'extend-dataset'"
+                                :icon="@svg('eva-upload')->toHtml()">
+                                Extend Dataset
+                            </x-dropdown-menu-item>
+
+                            <x-dropdown-menu-item
+                                @click.prevent.stop="open = 'edit-dataset'"
+                                :icon="@svg('eos-edit')->toHtml()">
+                                Edit Dataset info
+                            </x-dropdown-menu-item>
+
+                            <div class="border-t border-gray-300"></div>
+
+                            <x-dropdown-menu-item
+                                wire:click="deleteDataset({{ $dataset['id'] }})"
+                                wire:confirm="This will permanently delete the dataset"
+                                danger
+                                :icon="@svg('mdi-trash-can-outline')->toHtml()">
+                                Delete Dataset
+                            </x-dropdown-menu-item>
+
+                            <x-dropdown-menu-item
+                                wire:click="deleteImages(selectedImages)"
+                                wire:confirm="Are you sure you want to delete these images?"
+                                danger
+                                :icon="@svg('mdi-trash-can-outline')->toHtml()">
+                                Delete Images
+                            </x-dropdown-menu-item>
+                        @endif
+                    @endauth
                 </x-dropdown-menu>
+
             </div>
         </div>
     </div>

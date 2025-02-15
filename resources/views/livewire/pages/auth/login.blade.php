@@ -20,7 +20,8 @@ new #[Layout('layouts.app')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('profile', absolute: false), navigate: true);
+        //$this->redirectIntended(default: route('profile', absolute: false), navigate: true);
+        $this->redirectIntended('profile');
     }
 };
 ?>
