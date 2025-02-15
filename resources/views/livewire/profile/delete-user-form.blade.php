@@ -11,13 +11,16 @@ new class extends Component
     /**
      * Delete the currently authenticated user.
      */
-    public function deleteUser(Logout $logout): void
+    public function deactivateUser(Logout $logout): void
     {
         $this->validate([
             'password' => ['required', 'string', 'current_password'],
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        tap(Auth::user(), function ($user) use ($logout) {
+            $logout();
+            $user->update(['is_active' => false]);
+        });
 
         $this->redirect('/', navigate: true);
     }
@@ -25,7 +28,7 @@ new class extends Component
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
     <!-- Header -->
-    <x-misc.header-with-line title="Delete Account" info="Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain."/>
+    <x-misc.header-with-line title="Deactivate Account" info="Once your account is deactivated, all of its resources and data will be reassigned under admins ownership"/>
 
     <!-- Delete Button -->
     <x-danger-button
@@ -33,14 +36,14 @@ new class extends Component
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
         class="w-full sm:w-auto"
     >
-        {{ __('Delete Account') }}
+        {{ __('Deactivate Account') }}
     </x-danger-button>
 
     <!-- Modal -->
     <x-modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable>
-        <form wire:submit="deleteUser" class="space-y-6 p-6 bg-slate-800 rounded-lg shadow-xl">
-            <h2 class="text-lg font-medium text-white">{{ __('Are you sure you want to delete your account?') }}</h2>
-            <p class="mt-2 text-sm text-gray-300">{{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}</p>
+        <form wire:submit="deactivateUser" class="space-y-6 p-6 bg-slate-800 rounded-lg shadow-xl">
+            <h2 class="text-lg font-medium text-white">{{ __('Are you sure you want to deactivate your account?') }}</h2>
+            <p class="mt-2 text-sm text-gray-300">{{ __("Once your account is deactivated, all of its resources and data will be reassigned under admin's ownership. Please enter your password to confirm you would like to deactivate your account. Admin can reactivate this account later") }}</p>
 
             <!-- Password Field -->
             <div>
@@ -63,7 +66,7 @@ new class extends Component
                 </x-secondary-button>
 
                 <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
+                    {{ __('Deactivate Account') }}
                 </x-danger-button>
             </div>
         </form>

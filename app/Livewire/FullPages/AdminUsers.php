@@ -26,7 +26,7 @@ class AdminUsers extends Component
         ['label' => 'Email', 'field' => 'email', 'sortable' => true, 'width' => 'w-20'],
         ['label' => 'Role', 'field' => 'role', 'sortable' => true, 'width' => 'w-18'],
         ['label' => 'Status', 'field' => 'status', 'sortable' => false, 'width' => 'w-18'],
-        ['label' => 'Datasets', 'field' => 'dataset_count', 'sortable' => true, 'width' => 'w-16'],
+        ['label' => 'Datasets', 'field' => 'datasets_count', 'sortable' => true, 'width' => 'w-16'],
         ['label' => 'Actions', 'field' => 'action', 'sortable' => false, 'width' => 'w-16'],
     ];
 

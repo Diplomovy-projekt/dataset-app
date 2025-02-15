@@ -135,30 +135,15 @@
                                       'bg-green-500/10 text-green-400': '{{ $user['is_active'] }}' === '1',
                                       'bg-red-500/10 text-red-400': '{{ $user['is_active'] }}' === '0'
                                   }">
-                                {{ $user['is_active'] === '1' ? 'Active' : 'Inactive' }}
+                                {{ $user['is_active'] == '1' ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
                         {{-- Datasets --}}
                         <td class="px-6 py-3">
                             <span class="text-gray-200">{{ $user['datasets_count'] }}</span>
                         </td>
-
                         <td class="px-6 py-3">
                             <x-dropdown-menu direction="left" class="w-50">
-                                <x-dropdown-menu-item
-                                    @click.prevent="open = 'edit-user'"
-                                    :icon="@svg('eos-edit')->toHtml()">
-                                    Edit User
-                                </x-dropdown-menu-item>
-
-                                <x-dropdown-menu-item
-                                    @click.prevent="open = 'reset-password'"
-                                    :icon="@svg('eva-lock')->toHtml()">
-                                    Reset Password
-                                </x-dropdown-menu-item>
-
-                                <div class="border-t border-gray-300"></div>
-
                                 <x-dropdown-menu-item
                                     wire:click="toggleActiveUser({{ $user['id'] }})"
                                     wire:confirm="This action will {{ $user['is_active'] ? 'deactivate' : 'activate' }} user and keep datasets under their ownership. Can be changed later"

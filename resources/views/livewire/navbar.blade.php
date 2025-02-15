@@ -1,7 +1,7 @@
 <div x-data="{ navLinks: false }" class="bg-hcportal-primary drop-shadow-md opacity-100 relative z-20">
     <nav class="container border-gray-200 h-[105px]">
         <div class="flex flex-wrap items-center justify-between mx-auto mt-0">
-            <a wire:navigate href="{{route('welcome')}}" class="flex items-center gap-5">
+            <a href="{{route('welcome')}}" class="flex items-center gap-5">
                 <img src="{{asset('v1.png')}}" class="w-[101px] h-[101px] p-2 rounded-3xl" type="image/x-icon"/>
                 <span class="hidden lg:block self-center font-bold text-2xl whitespace-nowrap text-white">
                     DATASET BUILDER
@@ -56,6 +56,7 @@
 
                             <!-- Dropdown Menu -->
                             <div x-show="userSubMenu"
+                                 x-cloak
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 scale-95"
                                  x-transition:enter-end="opacity-100 scale-100"

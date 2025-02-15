@@ -60,13 +60,6 @@
                         :icon="@svg('eva-download')->toHtml()">
                         Download Dataset
                     </x-dropdown-menu-item>
-                    <x-dropdown-menu-item
-                        wire:click="deleteDataset({{ $dataset['id'] }})"
-                        wire:confirm="This will permanently delete the dataset"
-                        danger
-                        :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                        Delete Dataset
-                    </x-dropdown-menu-item>
                     @auth
                         @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
                             <x-dropdown-menu-item

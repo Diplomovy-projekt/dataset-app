@@ -30,7 +30,7 @@
                 <x-button
                     type="submit"
                     x-bind:disabled="lock"
-                    class="{{$this->lockUpload ? 'opacity-50 cursor-not-allowed' : ''}}"
+                    class="{{$this->lockUpload ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}}"
                     @click="uploadChunks"
                     text="Save">
                 </x-button>
@@ -39,6 +39,3 @@
     </x-modals.fixed-modal>
 </div>
 
-@push('scripts')
-    @vite('resources/js/chunkedUpload.js')
-@endpush
