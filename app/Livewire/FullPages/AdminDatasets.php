@@ -6,6 +6,7 @@ use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -30,6 +31,8 @@ class AdminDatasets extends Component
     public $sortDirection = 'asc';
 
     public array $datasets;
+    public array $users = [];
+    public string $userSearchTerm = '';
     #[Computed]
     public function paginatedDatasets()
     {
@@ -43,6 +46,18 @@ class AdminDatasets extends Component
                 $query->orderBy($this->sortColumn, $this->sortDirection);
             })
             ->paginate(AppConfig::PER_PAGE);
+    }
+    public function mount()
+    {
+        $this->users = User::all()->select('email', 'id', 'name', 'role')->toArray();
+    }
+    public function searchUsers()
+    {
+        $this->users = User::where('name', 'like', "%$this->userSearchTerm%")
+            ->orWhere('email', 'like', "%$this->userSearchTerm%")
+            ->select('email', 'id', 'role', 'name')
+            ->get()
+            ->toArray();
     }
 
     public function sortBy($column)
@@ -60,6 +75,18 @@ class AdminDatasets extends Component
     {
         $dataset = Dataset::find($id);
         $dataset->update(['is_public' => !$dataset->is_public]);
+    }
+
+    public function changeOwner($id, $userId)
+    {
+        try {
+            $dataset = Dataset::find($id);
+            $dataset->update(['user_id' => $userId]);
+            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Owner changed successfully']);
+
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'An error occurred']);
+        }
     }
 
     public function deleteDataset(DatasetActions $datasetService, $uniqueName)

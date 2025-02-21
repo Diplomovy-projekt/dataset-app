@@ -32,6 +32,8 @@ class AdminUsers extends Component
 
     public $sortColumn = 'name';
     public $sortDirection = 'asc';
+    public array $users = [];
+    public string $userSearchTerm = '';
 
     #[Computed]
     public function paginatedUsers()
@@ -55,10 +57,11 @@ class AdminUsers extends Component
         return $expiredInvites;
     }
 
-    public function render()
+    public function mount()
     {
-        return view('livewire.full-pages.admin-users');
+        $this->users = User::all()->select('email', 'id', 'role', 'name')->toArray();
     }
+
     public function sortBy($column)
     {
         if ($this->sortColumn === $column) {
@@ -72,9 +75,27 @@ class AdminUsers extends Component
 
     public function updateRole($id, $role)
     {
-        $user = User::find($id);
-        $user->update(['role' => $role]);
-        unset($this->paginatedUsers);
+        try {
+            if ($id === auth()->id()) {
+                throw new \Exception("You cannot change your own role.");
+            }
+
+            $user = User::findOrFail($id);
+
+            if (!in_array($role, ['admin', 'user'])) {
+                throw new \InvalidArgumentException('Invalid role selected.');
+            }
+
+            $user->update(['role' => $role]);
+
+            unset($this->paginatedUsers);
+
+            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Role updated successfully!']);
+        } catch (\InvalidArgumentException $e) {
+            $this->dispatch('flash-msg', ['type' => 'error', 'message' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', ['type' => 'error', 'message' => $e->getMessage()]);
+        }
     }
 
     public function toggleActiveUser($id)
@@ -89,19 +110,26 @@ class AdminUsers extends Component
         unset($this->paginatedUsers);
     }
 
-
-    public function deleteUser($id)
+    public function searchUsers()
     {
-        if (auth()->id() == $id) {
+        $this->users = User::where('name', 'like', "%$this->userSearchTerm%")
+            ->orWhere('email', 'like', "%$this->userSearchTerm%")
+            ->select('email', 'id', 'role', 'name')
+            ->get()
+            ->toArray();
+    }
+    public function deleteUser($deleteUserId, $inheritDatasetsUserId)
+    {
+        if (auth()->id() == $deleteUserId) {
             $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'You cannot delete yourself!']);
             return;
         }
         try {
             DB::beginTransaction();
 
-            $user = User::find($id);
+            $user = User::find($deleteUserId);
             // Update the datasets owner to the current admin
-            $user->datasets()->update(['user_id' => auth()->id()]);
+            $user->datasets()->update(['user_id' => $inheritDatasetsUserId]);
             $user->delete();
             Invitation::where('email', $user->email)->delete();
 
