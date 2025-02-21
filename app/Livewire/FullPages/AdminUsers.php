@@ -44,7 +44,6 @@ class AdminUsers extends Component
     public function pendingInvites()
     {
         $invitations = Invitation::pending()->get();
-        $idk = $invitations->count();
         $this->pendingInvitesCount = $invitations->count();
         return $invitations;
     }

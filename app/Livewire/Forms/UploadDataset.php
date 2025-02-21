@@ -63,7 +63,6 @@ class UploadDataset extends Component
 
     public function finishImport(ZipManager $zipManager)
     {
-        Gate::authorize('post-dataset');
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
         $payload = [
             "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
@@ -102,6 +101,7 @@ class UploadDataset extends Component
     private function validateDataset()
     {
         if (!$this->validated) {
+            Gate::authorize('post-dataset');
             $rules = [
                 'fileChunk' => 'required',
                 'selectedFormat' => 'required',

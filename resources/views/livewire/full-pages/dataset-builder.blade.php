@@ -49,7 +49,8 @@
     <!-- Builder Section -->
     <div id="builder" class="mt-12 space-y-4">
         @foreach($stageData as $stageNumber => $stage)
-            <div class="rounded-xl bg-slate-800/50 backdrop-blur-sm" wire:key="livewire-builder-{{$stageNumber}}">
+
+            <div class="rounded-xl bg-slate-800/50 " wire:key="livewire-builder-{{$stageNumber}}">
                 <x-builder.main-accordion
                     stageIndex="{{ $stageNumber }}"
                     :currentStage="$currentStage"

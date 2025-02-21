@@ -10,6 +10,7 @@ use App\Models\AnnotationClass;
 use App\Models\Dataset;
 use App\Utils\FileUtil;
 use App\Utils\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class DatasetActions
@@ -18,6 +19,7 @@ class DatasetActions
 
     public function deleteDataset($unique_name): Response
     {
+        Gate::authorize('delete-dataset', $unique_name);
         try {
             $dataset = Dataset::where('unique_name', $unique_name)->first();
             $dataset->delete();
@@ -32,6 +34,7 @@ class DatasetActions
 
     public function deleteImages($uniqueName, $ids): Response
     {
+        Gate::authorize('delete-dataset', $uniqueName);
         try {
             $dataset = Dataset::where('unique_name', $uniqueName)->first();
             $images = $dataset->images()->whereIn('id', $ids)->get();
@@ -42,7 +45,7 @@ class DatasetActions
                 $files = Storage::disk('datasets')->allFiles($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER);
                 foreach ($files as $file) {
                     $filename = pathinfo($file, PATHINFO_BASENAME);
-                    if (strpos($filename, '_' . $image->filename) !== false) {
+                    if (str_contains($filename, '_' . $image->filename)) {
                         Storage::disk('datasets')->delete($file);
                     }
                 }
@@ -50,8 +53,8 @@ class DatasetActions
             }
 
             FileUtil::deleteEmptyDirectories(AppConfig::DATASETS_PATH . $dataset->unique_name);
-            $this->deleteUnusedClasses();
-            $result = $this->createSamplesForClasses($dataset->unique_name, $dataset->classes->pluck('id')->toArray());
+            $this->deleteUnusedClassesFromDb();
+            $result = $this->createSamplesForClasses($dataset->unique_name, $dataset->classes->pluck('id')->toArray(), $dataset->images()->pluck('filename')->toArray());
             $dataset->updateImageCount(-count($ids));
             if (!$result->isSuccessful()) {
                 throw new \Exception($result->message);
@@ -63,76 +66,48 @@ class DatasetActions
         }
     }
 
-    public function createSamplesForClasses(string $datasetFolder, array $classesToSample): Response
+    public function createSamplesForClasses(string $datasetFolder, array $classesToSample, array $newImages): Response
     {
-        $dataset = Dataset::where('unique_name', $datasetFolder)->first();
-        $batchSize = max(ceil($dataset->num_images * 0.1), 10); // 10% of the dataset size
-
+        $dataset = Dataset::where('unique_name', $datasetFolder)->firstOrFail();
+        $batchSize = max(ceil(count($newImages) * 0.1), 10); // 10% of new images or at least 10
         $classCounts = [];
-        // We are creating crops for classes in batches of 10% images because most likely
-        // we will get AppConfig::SAMPLES_COUNT crops per class sooner than parsing through whole dataset
+
         try {
             for ($i = 0; $i < 10; $i++) {
-                $offset = $i * $batchSize;
-                // Fetch images in the batch with annotations belonging to classes to sample
+                $batch = array_slice($newImages, $i * $batchSize, $batchSize);
+                if (empty($batch)) break;
+
+                // Ensure images belong to the correct dataset
                 $images = $dataset->images()
-                    ->whereHas('annotations', function ($query) use ($classesToSample) {
-                        $query->whereIn('annotation_class_id', $classesToSample);
-                    })
-                    ->with(['annotations' => function ($query) use ($classesToSample) {
-                        $query->whereIn('annotation_class_id', $classesToSample);
-                    }])
-                    ->skip($offset)
-                    ->take($batchSize)
+                    ->whereIn('filename', $batch)
+                    ->whereHas('annotations', fn($q) => $q->whereIn('annotation_class_id', $classesToSample))
+                    ->with(['annotations' => fn($q) => $q->whereIn('annotation_class_id', $classesToSample)])
                     ->get();
 
                 $classCounts = array_merge($classCounts, $this->createClassCrops($datasetFolder, $images));
 
-                $allClassesSampled = true;
-                foreach ($classesToSample as $classId) {
-                    // If a class does not exist in classCounts or doesn't have enough samples, keep sampling
-                    if (!isset($classCounts[$classId]) || $classCounts[$classId] < AppConfig::SAMPLES_COUNT) {
-                        $allClassesSampled = false;
-                        break;
-                    }
-                }
-                if ($offset + $batchSize >= $dataset->num_images || $allClassesSampled) {
-                    break;
-                }
+                if ($this->allClassesSampled($classCounts, $classesToSample)) break;
             }
         } catch (DatasetImportException $e) {
             return Response::error($e->getMessage(), $e->getData());
         }
+
         return Response::success("Class crops created successfully");
     }
 
-    public function deleteUnusedClasses(): void
+    private function allClassesSampled(array $classCounts, array $classesToSample): bool
+    {
+        foreach ($classesToSample as $classId) {
+            if (($classCounts[$classId] ?? 0) < AppConfig::SAMPLES_COUNT) return false;
+        }
+        return true;
+    }
+
+    public function deleteUnusedClassesFromDb(): void
     {
         $classes = AnnotationClass::doesntHave('annotations')->get();
         foreach ($classes as $class) {
             $class->delete();
         }
-    }
-
-
-    public function downloadDataset($images, $exportFormat)
-    {
-
-        $response = ExportService::handleExport($images, $exportFormat);
-        if ($response->isSuccessful()) {
-            return response()->streamDownload(function () use ($response) {
-                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
-            }, basename($response->data['datasetFolder']));
-        }
-
-        return Response::error($response->message);
-    }
-    public function buildDataset($images): Response
-    {
-        //build new custom dataset from images. images contain annotations and classes.
-
-
-        return Response::success();
-
     }
 }

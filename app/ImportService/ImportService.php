@@ -73,7 +73,9 @@ class ImportService
 
             //  Create class samples
             $datasetService = new DatasetActions();
-            $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'], $savedToDb->data['classesToSample']);
+            $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'],
+                                                                          $savedToDb->data['classesToSample'],
+                                                                          $savedToDb->data['newImages']);
             if (!$createdClassCrops->isSuccessful()) {
                 throw new DatasetImportException($imagesMoved->message);
             }

@@ -45,6 +45,8 @@ class AppConfig
         'admin' => 'Admin',
     ];
 
-    public const URL_EXPIRATION_VALUE = 5;
-    public const URL_EXPIRATION_UNIT = 'seconds';
+    public const EXPIRATION = [
+        'URL' => ['value' => 5, 'unit' => 'seconds'],
+        'TMP_FILE' => ['value' => 6, 'unit' => 'hours'],
+    ];
 }

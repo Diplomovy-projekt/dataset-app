@@ -1,7 +1,5 @@
 <div x-data="userManagement(@this)" class="p-6">
     <!-- Header Section -->
-    <x-notif></x-notif>
-
     <x-misc.header-with-line title="User Management"/>
 
     <!-- Main Content -->
@@ -179,7 +177,7 @@
                             </div>
                             <div>
                                 <div class="text-gray-200">{{ $invite['email'] }}</div>
-                                <div class="text-sm text-gray-400">Invited {{ $invite['last_active'] }} days ago</div>
+                                <div class="text-sm text-gray-400">Invited {{ \Carbon\Carbon::parse($invite['updated_at'])->diffForHumans() }}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
@@ -213,7 +211,7 @@
                             </div>
                             <div>
                                 <div class="text-gray-200">{{ $invite['email'] }}</div>
-                                <div class="text-sm text-gray-400">Invited {{ $invite['last_active'] }} days ago</div>
+                                <div class="text-sm text-gray-400">Invited {{ \Carbon\Carbon::parse($invite['updated_at'])->diffForHumans() }}</div>
                             </div>
                         </div>
 

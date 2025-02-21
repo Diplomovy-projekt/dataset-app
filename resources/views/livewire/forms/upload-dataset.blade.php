@@ -20,10 +20,7 @@
                 {{-- Submit Button--}}
                 <div x-show="lock"
                      class="flex items-center space-x-2 mt-4">
-                    <!-- MaryUI Progress Bar -->
                     <x-mary-progress name="progressBar" x-bind:value="progress" max="100" class="progress-warning h-3 flex-1" />
-
-                    <!-- Percentage Text -->
                     <p class="text-sm font-medium text-gray-600" x-text="progressFormatted" :style="{ width: progressFormatted.length > 5 ? '50px' : '35px' }"></p>
                 </div>
                 @if($errors)

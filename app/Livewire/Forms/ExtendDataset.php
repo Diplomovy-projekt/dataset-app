@@ -13,6 +13,7 @@ use App\Models\MetadataType;
 use App\Traits\DatasetImportHelper;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -24,7 +25,7 @@ class ExtendDataset extends Component
     public $errors;
     public $lockUpload = false;
     public $editingDataset;
-    public $annotationFormats;
+    public $annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
     public $techniques;
 
     # Selectable form fields
@@ -40,16 +41,27 @@ class ExtendDataset extends Component
     public $finalFile;
     public $validated = false;
 
-    public function mount()
+    #[On('extend-selected')]
+    public function setDatasetInfo($uniqueName)
     {
-        $this->editingDataset = Dataset::where('unique_name', $this->editingDataset)->first();
-        $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
+        $this->setDataset($uniqueName);
+    }
+    public function mount($editingDataset = null)
+    {
         $this->techniques = array_values(array_map(function ($technique) {
             return [
                 'key' => $technique,
                 'value' => $technique,
             ];
         }, AppConfig::ANNOTATION_TECHNIQUES));
+        $this->setDataset($editingDataset);
+    }
+    private function setDataset($uniqueName)
+    {
+        $this->editingDataset = $uniqueName ? Dataset::where('unique_name', $uniqueName)->first() : null;
+        if($this->editingDataset){
+            $this->selectedTechnique = $this->editingDataset->annotation_technique;
+        }
     }
     public function render()
     {
@@ -58,7 +70,6 @@ class ExtendDataset extends Component
 
     public function finishImport(ZipManager $zipManager): void
     {
-        Gate::authorize('update-dataset', $this->editingDataset->unique_name);
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
 
         $payload = [
@@ -81,18 +92,21 @@ class ExtendDataset extends Component
         } else {
             $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
             $this->errors['message'] = $datasetImported->message;
+            $this->lockUpload = false;
+            $this->reset($this->finalFile, $this->fileChunk, $this->displayName, $this->uniqueName, $this->fileSize);
+
         }
     }
 
     public function updatedFileChunk()
     {
-        Gate::authorize('update-dataset', $this->dataset['id']);
         $this->validateDataset();
         $this->chunkUpload();
     }
     private function validateDataset()
     {
         if (!$this->validated) {
+            Gate::authorize('update-dataset', $this->editingDataset->id);
             $rules = [
                 'fileChunk' => 'required',
                 'selectedFormat' => 'required',

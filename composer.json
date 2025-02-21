@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.2",
         "ext-zip": "*",
+        "anourvalar/eloquent-serialize": "^1.2",
         "blade-ui-kit/blade-heroicons": "^2.5",
         "blade-ui-kit/blade-icons": "^1.7",
         "blade-ui-kit/blade-zondicons": "^1.5",

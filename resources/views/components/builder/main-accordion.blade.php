@@ -17,7 +17,6 @@
             Stage {{$stageIndex}}: {{ $stageData[$stageIndex]['title'] ?? " " }}
         </h3>
     </div>
-
     @if($currentStage == $stageIndex)
         <div class="p-1 sm:p-4 pt-1 shadow-md bg-gray-900 rounded-b-lg border-x border-b border-gray-700">
             <hr class="border border-gray-700">

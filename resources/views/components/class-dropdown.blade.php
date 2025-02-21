@@ -57,7 +57,8 @@
     </button>
 
     <!-- Dropdown Content -->
-    <div x-show="open"
+    <div x-cloak
+         x-show="open"
          @click.away="open = false"
          class="absolute mt-2 w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50">
         <div class="py-1">

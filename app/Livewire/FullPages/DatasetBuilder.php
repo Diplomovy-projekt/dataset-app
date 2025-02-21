@@ -3,8 +3,6 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
-use App\DatasetActions\DatasetActions;
-use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Category;
 use App\Models\Dataset;
@@ -13,12 +11,11 @@ use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
-use App\Utils\Util;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -63,7 +60,6 @@ class DatasetBuilder extends Component
         ],
     ];
 
-
     #[Locked]
     public $categories = [];
     public $selectedCategories = [];
@@ -78,15 +74,11 @@ class DatasetBuilder extends Component
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
-    #[Validate('required')]
-    public $exportFormat = '';
-    public $availableFormats = [];
     public $finalDataset = [
         'stats' => [],
         'metadataValues' => [],
         'categories' => [],
     ];
-    public $failedDownload = [];
     #[Computed]
     public function paginatedImages()
     {
@@ -102,7 +94,6 @@ class DatasetBuilder extends Component
     }
     public function render()
     {
-        //$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])->get();
         $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
             ->orderBy('id', 'desc')
             ->limit(6) // Get only the last two
@@ -114,7 +105,6 @@ class DatasetBuilder extends Component
             $dataset->image = $dataset->image->toArray();
         }
         $this->datasets = $this->datasets->toArray();
-        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         return view('livewire.full-pages.dataset-builder');
     }
 
@@ -172,6 +162,7 @@ class DatasetBuilder extends Component
     private function originStage()
     {
         $this->metadataValues = DatasetMetadata::getGroupedMetadataByCategories($this->selectedCategories);
+        $this->datasetsStage();
     }
 
     public function updatedSkipTypes()
@@ -184,52 +175,32 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
-        // Get all selected metadata values except for skipped types
-        $selectedMetadataValues = collect($this->selectedMetadataValues)
-            ->filter(function ($selected, $valueId) {
-                $value = MetadataValue::find($valueId);
-                $typeId = $value->metadataType->id;
+        // Get all explicitly selected metadata values
+        $explicitlyIncluded = array_keys(array_filter($this->selectedMetadataValues));
+        // Get all metadata values from skipped types (treat them as included)
+        $skippedValues = MetadataValue::whereIn('metadata_type_id', $this->skipTypes)
+            ->pluck('id')
+            ->all();
+        // Combine both sets of values
+        $metadataValueIds = array_unique(array_merge($explicitlyIncluded, $skippedValues));
 
-                // Only include if type is not skipped and value is selected
-                return !in_array($typeId, $this->skipTypes);
+        // Query datasets that match at least one metadata value
+        $datasetMetadataIds = DatasetMetadata::whereIn('metadata_value_id', $metadataValueIds)
+            ->distinct()
+            ->pluck('dataset_id');
+        $this->datasets = Dataset::whereIn('id', $datasetMetadataIds)
+            ->with(['classes', 'metadataValues', 'categories'])
+            ->get()
+            ->map(function ($dataset) {
+                $dataset->stats = $dataset->getStats();
+                $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
+                return $dataset;
             })
-            ->map(fn($encodedValue) => json_decode($encodedValue));;
+            ->toArray();
 
-        // Separate metadata values into include and exclude groups
-        $groupedMetadata = [
-            'include' => $selectedMetadataValues->filter()->keys()->all(),
-            'exclude' => $selectedMetadataValues->reject()->keys()->all(),
-        ];
-
-        // Include datasets with all `include` metadata IDs
-        $query = DatasetMetadata::query();
-        if (!empty($groupedMetadata['include'])) {
-            $query->whereIn('metadata_value_id', $groupedMetadata['include'])
-                ->select('dataset_id')
-                ->groupBy('dataset_id')
-                ->havingRaw('COUNT(DISTINCT metadata_value_id) = ?', [count($groupedMetadata['include'])]);
-        }
-
-        if (!empty($groupedMetadata['exclude'])) {
-            $query->whereNotIn('dataset_id', function ($subquery) use ($groupedMetadata) {
-                $subquery->select('dataset_id')
-                    ->from('dataset_metadata')
-                    ->whereIn('metadata_value_id', $groupedMetadata['exclude']);
-            });
-        }
-        $datasetMetadataIds = $query->pluck('dataset_id');
-        $datasetCategoryIds = DatasetCategory::whereIn('category_id', $this->selectedCategories)->pluck('dataset_id as id');
-        $matchingDatasetIds = $query->getQuery()->wheres ? $datasetMetadataIds->intersect($datasetCategoryIds) : $datasetCategoryIds;
-
-        $this->datasets = Dataset::whereIn('id', $matchingDatasetIds)->with(['classes', 'metadataValues', 'categories'])->get();
-
-        foreach ($this->datasets as $dataset) {
-            $dataset->stats = $dataset->getStats();
-            $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
-        }
-        $this->datasets = $this->datasets->toArray();
         $this->selectedImages = [];
     }
+
 
     private function finalStage()
     {
@@ -239,7 +210,7 @@ class DatasetBuilder extends Component
     {
         $classIds = $this->getSelectedClassesForSelectedDatasets();
 
-        return Image::whereIn('dataset_id', array_keys($this->selectedDatasets))
+        return Image::whereIn('dataset_id', array_keys(array_filter($this->selectedDatasets)))
             ->whereNotIn('id', $this->selectedImages ?? [])
             // Only include images that has annotations with selected classes
             ->whereHas('annotations.class', function ($query) use ($classIds) {
@@ -251,13 +222,12 @@ class DatasetBuilder extends Component
             }, 'annotations.class']);
     }
 
-    private function downloadFilter(ExportService $exportService)
+    private function downloadFilter()
     {
-        $this->availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         $this->images = $this->imagesQuery()->get()->toArray();
 
         $this->finalDataset['stats'] = $this->getCustomStats();
-        $datasetIds = array_keys($this->selectedDatasets);
+        $datasetIds = array_keys(array_filter($this->selectedDatasets));
         $this->finalDataset['categories'] = Category::whereIn('id', function ($query) use ($datasetIds) {
             $query->select('category_id')
                 ->from('dataset_categories')
@@ -271,27 +241,21 @@ class DatasetBuilder extends Component
         })->get(['id', 'value'])->toArray();
     }
 
-    public function downloadCustomDataset()
+    public function cacheQuery()
     {
         $this->validate();
-        $this->images = $this->imagesQuery()->get()->toArray();
+        $query = $this->imagesQuery();
 
-        // Export the dataset
-        $response = ExportService::handleExport($this->images, $this->exportFormat);
-        if(!$response->isSuccessful()) {
-            $this->failedDownload['message'] = $response->getMessage();
-            $this->failedDownload['data'] = $response->getData();
-        } else {
-            return response()->streamDownload(function () use ($response) {
-                echo Storage::disk('datasets')->get($response->data['datasetFolder']);
-            }, $response->data['datasetFolder']);
-        }
+        $token = Str::random(32);
+        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
+
+        $this->dispatch('store-download-token', token: $token);
 
     }
 
     private function getSelectedClassesForSelectedDatasets(): array
     {
-        $eligiblePerDataset = array_intersect_key($this->selectedClasses, $this->selectedDatasets);
+        $eligiblePerDataset = array_intersect_key($this->selectedClasses, array_filter($this->selectedDatasets));
         // Flatten the arrays and merge them
         $classIds = [];
         foreach($eligiblePerDataset as $datasetId => $classes) {

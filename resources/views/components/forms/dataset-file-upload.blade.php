@@ -55,7 +55,7 @@
             placeholder="Select format"/>
         {{-- TECHNIQUE SELECT --}}
         <x-mary-radio
-            label="{{$modalStyle == 'new-upload' ? 'Select used annotation technique' : 'Annotation technique can`t be changed during edit'}}"
+            label="{{$modalStyle == 'new-upload' ? 'Select used annotation technique' : 'Annotation technique has to be same as the existing dataset'}}"
             :options="$this->techniques"
             option-value="key"
             option-label="value"

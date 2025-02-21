@@ -22,7 +22,7 @@
             <div x-show="open"
                  x-collapse
                  class="border-t border-base-300">
-                <div class="p-4 space-y-3">
+                <div class="p-4 grid grid-cols-2 md:grid-cols-3 gap-3 items-start">
                     @foreach($categories as $category)
                         <x-mary-checkbox
                             wire:model="selectedCategories"
@@ -53,7 +53,7 @@
                 <div x-show="open"
                      x-collapse
                      class="border-t border-base-300">
-                    <div class="p-4 space-y-3">
+                    <div class="p-4 grid grid-cols-2 md:grid-cols-3 gap-3 items-start">
                         @foreach($metadataType['metadataValues'] as $metadataValue)
                             <x-mary-checkbox
                                 wire:model="selectedMetadata.{{ $metadataType['id'] }}.metadataValues"

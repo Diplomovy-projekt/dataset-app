@@ -1,4 +1,9 @@
 <div x-data="datasetManagement(@this)" class="p-6">
+
+    <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
+    <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
+    <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
+
     <!-- Header Section -->
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-200">Dataset Management</h1>
@@ -68,7 +73,10 @@
                                 <div class="bg-blue-500/10 p-2 rounded-lg">
                                     <x-icon name="o-folder" class="w-5 h-5 text-blue-400" />
                                 </div>
-                                <span class="text-gray-200">{{ $dataset['display_name'] }}</span>
+                                <a href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
+                                   wire:navigate
+                                   class="text-gray-200">
+                                    {{ $dataset['display_name'] }}</a>
                             </div>
                         </td>
                         {{-- Categories --}}
@@ -87,7 +95,7 @@
                         </td>
                         {{-- Owner --}}
                         <td class="px-6 py-3">
-                            <span class="text-gray-200">{{ $dataset['owner'] }}</span>
+                            <span class="text-gray-200">{{ $dataset['user']['email'] }}</span>
                         </td>
                         {{-- Visibility --}}
                         <td class="px-6 py-3">
@@ -111,22 +119,21 @@
                         </td>
                         {{-- Actions --}}
                         <td class="px-6 py-3">
-                            <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'.$dataset['id']"  :editingDataset="$dataset['unique_name']"/>
-                            <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'.$dataset['id']"  :editingDataset="$dataset['unique_name']"/>
                             <x-dropdown-menu direction="left" class="w-50">
                                 <x-dropdown-menu-item
-                                    @click.prevent="open = 'extend-dataset'"
+                                    @click="$dispatch('extend-selected','{{ $dataset['unique_name'] }}'); open = 'extend-dataset'"
                                     :icon="@svg('eva-upload')->toHtml()">
                                     Extend Dataset
                                 </x-dropdown-menu-item>
+
                                 <x-dropdown-menu-item
-                                    @click.prevent.stop="open = 'edit-dataset'"
+                                    @click="$dispatch('edit-selected','{{ $dataset['unique_name'] }}'); open = 'edit-dataset'"
                                     :icon="@svg('eos-edit')->toHtml()">
                                     Edit Dataset info
                                 </x-dropdown-menu-item>
 
                                 <x-dropdown-menu-item
-                                    @click.prevent.stop="open = 'download-dataset'"
+                                    @click="$wire.cacheQuery('{{$dataset['id']}}'); open = 'download-dataset'"
                                     :icon="@svg('eva-download')->toHtml()">
                                     Download Dataset
                                 </x-dropdown-menu-item>
@@ -134,7 +141,7 @@
                                 <div class="border-t border-gray-300"></div>
 
                                 <x-dropdown-menu-item
-                                    wire:click="deleteDataset({{ $dataset['id'] }})"
+                                    wire:click="deleteDataset('{{ $dataset['unique_name'] }}')"
                                     wire:confirm="This will permanently delete the dataset"
                                     danger
                                     :icon="@svg('mdi-trash-can-outline')->toHtml()">
@@ -161,7 +168,7 @@
         open: '',
         init() {
 
-        },
+        }
     }));
 </script>
 @endscript

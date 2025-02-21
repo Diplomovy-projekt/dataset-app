@@ -82,6 +82,25 @@
         1
     );
 @endphp
+@php
+    $config = [
+        'invitation_expiration_value' => 24,
+        'invitation_expiration_unit' => 'hours',
+        'tmp_file_lifetime_value' => 48,
+        'tmp_file_lifetime_unit' => 'hours',
+        'chunk_size' => 10,
+        'max_parallel_uploads' => 3
+    ];
+
+    $timeUnits = [
+        'seconds' => 'Seconds',
+        'minutes' => 'Minutes',
+        'hours' => 'Hours',
+        'days' => 'Days',
+        'weeks' => 'Weeks',
+        'months' => 'Months'
+    ];
+@endphp
 <div x-data="adminDashboard(@this)" class="p-6">
     <!-- Header Section -->
     <div class="flex items-center justify-between mb-6">
@@ -126,37 +145,109 @@
         </div>
     </div>
 
-    {{--<!-- Email Settings Section -->
-    <div class="bg-slate-800 rounded-xl overflow-hidden">
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-500/10 p-2 rounded-lg">
-                    <x-icon name="o-envelope" class="w-5 h-5 text-blue-400" />
+    {{--<div class="mb-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-200">System Configuration</h2>
+            <p class="text-sm text-gray-400">Manage system-wide settings and parameters</p>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Time Settings Card -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-orange-500/10 p-2 rounded-lg">
+                        <x-icon name="o-clock" class="w-5 h-5 text-orange-400" />
+                    </div>
+                    <h3 class="text-gray-200 font-semibold">Expiration Settings</h3>
                 </div>
-                <h2 class="text-xl font-bold text-gray-200">Email Settings</h2>
+
+                <div class="space-y-6">
+                    <!-- Invitation URL Expiration -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">
+                            Invitation URL Expiration
+                        </label>
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <input type="number"
+                                       value="{{ $config['invitation_expiration_value'] }}"
+                                       class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       min="1">
+                            </div>
+                            <div class="flex-1">
+                                <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    @foreach ($timeUnits as $value => $label)
+                                        <option value="{{ $value }}" {{ $config['invitation_expiration_unit'] == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temporary File Lifetime -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">
+                            Temporary File Lifetime
+                        </label>
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <input type="number"
+                                       value="{{ $config['tmp_file_lifetime_value'] }}"
+                                       class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       min="1">
+                            </div>
+                            <div class="flex-1">
+                                <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    @foreach ($timeUnits as $value => $label)
+                                        <option value="{{ $value }}" {{ $config['tmp_file_lifetime_unit'] == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Settings Card -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-cyan-500/10 p-2 rounded-lg">
+                        <x-icon name="o-arrow-up-tray" class="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <h3 class="text-gray-200 font-semibold">Upload Settings</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">
+                        Upload Chunk Size (MB)
+                    </label>
+                    <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        @foreach ([5, 10, 15, 20] as $size)
+                            <option value="{{ $size }}" {{ $config['chunk_size'] == $size ? 'selected' : '' }}>
+                                {{ $size }} MB
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
-        <div class="p-6 space-y-4">
-            <div class="space-y-2">
-                <label class="text-sm text-gray-400">SMTP Server</label>
-                <input type="text" value="{{ $emailSettings['smtp_server'] }}"
-                       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-gray-200">
-            </div>
-            <div class="space-y-2">
-                <label class="text-sm text-gray-400">SMTP Port</label>
-                <input type="text" value="{{ $emailSettings['smtp_port'] }}"
-                       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-gray-200">
-            </div>
-            <div class="space-y-2">
-                <label class="text-sm text-gray-400">From Address</label>
-                <input type="email" value="{{ $emailSettings['from_address'] }}"
-                       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-gray-200">
-            </div>
-            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Save Email Settings
+
+        <!-- Save Button -->
+        <div class="mt-6 flex justify-end">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                <x-icon name="o-check" class="w-5 h-5" />
+                Save Changes
             </button>
         </div>
     </div>--}}
+
+
     <!-- Activity Logs Table -->
     <div class="bg-slate-800 rounded-xl overflow-hidden">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
