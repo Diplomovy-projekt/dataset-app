@@ -10,6 +10,7 @@ use App\Models\Dataset;
 use App\Models\Image;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -46,6 +47,11 @@ class DatasetShow extends Component
         }
 
         $dataset->stats = $dataset->getStats();
+        foreach($dataset->classes as $class) {
+            $firstFile = collect(Storage::disk('datasets')
+                ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
+            $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
+        }
         $this->dataset = $dataset->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
@@ -66,11 +72,11 @@ class DatasetShow extends Component
             return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
         }
     }
-    public function deleteDataset(DatasetActions $datasetService)
+    public function deleteDataset(DatasetActions $datasetService): void
     {
         $result = $datasetService->deleteDataset($this->uniqueName);
         if($result->isSuccessful()){
-            return redirect()->route('profile');
+            redirect()->route('profile');
         }
     }
 
