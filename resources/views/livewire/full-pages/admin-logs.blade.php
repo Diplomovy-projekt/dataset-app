@@ -101,7 +101,7 @@
         'months' => 'Months'
     ];
 @endphp
-<div>
+<div x-data="adminLogs(@this)">
     <!-- Activity Logs Table -->
     <div class="bg-slate-800 rounded-xl overflow-hidden">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
@@ -220,7 +220,7 @@
 
 @script
 <script>
-    Alpine.data('adminDashboard', (wire) => ({
+    Alpine.data('adminLogs', (wire) => ({
         showModal: false,
         selectedLog: null,
 

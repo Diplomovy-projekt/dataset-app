@@ -16,6 +16,7 @@ class Register extends Component
     public string $name = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public $agreed = false;
 
     public function mount($token)
     {
@@ -27,7 +28,7 @@ class Register extends Component
         return view('livewire.forms.register');
     }
 
-    public function canRender()
+    private function canRender()
     {
         $invitation = Invitation::where('token', $this->token)->first();
         if(!$invitation || $invitation->used){
@@ -40,6 +41,7 @@ class Register extends Component
         $this->validate([
             'name' => 'required',
             'password' => 'required|confirmed',
+            'agreed' => 'accepted',
         ]);
 
         try {
@@ -65,10 +67,11 @@ class Register extends Component
 
             DB::commit();
 
+            $this->dispatch('flash-msg', type: 'success', message: 'Registered successfully');
             return redirect()->route('profile');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Failed to register. Your invitation may have expired.');
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to register');
         }
     }
 

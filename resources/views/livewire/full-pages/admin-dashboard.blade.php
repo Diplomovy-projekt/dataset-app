@@ -4,41 +4,28 @@
     <x-misc.header title="System Statistics"/>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Active Users Card -->
-        <div class="bg-slate-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-blue-500/10 p-2 rounded-lg">
-                    <x-icon name="o-users" class="w-5 h-5 text-blue-400" />
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        @foreach([
+            ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount],
+            ['icon' => 'o-squares-2x2', 'color' => 'purple', 'title' => 'Total Datasets', 'value' => $this->datasetCount],
+            ['icon' => 'o-server', 'color' => 'yellow', 'title' => 'Dataset Storage', 'value' => "$totalStorage GB", 'extra' => 'Total space used']
+        ] as $stat)
+            <div class="bg-slate-800 rounded-lg p-4 flex items-center gap-4">
+                <div class="bg-{{ $stat['color'] }}-500/10 p-3 rounded-lg">
+                    <x-icon name="{{ $stat['icon'] }}" class="w-6 h-6 text-{{ $stat['color'] }}-400" />
                 </div>
-                <h3 class="text-gray-200 font-semibold">Active Users</h3>
-            </div>
-            <p class="text-3xl font-bold text-gray-200">{{ $this->userCount}}</p>
-        </div>
-
-        <!-- Total Datasets Card -->
-        <div class="bg-slate-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-purple-500/10 p-2 rounded-lg">
-                    <x-icon name="o-squares-2x2" class="w-5 h-5 text-purple-400" />
+                <div class="flex flex-col">
+                    <h3 class="text-gray-200 text-sm font-semibold">{{ $stat['title'] }}</h3>
+                    <p class="text-3xl font-bold text-gray-200">{{ $stat['value'] }}</p>
+                    @isset($stat['extra'])
+                        <p class="text-xs text-gray-400">{{ $stat['extra'] }}</p>
+                    @endisset
                 </div>
-                <h3 class="text-gray-200 font-semibold">Total Datasets</h3>
             </div>
-            <p class="text-3xl font-bold text-gray-200">{{ $this->datasetCount }}</p>
-        </div>
-
-        <!-- Storage Usage Card -->
-        <div class="bg-slate-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-green-500/10 p-2 rounded-lg">
-                    <x-icon name="o-server" class="w-5 h-5 text-green-400" />
-                </div>
-                <h3 class="text-gray-200 font-semibold">Dataset Storage</h3>
-            </div>
-            <p class="text-3xl font-bold text-gray-200">{{ $totalStorage }}GB</p>
-            <p class="text-sm text-gray-400">Total space used by datasets</p>
-        </div>
+        @endforeach
     </div>
+
+
 
     <!-- Metadata Management Section -->
     <div class="space-y-6">
@@ -227,7 +214,7 @@
 <script>
     Alpine.data('adminDashboard', (wire) => ({
         // Modal
-        open: '45',
+        open: '',
         // Type Management
         typeName: '',
         typeDelete: null,

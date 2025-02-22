@@ -25,5 +25,7 @@
                 {{ $slot }}
             </div>
         </div>
+        <x-notif></x-notif>
+
     </body>
 </html>

@@ -23,7 +23,7 @@ class DatasetBuilder extends Component
 {
     use ImageRendering, WithPagination;
     #[Locked]
-    public $currentStage = 3;
+    public $currentStage = 0;
     #[Locked]
     public $completedStages = [];
     #[Locked]
@@ -94,7 +94,7 @@ class DatasetBuilder extends Component
     }
     public function render()
     {
-        $this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
+        /*$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
             ->orderBy('id', 'desc')
             ->limit(6) // Get only the last two
             ->get();
@@ -104,7 +104,7 @@ class DatasetBuilder extends Component
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
             $dataset->image = $dataset->image->toArray();
         }
-        $this->datasets = $this->datasets->toArray();
+        $this->datasets = $this->datasets->toArray();*/
         return view('livewire.full-pages.dataset-builder');
     }
 

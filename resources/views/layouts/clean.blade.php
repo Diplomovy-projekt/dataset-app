@@ -17,7 +17,8 @@
 
 </div>
 
-<x-reusable.flash-message />
+<x-notif></x-notif>
+
 </body>
 
 </html>
