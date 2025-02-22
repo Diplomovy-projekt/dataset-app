@@ -175,6 +175,7 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
+        $this->datasets = [];
         // Get all explicitly selected metadata values
         $explicitlyIncluded = array_keys(array_filter($this->selectedMetadataValues));
         // Get all metadata values from skipped types (treat them as included)
@@ -186,9 +187,21 @@ class DatasetBuilder extends Component
 
         // Query datasets that match at least one metadata value
         $datasetMetadataIds = DatasetMetadata::whereIn('metadata_value_id', $metadataValueIds)
+            ->whereHas('dataset.categories', function ($query) {
+                $query->whereIn('category_id', $this->selectedCategories);
+            })
             ->distinct()
             ->pluck('dataset_id');
-        $this->datasets = Dataset::whereIn('id', $datasetMetadataIds)
+        // Query datasets that have no metadata but belong to selected categories
+        $datasetsWithoutMetadata = Dataset::whereDoesntHave('metadataValues')
+            ->whereHas('categories', function ($query) {
+                $query->whereIn('category_id', $this->selectedCategories);
+            })
+            ->pluck('id');
+        // Merge both sets of datasets
+        $datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique();
+
+        $this->datasets = Dataset::whereIn('id', $datasetIds)
             ->with(['classes', 'metadataValues', 'categories'])
             ->get()
             ->map(function ($dataset) {
