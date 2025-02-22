@@ -40,7 +40,7 @@ new class extends Component
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
     <!-- Header -->
-    <x-misc.header-with-line title="Update Password" info="Ensure your account is using a long, random password to stay secure."/>
+    <x-misc.header title="Update Password" info="Ensure your account is using a long, random password to stay secure."/>
 
     <!-- Form -->
     <form wire:submit="updatePassword" class="space-y-4">

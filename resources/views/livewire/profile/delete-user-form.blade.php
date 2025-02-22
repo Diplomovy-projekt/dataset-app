@@ -28,7 +28,7 @@ new class extends Component
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
     <!-- Header -->
-    <x-misc.header-with-line title="Deactivate Account" info="Once your account is deactivated, all of its resources and data will be reassigned under admins ownership"/>
+    <x-misc.header title="Deactivate Account" info="Once your account is deactivated, all of its resources and data will be reassigned under admins ownership"/>
 
     <!-- Delete Button -->
     <x-danger-button

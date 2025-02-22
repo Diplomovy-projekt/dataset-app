@@ -5,10 +5,7 @@
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
 
     <!-- Header Section -->
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-200">Dataset Management</h1>
-        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
-    </div>
+    <x-misc.header title="Dataset Management"/>
 
     <!-- Table Section -->
     <div class="bg-slate-800 rounded-xl overflow-hidden">
@@ -106,7 +103,7 @@
                                 <x-modals.fixed-modal modalId="change-owner">
                                     <div class="p-4">
                                         {{-- Header --}}
-                                        <x-misc.header-with-line title="Change Dataset Owner" info="Select a new owner for the dataset." />
+                                        <x-misc.header title="Change Dataset Owner" info="Select a new owner for the dataset." />
 
                                         {{-- Search input --}}
                                         <div class="relative mb-3">

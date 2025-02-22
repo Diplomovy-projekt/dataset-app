@@ -1,6 +1,6 @@
 <div x-data="userManagement(@this)" class="p-6">
     <!-- Header Section -->
-    <x-misc.header-with-line title="User Management"/>
+    <x-misc.header title="User Management"/>
 
     <!-- Main Content -->
     <div class="bg-slate-800 rounded-xl overflow-hidden">
@@ -229,7 +229,7 @@
         <x-modals.fixed-modal modalId="change-owner" class="w-fit">
             <div class="p-4">
                 {{-- Header --}}
-                <x-misc.header-with-line title="Change Dataset Ownership" info="Select a new owner before deleting the user. The dataset will be transferred automatically."/>
+                <x-misc.header title="Change Dataset Ownership" info="Select a new owner before deleting the user. The dataset will be transferred automatically."/>
 
                 {{-- Search input --}}
                 <div class="relative mb-3">

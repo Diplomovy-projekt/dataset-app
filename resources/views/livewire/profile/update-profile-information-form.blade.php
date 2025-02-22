@@ -64,7 +64,7 @@ new class extends Component
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
 
-    <x-misc.header-with-line title="Profile Information" info="Update your account's profile information and email address."/>
+    <x-misc.header title="Profile Information" info="Update your account's profile information and email address."/>
 
 
     <!-- Form -->

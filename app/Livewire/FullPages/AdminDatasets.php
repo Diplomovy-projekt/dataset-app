@@ -82,10 +82,10 @@ class AdminDatasets extends Component
         try {
             $dataset = Dataset::find($id);
             $dataset->update(['user_id' => $userId]);
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Owner changed successfully']);
+            $this->dispatch('flash-msg', type: 'success', message: 'Owner changed successfully');
 
         } catch (\Exception $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'An error occurred']);
+            $this->dispatch('flash-msg', type: 'error', message: 'An error occurred');
         }
     }
 

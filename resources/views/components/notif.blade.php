@@ -18,7 +18,7 @@
             this.timer = setTimeout(() => this.show = false, 3000);
         }
     }"
-     @flash-msg.window="showNotification($event.detail[0])"
+     @flash-msg.window="showNotification($event.detail)"
      class="fixed top-4 right-4 z-50">
 
     <div x-show="show"

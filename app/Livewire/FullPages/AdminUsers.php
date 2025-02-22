@@ -90,11 +90,11 @@ class AdminUsers extends Component
 
             unset($this->paginatedUsers);
 
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Role updated successfully!']);
+            $this->dispatch('flash-msg', type: 'success', message: 'Role updated successfully!');
         } catch (\InvalidArgumentException $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => $e->getMessage()]);
+            $this->dispatch('flash-msg', type: 'error', message: $e->getMessage());
         } catch (\Exception $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => $e->getMessage()]);
+            $this->dispatch('flash-msg', type: 'error', message: $e->getMessage());
         }
     }
 
@@ -103,9 +103,9 @@ class AdminUsers extends Component
         try {
             $user = User::find($id);
             $user->update(['is_active' => !$user->is_active]);
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Action completed successfully!']);
+            $this->dispatch('flash-msg', type: 'success', message: 'Action completed successfully!');
         } catch (\Exception $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Action failed']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Action failed');
         }
         unset($this->paginatedUsers);
     }
@@ -121,7 +121,7 @@ class AdminUsers extends Component
     public function deleteUser($deleteUserId, $inheritDatasetsUserId)
     {
         if (auth()->id() == $deleteUserId) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'You cannot delete yourself!']);
+            $this->dispatch('flash-msg', type: 'error', message: 'You cannot delete yourself!');
             return;
         }
         try {
@@ -134,9 +134,9 @@ class AdminUsers extends Component
             Invitation::where('email', $user->email)->delete();
 
             DB::commit();
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'User deleted successfully!']);
+            $this->dispatch('flash-msg', type: 'success', message: 'User deleted successfully!');
         } catch (\Exception $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Failed to delete user. Please try again.']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete user. Please try again.');
         }
         unset($this->paginatedUsers);
     }
@@ -149,7 +149,7 @@ class AdminUsers extends Component
             ->first();
 
         if (!$invitation) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Invitation not found.']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Invitation not found.');
             return;
         }
 
@@ -158,9 +158,9 @@ class AdminUsers extends Component
 
         try {
             Mail::to($invitation->email)->send(new UserInvitationMail($invitation));
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Invitation resent successfully!']);
+            $this->dispatch('flash-msg', type: 'success', message: 'Invitation resent successfully!');
         } catch (\Exception $e) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Failed to send invitation email.']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to send invitation email.');
         }
         unset($this->pendingInvites);
     }
@@ -172,14 +172,14 @@ class AdminUsers extends Component
             ->first();
 
         if (!$invitation) {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Invitation is either already used or not found.']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Invitation is either already used or not found.');
             return;
         }
 
         if ($invitation->delete()) {
-            $this->dispatch('flash-msg', ['type' => 'success', 'message' => 'Invitation cancelled successfully!']);
+            $this->dispatch('flash-msg', type: 'success', message: 'Invitation cancelled successfully!');
         } else {
-            $this->dispatch('flash-msg', ['type' => 'error', 'message' => 'Failed to cancel invitation. Please try again.']);
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to cancel invitation. Please try again.');
         }
         unset($this->pendingInvites);
     }

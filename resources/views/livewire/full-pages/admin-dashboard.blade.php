@@ -1,112 +1,7 @@
-@php
-    $dummyLogs = collect([
-        (object)[
-            'created_at' => now()->subHours(2),
-            'user' => (object)[
-                'name' => 'John Smith',
-                'email' => 'john.smith@example.com'
-            ],
-            'description' => 'Uploaded new dataset "Sales Data 2024"',
-            'type' => 'dataset'
-        ],
-        (object)[
-            'created_at' => now()->subHours(3),
-            'user' => (object)[
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah.j@example.com'
-            ],
-            'description' => 'Modified user permissions',
-            'type' => 'user'
-        ],
-        (object)[
-            'created_at' => now()->subHours(5),
-            'user' => (object)[
-                'name' => 'Mike Anderson',
-                'email' => 'mike.a@example.com'
-            ],
-            'description' => 'Downloaded dataset "Customer Survey Results"',
-            'type' => 'dataset'
-        ],
-        (object)[
-            'created_at' => now()->subHours(6),
-            'user' => (object)[
-                'name' => 'Emma Wilson',
-                'email' => 'emma.w@example.com'
-            ],
-            'description' => 'System backup completed',
-            'type' => 'system'
-        ],
-        (object)[
-            'created_at' => now()->subHours(8),
-            'user' => (object)[
-                'name' => 'Alex Turner',
-                'email' => 'alex.t@example.com'
-            ],
-            'description' => 'Updated dataset metadata',
-            'type' => 'dataset'
-        ],
-        (object)[
-            'created_at' => now()->subHours(10),
-            'user' => (object)[
-                'name' => 'Lisa Brown',
-                'email' => 'lisa.b@example.com'
-            ],
-            'description' => 'Created new user account',
-            'type' => 'user'
-        ],
-        (object)[
-            'created_at' => now()->subHours(12),
-            'user' => (object)[
-                'name' => 'David Chen',
-                'email' => 'david.c@example.com'
-            ],
-            'description' => 'Scheduled system maintenance',
-            'type' => 'system'
-        ],
-        (object)[
-            'created_at' => now()->subHours(14),
-            'user' => (object)[
-                'name' => 'Rachel Adams',
-                'email' => 'rachel.a@example.com'
-            ],
-            'description' => 'Deleted outdated dataset',
-            'type' => 'dataset'
-        ]
-    ]);
-
-    // Convert to paginator
-    $activityLogs = new \Illuminate\Pagination\LengthAwarePaginator(
-        $dummyLogs,
-        $dummyLogs->count(),
-        10,
-        1
-    );
-@endphp
-@php
-    $config = [
-        'invitation_expiration_value' => 24,
-        'invitation_expiration_unit' => 'hours',
-        'tmp_file_lifetime_value' => 48,
-        'tmp_file_lifetime_unit' => 'hours',
-        'chunk_size' => 10,
-        'max_parallel_uploads' => 3
-    ];
-
-    $timeUnits = [
-        'seconds' => 'Seconds',
-        'minutes' => 'Minutes',
-        'hours' => 'Hours',
-        'days' => 'Days',
-        'weeks' => 'Weeks',
-        'months' => 'Months'
-    ];
-@endphp
 <div x-data="adminDashboard(@this)" class="p-6">
     <!-- Header Section -->
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-200">Admin Dashboard</h1>
-        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
-    </div>
+
+    <x-misc.header title="System Statistics"/>
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -145,238 +40,234 @@
         </div>
     </div>
 
-    {{--<div class="mb-8">
-        <!-- Header -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-gray-200">System Configuration</h2>
-            <p class="text-sm text-gray-400">Manage system-wide settings and parameters</p>
-        </div>
+    <!-- Metadata Management Section -->
+    <div class="space-y-6">
+        <!-- Section Header -->
+        <x-misc.header title="Metadata Management"/>
 
-        <!-- Settings Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Time Settings Card -->
-            <div class="bg-slate-800 rounded-xl p-6">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="bg-orange-500/10 p-2 rounded-lg">
-                        <x-icon name="o-clock" class="w-5 h-5 text-orange-400" />
-                    </div>
-                    <h3 class="text-gray-200 font-semibold">Expiration Settings</h3>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- Invitation URL Expiration -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">
-                            Invitation URL Expiration
-                        </label>
-                        <div class="flex gap-3">
-                            <div class="flex-1">
-                                <input type="number"
-                                       value="{{ $config['invitation_expiration_value'] }}"
-                                       class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                       min="1">
-                            </div>
-                            <div class="flex-1">
-                                <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    @foreach ($timeUnits as $value => $label)
-                                        <option value="{{ $value }}" {{ $config['invitation_expiration_unit'] == $value ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Temporary File Lifetime -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">
-                            Temporary File Lifetime
-                        </label>
-                        <div class="flex gap-3">
-                            <div class="flex-1">
-                                <input type="number"
-                                       value="{{ $config['tmp_file_lifetime_value'] }}"
-                                       class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                       min="1">
-                            </div>
-                            <div class="flex-1">
-                                <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    @foreach ($timeUnits as $value => $label)
-                                        <option value="{{ $value }}" {{ $config['tmp_file_lifetime_unit'] == $value ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upload Settings Card -->
-            <div class="bg-slate-800 rounded-xl p-6">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="bg-cyan-500/10 p-2 rounded-lg">
-                        <x-icon name="o-arrow-up-tray" class="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <h3 class="text-gray-200 font-semibold">Upload Settings</h3>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2">
-                        Upload Chunk Size (MB)
-                    </label>
-                    <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        @foreach ([5, 10, 15, 20] as $size)
-                            <option value="{{ $size }}" {{ $config['chunk_size'] == $size ? 'selected' : '' }}>
-                                {{ $size }} MB
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="mt-6 flex justify-end">
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                <x-icon name="o-check" class="w-5 h-5" />
-                Save Changes
-            </button>
-        </div>
-    </div>--}}
-
-
-    <!-- Activity Logs Table -->
-    <div class="bg-slate-800 rounded-xl overflow-hidden">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-500/10 p-2 rounded-lg">
-                    <x-icon name="o-clock" class="w-5 h-5 text-blue-400" />
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-500 p-2 rounded-lg">
+                        <x-icon name="o-squares-2x2" class="w-5 h-5 text-gray-200" />
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-200">Metadata</h2>
                 </div>
-                <h2 class="text-xl font-bold text-gray-200">Activity Logs</h2>
+                <button @click="open = open === 'new-type' ? '' : 'new-type'"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <x-icon name="o-plus" class="w-4 h-4" />
+                        <span>New Metadata</span>
+                    </div>
+                </button>
             </div>
         </div>
+        <!-- Metadata Types List -->
+        <div class="space-y-3">
 
-        <div class="p-6">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                    <tr class="text-left border-b border-slate-700">
-                        <th class="pb-3 px-4 text-sm font-semibold text-gray-400">Timestamp</th>
-                        <th class="pb-3 px-4 text-sm font-semibold text-gray-400">User</th>
-                        <th class="pb-3 px-4 text-sm font-semibold text-gray-400">Email</th>
-                        <th class="pb-3 px-4 text-sm font-semibold text-gray-400">Action</th>
-                        <th class="pb-3 px-4 text-sm font-semibold text-gray-400">Type</th>
-                    </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-700">
-                    @foreach($activityLogs as $log)
-                        <tr
-                            class="hover:bg-slate-700/50 transition-colors cursor-pointer"
-                            @click="openLogDetail($el, {{ json_encode($log) }})"
-                        >
-                            <td class="py-3 px-4 text-sm text-gray-400">
-                                {{ $log->created_at->format('M d, Y H:i') }}
-                            </td>
-                            <td class="py-3 px-4 text-sm text-gray-200">
-                                {{ $log->user->name }}
-                            </td>
-                            <td class="py-3 px-4 text-sm text-gray-400">
-                                {{ $log->user->email }}
-                            </td>
-                            <td class="py-3 px-4 text-sm text-gray-200">
-                                {{ Str::limit($log->description, 60) }}
-                            </td>
-                            <td class="py-3 px-4">
-                                <span @class([
-                                    'px-2 py-1 text-xs rounded-full',
-                                    'bg-blue-500/10 text-blue-400' => $log->type === 'dataset',
-                                    'bg-purple-500/10 text-purple-400' => $log->type === 'user',
-                                    'bg-emerald-500/10 text-emerald-400' => $log->type === 'system',
-                                ])>
-                                    {{ $log->type }}
-                                </span>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div
-        x-show="showModal"
-        x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-    >
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-slate-900/75"></div>
-
-        <!-- Modal Content -->
-        <div class="relative min-h-screen flex items-center justify-center p-4">
+                <!-- New Type Input (Initially Hidden) -->
             <div
-                class="relative bg-slate-800 rounded-xl max-w-2xl w-full overflow-hidden"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 transform scale-95"
-                x-transition:enter-end="opacity-100 transform scale-100"
-            >
-                <!-- Modal Header -->
-                <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-bold text-gray-200">Activity Details</h2>
-                        <button @click="showModal = false" class="text-gray-400 hover:text-gray-200">
-                            <!-- Close button (X) -->
-                            <span class="text-lg">&times;</span>
+                x-show="open == 'new-type'"
+                x-transition
+                class="bg-slate-800 rounded-xl p-4 border border-blue-500/50">
+                <div class="flex items-center gap-3">
+                    <input
+                        type="text"
+                        x-model="typeName"
+                        @keydown.enter="open = ''"
+                        @keydown.escape="open = ''"
+                        placeholder="Enter type name..."
+                        class="flex-1 bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-slate-800"
+                        >
+
+                    <button
+                        @click="open = ''; saveType(typeName, null)"
+                        class="p-2 text-gray-400 hover:text-gray-200">
+                        <x-icon name="o-check" class="w-5 h-5" />
+                    </button>
+                    <button
+                        @click="open = ''"
+                        class="p-2 text-gray-400 hover:text-gray-200">
+                        <x-icon name="o-x-mark" class="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing Types -->
+            @foreach($this->metadata as $type)
+                <div
+                    class="bg-slate-800 rounded-xl overflow-hidden"
+                    x-data="{
+                    expanded: false,
+                    isAddingValue: false,
+                    newValue: '',
+                    typeName: '{{ $type['name'] }}'
+                }">
+                    <!-- Type Header (Collapsed State) -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-slate-700/50 transition-colors">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 cursor-pointer" @click="expanded = !expanded">
+                            <div class="bg-purple-500/10 p-2 rounded-lg">
+                                <x-icon
+                                    name="o-chevron-right"
+                                    class="w-5 h-5 text-purple-400 transition-transform"
+                                    ::class="{ 'rotate-90': expanded }" />
+                            </div>
+                            <!-- Type Name (Editable) -->
+                            <input
+                                type="text"
+                                x-model="typeName"
+                                @keydown.enter="saveType(typeName, {{ $type['id'] }})"
+                                @blur="saveType(typeName, {{ $type['id'] }})"
+                                class=" sm:w-fit text-xl font-bold text-gray-300 bg-slate-800/50 border border-slate-600 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-slate-800"
+                                >
+                            <span class="text-sm text-gray-400">({{ count($type['metadata_values']) }} values)</span>
+                        </div>
+                        <!-- Delete Type Button -->
+                        <button
+                            @click="typeDelete = {{ $type['id'] }}; open = 'delete-type-modal'"
+                            class="p-2 text-red-400 hover:text-red-300 transition-colors">
+                            <x-icon name="o-trash" class="w-5 h-5" />
                         </button>
                     </div>
-                </div>
 
-                <!-- Modal Body -->
-                <div class="p-6 space-y-4">
-                    <div class="space-y-1">
-                        <h3 class="text-sm font-medium text-gray-400">Timestamp</h3>
-                        <p class="text-gray-200" x-text="formatDate(selectedLog?.created_at)"></p>
+                    <!-- Values Section (Expanded State) -->
+                    <div
+                        x-show="expanded"
+                        x-collapse
+                        class="border-t border-slate-700">
+                        <!-- Add Value Input -->
+                        <div class="p-4 bg-slate-800/50">
+                            <div
+                                x-show="isAddingValue"
+                                class="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    x-model="newValue"
+                                    @keydown.escape="isAddingValue = false"
+                                    @click.outside="isAddingValue = false"
+                                    placeholder="Enter new value..."
+                                    class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                <button
+                                    @click="isAddingValue = false; saveValue({{ $type['id'] }}, newValue)"
+                                    class="p-2 text-gray-400 hover:text-gray-200">
+                                    <x-icon name="o-check" class="w-5 h-5" />
+                                </button>
+                                <button
+                                    @click="isAddingValue = false"
+                                    class="p-2 text-gray-400 hover:text-gray-200">
+                                    <x-icon name="o-x-mark" class="w-5 h-5" />
+                                </button>
+                            </div>
+                            <button
+                                x-show="!isAddingValue"
+                                @click="isAddingValue = true"
+                                class="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2">
+                                <x-icon name="o-plus" class="w-4 h-4" />
+                                Add New Value
+                            </button>
+                        </div>
+
+                        <!-- Values List -->
+                        <div class="grid sm:grid-cols-2">
+                            @foreach($type['metadata_values'] as $index => $value)
+                                <div
+                                    class="p-4 flex items-center justify-between hover:bg-slate-700/50 group"
+                                    x-data="{valueText: '{{ $value['value'] }}'}">
+                                    <!-- Value Text (Editable) -->
+                                    <input
+                                        type="text"
+                                        x-model="valueText"
+                                        @keydown.enter="saveValue({{ $type['id'] }}, valueText, {{ $value['id'] }})"
+                                        @blur="saveValue({{ $type['id'] }}, valueText, {{ $value['id'] }})"
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-3 py-1 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-slate-800"
+                                        >
+                                    <!-- Action Buttons -->
+                                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            @click="deleteValue({{ $value['id'] }})"
+                                            class="p-1.5 text-red-400 hover:text-red-300">
+                                            <x-icon name="o-trash" class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <div class="space-y-1">
-                        <h3 class="text-sm font-medium text-gray-400">User</h3>
-                        <p class="text-gray-200">
-                            <span x-text="selectedLog?.user.name"></span>
-                            (<span x-text="selectedLog?.user.email"></span>)
-                        </p>
-                    </div>
-                    <div class="space-y-1">
-                        <h3 class="text-sm font-medium text-gray-400">Description</h3>
-                        <p class="text-gray-200" x-text="selectedLog?.description"></p>
-                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <x-modals.fixed-modal modalId="delete-type-modal">
+            <div class="p-6 space-y-4">
+                <div class="flex items-center gap-3 text-red-400">
+                    <x-icon name="o-exclamation-triangle" class="w-6 h-6" />
+                    <h3 class="text-xl font-bold">Delete Metadata Type</h3>
+                </div>
+                <p class="text-gray-300">This will delete all associated values. Also dataset metadata. This action can not be undone</p>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button
+                        @click="open = ''"
+                        class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-gray-200 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        @click="deleteType(); open = ''"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        Delete Type
+                    </button>
                 </div>
             </div>
-        </div>
+        </x-modals.fixed-modal>
     </div>
 </div>
 
 @script
 <script>
     Alpine.data('adminDashboard', (wire) => ({
-        showModal: false,
-        selectedLog: null,
-
-        openLogDetail(el, log) {
-            this.selectedLog = log;
-            this.showModal = true;
+        // Modal
+        open: '45',
+        // Type Management
+        typeName: '',
+        typeDelete: null,
+        saveType(name, id) {
+            name = name.trim();
+            if(name === ''){
+                window.dispatchEvent(new CustomEvent('flash-msg', {
+                    detail: { type: 'error', message: 'Type name cannot be empty' }
+                }));
+                return;
+            }
+            $wire.saveType(name, id);
         },
-
-        formatDate(date) {
-            return new Date(date).toLocaleString();
+        saveValue(typeId, value, valueId) {
+            value = value.trim();
+            if(value === ''){
+                window.dispatchEvent(new CustomEvent('flash-msg', {
+                    detail: { type: 'error', message: 'Value cannot be empty' }
+                }));
+                return;
+            }
+            $wire.saveValue(typeId, value, valueId);
+        },
+        deleteType() {
+            if(!this.typeDelete){
+                window.dispatchEvent(new CustomEvent('flash-msg', {
+                    detail: { type: 'error', message: 'Type ID not found' }
+                }));
+                return;
+            }
+            $wire.deleteType(this.typeDelete);
+        },
+        deleteValue(valueId) {
+            if(!valueId){
+                window.dispatchEvent(new CustomEvent('flash-msg', {
+                    detail: { type: 'error', message: 'Value ID not found' }
+                }));
+                return;
+            }
+            $wire.deleteValue(valueId);
         }
     }));
 </script>
