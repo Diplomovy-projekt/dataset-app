@@ -8,6 +8,7 @@ use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\Image;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -21,17 +22,12 @@ class DatasetShow extends Component
     use WithPagination, ImageRendering;
     public $uniqueName;
     public $dataset;
-    private $perPage = 25;
     public $searchTerm;
-    public $metadata = [];
-    public $categories = [];
-    public $modalStyle;
-    public $selectedImages = [];
-    private string $exportDataset = '';
-    public $exportFormat = '';
-    public mixed $progress = 0;
-    public array $failedDownload = [];
-    public string $filePath = '';
+    public Collection $metadata;
+    public Collection $categories;
+    public Collection $toggleClasses;
+    public string $modalStyle;
+    public array $selectedImages = [];
 
     #[Computed]
     public function paginatedImages()
@@ -52,6 +48,7 @@ class DatasetShow extends Component
                 ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
             $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
         }
+        $this->toggleClasses = $dataset->classes;
         $this->dataset = $dataset->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
@@ -59,17 +56,16 @@ class DatasetShow extends Component
 
     public function search()
     {
-        // Unsetting computed metadata makes it to recompute, where we fetch images based on search term
+        $this->searchTerm = trim($this->searchTerm);
         unset($this->images);
     }
-
     private function fetchImages()
     {
         if ($this->searchTerm) {
-            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate(AppConfig::PER_PAGE);
         }
         else {
-            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
+            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate(AppConfig::PER_PAGE);
         }
     }
     public function deleteDataset(DatasetActions $datasetService): void
@@ -96,12 +92,6 @@ class DatasetShow extends Component
         Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
-    }
-
-    public function updateProgress()
-    {
-        $this->progress = session()->get("download_progress_{$this->exportDataset}", 0);
-
     }
 
 }

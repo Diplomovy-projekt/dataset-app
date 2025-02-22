@@ -9,7 +9,6 @@ document.addEventListener('alpine:init', ()=>{
         uploadChunks() {
             // Prevent multiple uploads
             if (this.lock) {
-                console.log('Upload already in progress');
                 return;
             }
 
@@ -32,7 +31,6 @@ document.addEventListener('alpine:init', ()=>{
         },
 
         async livewireUploadChunk(file, start) {
-            console.log('Uploading chunk', start);
             const chunkSize = livewireComponent.$get('chunkSize');
             const chunkEnd = Math.min(start + chunkSize, file.size);
             const chunk = file.slice(start, chunkEnd, file.type);

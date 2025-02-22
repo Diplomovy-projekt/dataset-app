@@ -16,7 +16,6 @@
             this.isOpen = false;
         },
         prepareImgAndOverlay(imageSrc, overlayId = null) {
-        console.log(imageSrc);
             if (overlayId) {
                 const overlayElement = document.getElementById(overlayId);
                 if (overlayElement) {

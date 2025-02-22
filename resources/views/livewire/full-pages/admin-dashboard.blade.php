@@ -4,13 +4,13 @@
     <x-misc.header title="System Statistics"/>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+    <div class="flex justify-between gap-3">
         @foreach([
             ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount],
             ['icon' => 'o-squares-2x2', 'color' => 'purple', 'title' => 'Total Datasets', 'value' => $this->datasetCount],
             ['icon' => 'o-server', 'color' => 'yellow', 'title' => 'Dataset Storage', 'value' => "$totalStorage GB", 'extra' => 'Total space used']
         ] as $stat)
-            <div class="bg-slate-800 rounded-lg p-4 flex items-center gap-4">
+            <div class="bg-slate-800 rounded-lg p-4 flex items-center gap-4 flex-1">
                 <div class="bg-{{ $stat['color'] }}-500/10 p-3 rounded-lg">
                     <x-icon name="{{ $stat['icon'] }}" class="w-6 h-6 text-{{ $stat['color'] }}-400" />
                 </div>
