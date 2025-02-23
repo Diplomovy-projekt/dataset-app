@@ -6,7 +6,8 @@
                 <x-icon name="o-folder" class="w-5 h-5 text-gray-200" />
             </div>
             <h2 class="text-xl font-bold text-gray-200 whitespace-nowrap">Datasets</h2>
-            <x-search-bar searchTitle="Search datasets..." class="flex-1" />
+            <x-search-bar searchTitle="Search Datasets..." searchModel="searchTerm" searchMethod="search" />
+
         </div>
     </div>
 
