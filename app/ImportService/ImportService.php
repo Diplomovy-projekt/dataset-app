@@ -13,6 +13,7 @@ use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Utils\Response;
+use App\Utils\Util;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,18 +31,30 @@ class ImportService
     /**
      * @throws Exception
      */
-    public function handleImport(array $requestData): Response {
+    public function handleImport(array $requestData): Response
+    {
+        Util::logStart("Import process");
+
         $this->importPreprocessor = new ImportPreprocess($requestData['format']);
 
+        Util::logStart("Preprocessing dataset");
         $result = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
+        Util::logEnd("Preprocessing dataset");
+
         if (!$result->isSuccessful()) {
             return Response::error($result->message, $result->data);
         }
 
+        Util::logStart("Saving dataset");
         $isSaved = $this->saveDataset($result->data, $requestData);
+        Util::logEnd("Saving dataset");
+
         if (!$isSaved->isSuccessful()) {
             return Response::error($isSaved->message);
         }
+
+        Util::logEnd("Import process");
+
         return Response::success("Dataset imported successfully");
     }
 
@@ -50,39 +63,48 @@ class ImportService
         DB::beginTransaction();
 
         try {
-            // Save the mapped data to the database
+            Util::logStart("Saving to database");
             $savedToDb = $this->strategy->saveToDatabase($mappedData, $requestData);
+            Util::logEnd("Saving to database");
+
             if (!$savedToDb->isSuccessful()) {
                 throw new DatasetImportException($savedToDb->message);
             }
 
-            // Move images to public storage
+            Util::logStart("Moving images to public storage");
             $imagesMoved = $this->moveImagesToPublicDataset(
                 sourceFolder: $requestData['unique_name'],
                 imageFolder: get_class($this->importPreprocessor->config)::IMAGE_FOLDER,
-                destinationFolder: $requestData['parent_dataset_unique_name'] ?? null);
+                destinationFolder: $requestData['parent_dataset_unique_name'] ?? null
+            );
+            Util::logEnd("Moving images to public storage");
+
             if (!$imagesMoved->isSuccessful()) {
                 throw new DatasetImportException($imagesMoved->message);
             }
 
-            // Create thumbnails
+            Util::logStart("Creating thumbnails");
             $thumbnails = $this->createThumbnails($imagesMoved->data['destinationFolder'], $imagesMoved->data['images']);
+            Util::logEnd("Creating thumbnails");
+
             if (count($thumbnails) != count($imagesMoved->data['images'])) {
                 throw new DatasetImportException("Failed to create thumbnails for some images");
             }
 
-            //  Create class samples
+            Util::logStart("Creating class samples");
             $datasetService = new DatasetActions();
             $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'],
-                                                                          $savedToDb->data['classesToSample'],
-                                                                          $savedToDb->data['newImages']);
+                $savedToDb->data['classesToSample'],
+                $savedToDb->data['newImages']);
+            Util::logEnd("Creating class samples");
+
             if (!$createdClassCrops->isSuccessful()) {
                 throw new DatasetImportException($imagesMoved->message);
             }
 
             DB::commit();
             return Response::success();
-        } catch (DatasetImportException $e){
+        } catch (DatasetImportException $e) {
             $this->strategy->handleRollback($requestData);
             return Response::error($e->getMessage(), $e->getData());
         }

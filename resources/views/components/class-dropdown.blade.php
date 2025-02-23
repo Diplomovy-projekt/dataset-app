@@ -73,7 +73,7 @@
 
         <!-- Class Cards Grid -->
         <div class="p-2 max-h-[400px] overflow-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 w-full">
-            <template x-for="classItem in filteredList" :key="classItem.id">
+            <template x-for="classItem in filteredList" :key="'toggle-class-key-' + classItem.id">
                 <div class="rounded-lg min-w-28"
                      :style="'border-color: ' + classItem.rgb + ';'">
                     <div class="flex items-center gap-1">
@@ -81,6 +81,8 @@
                         <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
                             <img :src="imageBasePath + classItem.image"
                                  :alt="classItem.name"
+                                 fetchpriority="high"
+                                 @load="console.log('Toggle image loaded')"
                                  class="object-cover w-full h-full cursor-pointer"
                                  @click="const imgSrc = $event.target.src;
                                                         $dispatch('open-full-screen-image', { src: imgSrc, overlayId: 'null' })">

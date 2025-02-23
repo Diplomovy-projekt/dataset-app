@@ -2,17 +2,17 @@
      x-data="datasetShow(@this)"
      class="container mx-auto pt-3">
 
-    <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']" />
-    <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']" />
-    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']" />
-    <livewire:components.download-dataset :datasetId="$dataset['unique_name']" />
+    <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"  lazy="on-load"/>
+    <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"  lazy="on-load"/>
+    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']"  />
+    <livewire:components.download-dataset :datasetId="$dataset['unique_name']"  lazy="on-load"/>
 
     <div class=" mb-5 bg-slate-900/50">
         <x-dataset.dataset-header></x-dataset.dataset-header>
         <div class="flex flex-col sm:flex-row sm:items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar searchTitle="Search Images..." searchModel="searchTerm" searchMethod="search" />
             <div class="flex">
-                <x-class-dropdown />
+                <x-class-dropdown wire:ignore/>
                 <x-dropdown-menu direction="left" class="w-50">
                     @auth
                         @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])

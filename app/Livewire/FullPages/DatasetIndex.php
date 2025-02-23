@@ -3,8 +3,11 @@
 namespace App\Livewire\FullPages;
 
 use App\ImageService\ImageRendering;
+use App\ImageService\MyImageManager;
 use App\Models\Dataset;
+use Intervention\Image\ImageManager;
 use Livewire\Component;
+use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
 
 class DatasetIndex extends Component
 {

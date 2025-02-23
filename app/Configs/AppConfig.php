@@ -39,7 +39,7 @@ class AppConfig
         '200MB' => 200000000,
     ];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
-    public const PER_PAGE = 25;
+    public const PER_PAGE = 2;
     public const AUTH_ROLES = [
         'user' => 'User',
         'admin' => 'Admin',

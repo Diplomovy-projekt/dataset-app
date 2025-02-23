@@ -65,6 +65,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'timing' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/timing.log'),
+            'level' => 'debug', // Set the log level to debug or appropriate level
+        ],
+
+        'info_channel' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/info.log'),
+            'level' => 'info', // Only log info level messages
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

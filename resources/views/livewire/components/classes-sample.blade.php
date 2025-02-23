@@ -107,7 +107,8 @@
                                         <div class="relative group/image" wire:key="path-of-image-in-classes-sample{{$image}}">
                                             <img src="{{asset($image)}}"
                                                  class="w-14 rounded-md border border-slate-700 group-hover/image:border-blue-500 transition-all"
-                                                 loading="lazy"
+                                                 fetchpriority="low"
+                                                 @load="console.log('Sample image loaded')"
                                                  @click="const imgSrc = $event.target.src;
                                                         $dispatch('open-full-screen-image', { src: imgSrc, overlayId: 'null' })">
                                             <!-- Hover Overlay -->

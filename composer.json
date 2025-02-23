@@ -5,7 +5,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-zip": "*",
         "anourvalar/eloquent-serialize": "^1.2",
         "blade-ui-kit/blade-heroicons": "^2.5",
@@ -18,7 +18,8 @@
         "codeat3/blade-teeny-icons": "^1.10",
         "davidhsianturi/blade-bootstrap-icons": "^1.5",
         "hasnayeen/blade-eva-icons": "^2.0",
-        "intervention/image": "^3.9",
+        "intervention/image": "^3.11.1",
+        "intervention/image-driver-vips": "^1.0",
         "khatabwedaa/blade-css-icons": "^1.4",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
