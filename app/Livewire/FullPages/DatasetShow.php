@@ -25,7 +25,7 @@ class DatasetShow extends Component
     public $searchTerm;
     public Collection $metadata;
     public Collection $categories;
-    public Collection $toggleClasses;
+    public array $toggleClasses;
     public string $modalStyle;
     public array $selectedImages = [];
 
@@ -48,8 +48,8 @@ class DatasetShow extends Component
                 ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
             $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
         }
-        $this->toggleClasses = $dataset->classes;
         $this->dataset = $dataset->toArray();
+        $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
     }
