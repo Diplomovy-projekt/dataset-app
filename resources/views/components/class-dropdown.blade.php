@@ -1,4 +1,5 @@
-<div x-data="classSelector(@this)" class="relative">
+<div x-data="classSelector(@this)" class="relative"
+     wire:ignore>
     <!-- Dropdown Button -->
     <button @click="open = !open" class="bg-slate-900/50 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 hover:bg-slate-800/50 transition-colors">
         <span>Toggle classes</span>
