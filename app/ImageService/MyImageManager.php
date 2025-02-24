@@ -10,28 +10,63 @@ use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
 
 class MyImageManager
 {
-    // Get the appropriate image manager instance
-    public static function getManager()
+    private static ?ImageManager $instance = null;
+
+    private static array $preferredOrder = [
+        'createVipsManager',
+        'createGdManager',
+        'createImagickManager',
+    ];
+
+    /**
+     * @throws \Exception
+     */
+    public static function getManager(): ImageManager
+    {
+        if (!self::$instance) {
+            self::$instance = self::detectDriver();
+        }
+        return self::$instance;
+    }
+
+    private static function detectDriver(): ImageManager
+    {
+        foreach (self::$preferredOrder as $method) {
+            if (method_exists(self::class, $method)) {
+                $manager = self::$method();
+                if ($manager instanceof ImageManager) {
+                    return $manager;
+                }
+            }
+        }
+
+        throw new \Exception("No suitable image driver is available.");
+    }
+
+    private static function createVipsManager(): ?ImageManager
     {
         if (extension_loaded('vips')) {
             Log::channel('info_channel')->info("Using VipsDriver");
             return ImageManager::withDriver(VipsDriver::class);
         }
+        return null;
+    }
 
-        // Check if Imagick is available
+    private static function createImagickManager(): ?ImageManager
+    {
         if (extension_loaded('imagick')) {
             Log::channel('info_channel')->info("Using ImagickDriver");
             return ImageManager::imagick();
         }
+        return null;
+    }
 
-        // Check if GD is available (default option)
+    private static function createGdManager(): ?ImageManager
+    {
         if (extension_loaded('gd')) {
             Log::channel('info_channel')->info("Using GdDriver");
             return ImageManager::gd();
         }
-
-        // If no supported driver is available, throw an exception
-        throw new \Exception("No suitable image driver (GD, Imagick, libvips) is available.");
+        return null;
     }
-
 }

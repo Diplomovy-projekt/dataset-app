@@ -45,7 +45,7 @@ class AdminDatasets extends Component
             }, function ($query) {
                 $query->orderBy($this->sortColumn, $this->sortDirection);
             })
-            ->paginate(AppConfig::PER_PAGE);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
     }
     public function mount()
     {

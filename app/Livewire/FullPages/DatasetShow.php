@@ -28,6 +28,7 @@ class DatasetShow extends Component
     public array $toggleClasses;
     public string $modalStyle;
     public array $selectedImages = [];
+    public int $perPage = 25;
 
     #[Computed]
     public function paginatedImages()
@@ -53,6 +54,10 @@ class DatasetShow extends Component
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
     }
+    public function updatedPerPage()
+    {
+        unset($this->images);
+    }
 
     public function search()
     {
@@ -62,10 +67,10 @@ class DatasetShow extends Component
     private function fetchImages()
     {
         if ($this->searchTerm) {
-            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate(AppConfig::PER_PAGE);
+            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
         }
         else {
-            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate(AppConfig::PER_PAGE);
+            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
         }
     }
     public function deleteDataset(DatasetActions $datasetService): void

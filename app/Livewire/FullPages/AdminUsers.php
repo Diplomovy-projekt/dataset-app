@@ -40,7 +40,7 @@ class AdminUsers extends Component
     {
         return User::withCount('datasets')
             ->orderBy($this->sortColumn, $this->sortDirection)
-            ->paginate(AppConfig::PER_PAGE);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
     }
     #[Computed]
     public function pendingInvites()

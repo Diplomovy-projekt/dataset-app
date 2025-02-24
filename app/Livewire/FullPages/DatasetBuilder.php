@@ -79,10 +79,12 @@ class DatasetBuilder extends Component
         'metadataValues' => [],
         'categories' => [],
     ];
+    public int $perPage = 25;
+
     #[Computed]
     public function paginatedImages()
     {
-        $images = $this->imagesQuery()->paginate(AppConfig::PER_PAGE);
+        $images = $this->imagesQuery()->paginate($this->perPage);
         return $this->prepareImagesForSvgRendering($images);
     }
     #[On('add-selected')]
@@ -106,6 +108,11 @@ class DatasetBuilder extends Component
         }
         $this->datasets = $this->datasets->toArray();*/
         return view('livewire.full-pages.dataset-builder');
+    }
+
+    public function updatedPerPage()
+    {
+        unset($this->images);
     }
 
     public function nextStage()
