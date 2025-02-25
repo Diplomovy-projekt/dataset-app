@@ -1,3 +1,4 @@
+/*
 document.addEventListener('alpine:init', ()=>{
     Alpine.data('chunkedUpload', (livewireComponent) => ({
         progress: 0,
@@ -88,3 +89,4 @@ document.addEventListener('alpine:init', ()=>{
         }
     }));
 })
+*/

@@ -13,7 +13,7 @@
 @endphp
 <div class=" relative">
     @if ($href)
-        <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
+        <a wire:navigate href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
             @if ($icon)
                 <span class="w-5 h-5 mr-2">
                     {!! $icon !!}

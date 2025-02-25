@@ -7,10 +7,12 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
+/*#[Lazy(isolate: false)]*/
 class EditDataset extends Component
 {
     public $editingDataset;

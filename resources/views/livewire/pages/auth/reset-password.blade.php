@@ -66,7 +66,8 @@ new #[Layout('layouts.clean')] class extends Component
 
         Session::flash('status', __($status));
 
-        $this->redirectRoute('login', navigate: true);
+        $this->redirect('login');
+        //$this->redirectRoute('login', navigate: true);
     }
 }; ?>
 

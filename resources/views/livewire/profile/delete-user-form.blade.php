@@ -21,8 +21,8 @@ new class extends Component
             $logout();
             $user->update(['is_active' => false]);
         });
-
-        $this->redirect('/', navigate: true);
+        $this->redirectIntended('welcome');
+        //$this->redirect('/', navigate: true);
     }
 }; ?>
 

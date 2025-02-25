@@ -2,10 +2,10 @@
      x-data="datasetShow(@this)"
      class="container mx-auto pt-3">
 
-    <livewire:forms.edit-dataset :editingDataset="$dataset['unique_name']"  lazy="on-load"/>
-    <livewire:forms.extend-dataset :editingDataset="$dataset['unique_name']"  lazy="on-load"/>
-    <livewire:components.classes-sample :uniqueNames="$dataset['unique_name']"  />
-    <livewire:components.download-dataset :datasetId="$dataset['unique_name']"  lazy="on-load"/>
+    <livewire:forms.edit-dataset :key="'dataset-show-edit-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
+    <livewire:forms.extend-dataset :key="'dataset-show-extend-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
+    <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueNames="$dataset['unique_name']"  />
+    <livewire:components.download-dataset :key="'dataset-show-download-dataset'" :datasetId="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
 
     <div class=" mb-5 bg-slate-900/50">
         <x-dataset.dataset-header></x-dataset.dataset-header>

@@ -1,4 +1,4 @@
-<div x-data="chunkedUpload(@this)">
+<div x-data="chunkedUpload()">
     <x-modals.fixed-modal modalId="uploadDataset" class="w-1/2">
          {{--Main Form Container using MaryUI's Form Component--}}
         <div  class=" mx-auto">
