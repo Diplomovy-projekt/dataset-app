@@ -5,6 +5,7 @@ namespace App\ExportService;
 use App\Configs\AppConfig;
 use App\ExportService\Factory\ExportComponentFactory;
 use App\FileManagement\ZipManager;
+use App\Jobs\DeleteTempFile;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,8 +25,11 @@ class ExportService
             $absolutePath = Storage::disk('datasets')->path($datasetFolder);
             ZipManager::createZipFromFolder($absolutePath);
 
-            //3. Delete the dataset folder
+            //3. Delete the dataset folder and create job to delete zip
             Storage::disk('datasets')->deleteDirectory($datasetFolder);
+            DeleteTempFile::dispatch(AppConfig::DATASETS_PATH . $datasetFolder . '.zip')
+                ->delay(now()->add(AppConfig::EXPIRATION['TMP_FILE']['value'], AppConfig::EXPIRATION['TMP_FILE']['unit']))
+                ->onQueue('temp-files');
 
             return Response::success(data: ['datasetFolder' => $datasetFolder.'.zip']);
         }catch (\Exception $e) {

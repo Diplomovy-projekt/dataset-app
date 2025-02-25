@@ -6,9 +6,13 @@ use App\Configs\AppConfig;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
+/*#[Lazy(isolate: false)]*/
 class EditDataset extends Component
 {
     public $editingDataset;
@@ -22,33 +26,56 @@ class EditDataset extends Component
     public $description;
     public $displayName;
 
-    public function mount($editingDataset)
+    #[On('edit-selected')]
+    public function setDatasetInfo($uniqueName)
     {
-        $this->editingDataset = $editingDataset;
+        $this->setDataset($uniqueName);
+    }
+    public function mount($editingDataset = null)
+    {
         $this->metadataTypes = MetadataType::with('metadataValues')->get();
         $this->selectedMetadata = $this->metadataTypes->pluck('metadataValues', 'id')->map(function () {
             return ['metadataValues' => []];
         })->toArray();
         $this->categories = Category::all()->toArray();
-        $this->populateFormFields();
+        if($editingDataset){
+            $this->setDataset($editingDataset);
+        }
     }
-    public function render()
+    private function setDataset($uniqueName)
     {
-        return view('livewire.forms.edit-dataset');
+        $this->editingDataset = $uniqueName ? Dataset::where('unique_name', $uniqueName)->first() : null;
+        $this->populateFormFields();
     }
 
     public function updateDatasetInfo()
     {
-        $this->editingDataset->description = $this->description;
-        $this->editingDataset->display_name = $this->displayName;
-        $ids = array_merge(...array_column($this->selectedMetadata, 'metadataValues'));
-        $this->editingDataset->metadataValues()->sync($ids);
-        $this->editingDataset->categories()->sync($this->selectedCategories);
-        $this->editingDataset->save();
+        Gate::authorize('update-dataset', $this->editingDataset->unique_name);
+
+        try {
+            $this->editingDataset->description = $this->description;
+            $this->editingDataset->display_name = $this->displayName;
+
+            $ids = array_merge(...array_column($this->selectedMetadata, 'metadataValues'));
+            $this->editingDataset->metadataValues()->sync($ids);
+            $this->editingDataset->categories()->sync($this->selectedCategories);
+            $this->editingDataset->save();
+
+            /*$this->dispatch('flash-msg', [
+                'type' => 'success',
+                'message' => 'Dataset information updated successfully!'
+            ]);*/
+            $this->dispatch('refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', [
+                'type' => 'error',
+                'message' => 'Failed to update dataset. Please try again.'
+            ]);
+        }
     }
+
     private function populateFormFields()
     {
-        $this->editingDataset = Dataset::where('unique_name', $this->editingDataset)->with(['categories'])->first();
         $datasetMetadata = $this->editingDataset->metadataGroupedByType()->toArray();
         array_walk($this->selectedMetadata, function (&$metadata, $id) use ($datasetMetadata) {
             if (isset($datasetMetadata[$id])) {

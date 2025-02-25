@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use App\Traits\DatasetImportHelper;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -87,6 +88,7 @@ class UploadDataset extends Component
             $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
             $this->errors['message'] = $datasetImported->message;
             $this->lockUpload = false;
+            $this->reset($this->finalFile, $this->fileChunk, $this->displayName, $this->uniqueName, $this->fileSize);
         }
     }
 
@@ -99,6 +101,7 @@ class UploadDataset extends Component
     private function validateDataset()
     {
         if (!$this->validated) {
+            Gate::authorize('post-dataset');
             $rules = [
                 'fileChunk' => 'required',
                 'selectedFormat' => 'required',

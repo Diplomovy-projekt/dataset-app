@@ -1,4 +1,5 @@
-<div x-data="classSampleSort(@this)">
+<div x-data="classSampleSort(@this)"
+     id="classes-sample-container">
     <x-modals.fixed-modal modalId="display-classes" class="sm:max-w-11/12">
 
         <!-- Modal Title -->
@@ -74,7 +75,7 @@
                                     {{-- Class Name --}}
                                     <h3 class="text-lg font-semibold text-gray-200"
                                         data-type="class-name"
-                                        data-value={{$class['name']}}>
+                                        data-value="{{$class['name']}}">
                                         {{$class['name']}}
                                     </h3>
                                     {{--Image and Class count--}}
@@ -83,7 +84,7 @@
                                             class="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full"
                                             title="Images that have at least 1 annotation labeled with this class"
                                             data-type="image-count"
-                                            data-value={{$class['imageCount']}}>
+                                            data-value="{{$class['imageCount']}}">
                                             <x-icon name="o-photo" class="w-4 h-4 text-blue-400" />
                                             <span class="text-sm text-gray-200">{{$class['imageCount']}}</span>
                                         </div>
@@ -91,7 +92,7 @@
                                             class="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full"
                                             title="Annotations that are labeled with this class"
                                             data-type="annotation-count"
-                                            data-value={{$class['annotationCount']}}>
+                                            data-value="{{$class['annotationCount']}}">
                                             <x-jam-pencil class="text-green-400 w-4 h-4"/>
                                             <span class="text-sm text-gray-200">{{$class['annotationCount']}}</span>
                                         </div>
@@ -106,9 +107,9 @@
                                         <div class="relative group/image" wire:key="path-of-image-in-classes-sample{{$image}}">
                                             <img src="{{asset($image)}}"
                                                  class="w-14 rounded-md border border-slate-700 group-hover/image:border-blue-500 transition-all"
-                                                 loading="lazy"
+                                                 fetchpriority="low"
+                                                 @load="console.log('Sample image loaded')"
                                                  @click="const imgSrc = $event.target.src;
-                                                        console.log(imgSrc);
                                                         $dispatch('open-full-screen-image', { src: imgSrc, overlayId: 'null' })">
                                             <!-- Hover Overlay -->
                                             <div class="w-14 pointer-events-none absolute inset-0 bg-slate-900/60 opacity-0 group-hover/image:opacity-100 transition-opacity rounded-md flex items-center justify-center">
@@ -133,12 +134,16 @@
         sortType: 'class-name',
         selectedClasses: livewireComponent.entangle('selectedClasses'),
         init() {
-            //console.log('Class Sample Sort initialized', this.selectedClasses);
         },
         sortBy(sortBy = null) {
             this.sortType = sortBy ?? this.sortType;
-            const classes = [...document.querySelectorAll('.group')];
 
+            const parentContainer = document.querySelector('#classes-sample-container');
+            if (!parentContainer) {
+                console.warn("Parent container not found.");
+                return;
+            }
+            const classes = [...parentContainer.querySelectorAll('.group')];
             classes.sort((a, b) => {
                 const aVal = a.querySelector(`[data-type=${this.sortType}]`).getAttribute('data-value').toLowerCase();
                 const bVal = b.querySelector(`[data-type=${this.sortType}]`).getAttribute('data-value').toLowerCase();

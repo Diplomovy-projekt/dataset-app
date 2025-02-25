@@ -3,6 +3,7 @@
 namespace App\Utils;
 
 use App\Configs\AppConfig;
+use Illuminate\Support\Facades\Log;
 
 class Util
 {
@@ -73,4 +74,27 @@ class Util
     public static function constructImagePath($datasetUniqueName, $filename, $folder = AppConfig::IMG_THUMB_FOLDER) {
         return AppConfig::LINK_DATASETS_PATH . $datasetUniqueName . "/" . $folder . $filename;
     }
+
+    protected static $startTime = [];
+
+    public static function logStart($message)
+    {
+        self::$startTime[$message] = microtime(true);
+        Log::channel('timing')->info("Start: $message");
+    }
+
+    public static function logEnd($message)
+    {
+        if (!isset(self::$startTime[$message])) {
+            Log::channel('timing')->error("End timing not started for: $message");
+            return;
+        }
+
+        $endTime = microtime(true);
+        $duration = $endTime - self::$startTime[$message];
+
+        Log::channel('timing')->info("End: $message | Duration: " . number_format($duration, 4) . " seconds");
+        unset(self::$startTime[$message]);
+    }
+
 }

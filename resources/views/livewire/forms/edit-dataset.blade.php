@@ -10,16 +10,20 @@
                         Edit Dataset Info
                     </h2>
                 </div>
+
                 {{-- Format Select--}}
                 <div>
                     <input type="text" wire:model="displayName" class="mb-2 h-14 w-full border border-slate-900 bg-slate-800 rounded-md p-2" placeholder="Dataset Name">
                 </div>
                 <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
                 {{-- Submit Button--}}
-                <x-button
-                    wire:click="updateDatasetInfo"
-                    text="Save">
-                </x-button>
+                <x-misc.button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    wire:click="updateDatasetInfo">
+                    Save Dataset
+                </x-misc.button>
             </div>
         </div>
     </x-modals.fixed-modal>

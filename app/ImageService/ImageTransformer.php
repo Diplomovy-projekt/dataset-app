@@ -17,7 +17,7 @@ trait ImageTransformer
     {
         try
         {
-            $manager = new ImageManager(new Driver());
+            $manager = MyImageManager::getManager();
             $image = $manager->read($imagePath);
 
             // Base padding on the smaller dimension of the bounding box
@@ -52,7 +52,7 @@ trait ImageTransformer
     {
         try
         {
-            $manager = new ImageManager(new Driver());
+            $manager = MyImageManager::getManager();
             $image = $manager->read($imagePath);
 
             $image->scale($width, $height);
@@ -67,7 +67,7 @@ trait ImageTransformer
 
     public function drawAnnotations($originalImgDims, $croppedImgPath, $annotations, $strokeColor = 'blue', $fillColor = 'transparent')
     {
-        $manager = new ImageManager(new Driver());
+        $manager = MyImageManager::getManager();
         $croppedImg = $manager->read($croppedImgPath);
 
         $annotations = is_array($annotations) ? $annotations : [$annotations];

@@ -1,46 +1,56 @@
-<div class="mx-auto px-1 sm:px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+    <!-- Hero Section with gradient background -->
+    <div class="rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 shadow-xl py-16">
+        <div class="max-w-4xl mx-auto px-6">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl sm:text-5xl font-bold text-gray-200 mb-6 tracking-tight leading-tight">
+                    Tailor Your Perfect Dataset
+                </h2>
+                <div class=" rounded-xl p-8 backdrop-blur-sm mb-8">
+                    <p class="text-lg sm:text-xl text-gray-200 leading-relaxed">
+                        Create a dataset that aligns perfectly with your project's unique needs. Our interactive builder empowers you to
+                        <span class="text-blue-400 font-semibold">customize</span>
+                        your data selection in a multi-step process, ensuring precision and relevance for your research or application.
+                    </p>
+                </div>
 
-    <div class="shadow-xl py-12">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-5xl font-extrabold text-gray-200 mb-8 tracking-tight leading-tight">
-                Tailor Your Perfect Dataset
-            </h2>
-            <div class=" p-8  border-gray-700 mb-8">
-                <p class="text-xl text-gray-200 leading-relaxed mb-6">
-                    Create a dataset that aligns perfectly with your project’s unique needs. Our interactive builder empowers you to
-                    <span class="font-bold text-blue-500">customize</span>
-                    your data selection in a multi-step process, ensuring precision and relevance for your research or application.
-                </p>
-            </div>
-            <div class="bg-blue-500 bg-opacity-20 border-l-4 border-blue-500 p-6 rounded-r-lg mb-8 shadow-md">
-                <p class="text-blue-300 text-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Build a dataset that’s as unique as your project.
-                </p>
-            </div>
+                <!-- Info Card -->
+                <div class="bg-slate-800/40 border-l-4 border-blue-500 p-6 rounded-lg mb-10">
+                    <div class="flex items-center justify-center gap-3 text-gray-200">
+                        <div class="bg-blue-500/20 p-2 rounded-lg">
+                            <x-icon name="o-information-circle" class="w-5 h-5 text-blue-400" />
+                        </div>
+                        <p class="text-lg">Build a dataset that's as unique as your project.</p>
+                    </div>
+                </div>
 
-            <div class="flex justify-center">
-                <button
-                    wire:click="nextStage"
-                    @click="document.getElementById('builder').scrollIntoView({ behavior: 'smooth' }); clicked = true;"
-                    x-data="{ clicked: false }"
-                    :disabled="clicked"
-                    :class="{ 'opacity-50 cursor-not-allowed': clicked }"
-                    class="bg-blue-500 text-gray-200 font-bold py-4 px-10 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 flex items-center space-x-3 shadow-lg">
-                    <span>Start Building</span>
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                </button>
+                <!-- CTA Button -->
+                <div class="flex justify-center">
+                    <button
+                        wire:click="nextStage"
+                        @click="document.getElementById('builder').scrollIntoView({ behavior: 'smooth' }); clicked = true;"
+                        x-data="{ clicked: false }"
+                        :disabled="clicked"
+                        class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-semibold text-gray-200 transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                        :class="{ 'opacity-50 cursor-not-allowed': clicked }">
+                        <div class="flex items-center gap-3">
+                            <span>Start Building</span>
+                            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="builder" class="flex flex-col mx-auto py-4 gap-1 my-10">
+    <!-- Builder Section -->
+    <div id="builder" class="mt-12 space-y-4">
         @foreach($stageData as $stageNumber => $stage)
-            <div class="rounded-lg" wire:key="livewire-builder-{{$stageNumber}}">
+
+            <div class="rounded-xl bg-slate-800/50 " wire:key="livewire-builder-{{$stageNumber}}">
                 <x-builder.main-accordion
                     stageIndex="{{ $stageNumber }}"
                     :currentStage="$currentStage"

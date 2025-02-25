@@ -3,7 +3,7 @@
     'svgSize' => 'w-5 h-5' // Default size for SVG
 ])
 
-<div {{ $attributes->class(['flex flex-col sm:flex-row justify-between items-center bg-slate-800 rounded-lg space-x-5 w-max h-max', 'text-xs' => !$attributes->has('class')]) }}>
+<div {{ $attributes->class(['flex flex-col sm:flex-row justify-between items-center bg-slate-800 rounded-lg space-x-5 w-max h-max overflow-auto', 'text-xs' => !$attributes->has('class')]) }}>
     <!-- Images -->
     <div class="flex items-center gap-1" title="Images">
         <x-icon name="o-photo" class="text-blue-400 {{ $svgSize }}" />

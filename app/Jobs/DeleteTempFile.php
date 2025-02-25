@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Configs\AppConfig;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,10 +20,9 @@ class DeleteTempFile implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath, string $createdAt)
+    public function __construct(string $filePath)
     {
         $this->filePath = $filePath;
-        $this->createdAt = Carbon::parse($createdAt);
     }
 
 
@@ -31,15 +31,9 @@ class DeleteTempFile implements ShouldQueue
      */
     public function handle(): void
     {
-        // Delete only if file is older than 12 hours
-        if ($this->createdAt->addHours(12)->isPast()) {
-            // File deletion
-            if (Storage::exists($this->filePath)) {
+        if (Storage::exists($this->filePath)) {
                 Storage::delete($this->filePath);
-            // Directory deletion
-            } elseif (Storage::directoryExists($this->filePath)) {
-                Storage::deleteDirectory($this->filePath);
-            }
         }
     }
+
 }

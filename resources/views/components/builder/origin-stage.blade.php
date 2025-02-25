@@ -1,14 +1,13 @@
 <div>
-    <div class="flex flex-wrap justify-around py-4">
-        @foreach($this->metadataValues as $data)
-            <div wire:key="origin-stage-types-{{$data['type']['id']}}"
-                class="w-80" x-data="{ skip: false }">
+    <div class="flex flex-wrap justify-around py-4 gap-4">
+        @forelse($this->metadataValues as $data)
+            <div wire:key="metadata-type-{{$data['type']['id']}}"
+                 class="w-80" x-data="{ skip: @js(in_array($data['type']['id'], $this->skipTypes)) }">
                 <div class="bg-gray-800 rounded-lg p-4 mb-4">
                     <div class="flex items-center justify-between">
-                        {{-- Metadata type --}}
                         <h2 class="text-xl font-bold text-gray-200">{{$data['type']['name']}}</h2>
-                        <label
-                               class="flex items-center space-x-3 text-gray-400 hover:text-gray-300 cursor-pointer">
+                        <label class="flex items-center space-x-3 text-gray-400 hover:text-gray-300 cursor-pointer"
+                        title="Skipping is same as checking all options in the category">
                             <span class="text-sm">Skip</span>
                             <div class="relative inline-flex items-center">
                                 <input
@@ -19,68 +18,68 @@
                                     wire:model.live="skipTypes"
                                 >
                                 <div
-                                    class="w-9 h-5 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"
+                                    class="w-9 h-5 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all"
                                     x-bind:class="skip ? 'bg-blue-500' : 'bg-gray-700'"
                                 ></div>
                             </div>
                         </label>
                     </div>
                 </div>
+
                 {{-- Values --}}
-                <div class="space-y-3" x-show="!skip" x-transition>
+                <div class="space-y-2" x-show="!skip" x-transition>
                     @forelse($data['values'] as $value)
-                        <div wire:key="origin-stage-values-{{$value['id']}}"
-                            class="bg-gray-700 rounded-lg p-3 flex items-center justify-between" x-data="{ selection: $wire.selectedMetadataValues[{{ $value['id'] }}] }" x-effect="selection = $wire.selectedMetadataValues[{{ $value['id'] }}]">
+                        <div wire:key="metadata-value-{{$value['id']}}"
+                             class="group flex items-center justify-between p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200"
+                             x-data="{ selected: $wire.selectedMetadataValues[{{ $value['id'] }}] }"
+                             x-effect="selected = $wire.selectedMetadataValues[{{ $value['id'] }}]">
+
                             <span class="text-sm font-medium text-gray-200">{{ $value['value'] }}</span>
 
-                            <div class="flex gap-2">
-                                <!-- Include Option -->
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="filter_{{ $value['id'] }}"
-                                        wire:model.live="selectedMetadataValues.{{ $value['id'] }}"
-                                        value="true"
-                                        class="sr-only peer"
-                                    >
-                                    <div class="w-8 h-8 flex items-center justify-center rounded-md border-2 border-gray-500 peer-checked:border-green-500 peer-checked:bg-green-500/10 hover:bg-gray-600 cursor-pointer transition-all duration-300"
-                                         :class="{'opacity-30 hover:bg-transparent cursor-default': selection === 'exclude'}">
-                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                             :class="{'text-gray-400': selection === 'exclude'}">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    </div>
-                                </label>
-
-                                <!-- Exclude Option -->
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="filter_{{ $value['id'] }}"
-                                        wire:model.live="selectedMetadataValues.{{ $value['id'] }}"
-                                        value="false"
-                                        class="sr-only peer"
-                                    >
-                                    <div class="w-8 h-8 flex items-center justify-center rounded-md border-2 border-gray-500 peer-checked:border-red-500 peer-checked:bg-red-500/10 hover:bg-gray-600 cursor-pointer transition-all duration-300"
-                                         :class="{'opacity-30 hover:bg-transparent cursor-default': selection === 'include'}">
-                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                             :class="{'text-gray-400': selection === 'include'}">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </div>
-                                </label>
-                            </div>
+                            <label class="cursor-pointer flex items-center">
+                                <input
+                                    type="checkbox"
+                                    wire:model.live="selectedMetadataValues.{{ $value['id'] }}"
+                                    class="relative sr-only peer"
+                                >
+                                <div class="w-5 h-5 flex items-center justify-center rounded border-2 border-gray-500
+                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                    hover:bg-gray-500/20 transition-all duration-200">
+                                </div>
+                                <svg
+                                    class="absolute w-5 h-5 text-green-500 opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 13l4 4L19 7">
+                                    </path>
+                                </svg>
+                            </label>
                         </div>
                     @empty
-                        <p class="text-gray-400">No data found for {{$data['type']['name']}}</p>
+                        <p class="text-gray-400 text-center py-4">No values available for {{$data['type']['name']}}</p>
                     @endforelse
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div class="w-full text-center py-8">
+                <p class="text-gray-400">No metadata available for datasets matching the selected categories.</p>
+            </div>
+        @endforelse
     </div>
-    <div class="text-gray-500">
-        <span class="font-medium">Current filter matches</span>
-        <span class="font-semibold text-blue-500">{{ count($this->datasets) }}</span>
-        <span class="font-medium">datasets</span>
+
+    {{-- Results Counter --}}
+    <div class="bg-gray-800 rounded-lg p-4 mt-4">
+        <div class="flex items-center justify-between text-gray-200">
+            <span class="text-sm">Matching Datasets</span>
+            <span class="text-2xl font-bold text-blue-500">{{ count($this->datasets) }}</span>
+        </div>
+        <p class="text-sm text-gray-400 mt-1">
+            Datasets matching any of the selected values or those without metadata will be included.
+        </p>
     </div>
 </div>

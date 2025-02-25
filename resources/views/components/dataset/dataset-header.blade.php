@@ -8,9 +8,7 @@
                         <h2 class="text-2xl font-bold text-slate-100 truncate flex-shrink min-w-0">
                             {{ $this->dataset['display_name'] }}
                         </h2>
-                        <span class="flex-shrink-0 grow-0 px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $this->dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
-                            {{ $this->dataset['annotation_technique'] }}
-                        </span>
+                        <x-dataset.annot_technique :annot_technique="$this->dataset['annotation_technique']" />
                     </div>
                     <x-dataset.dataset-stats :stats="$this->dataset['stats']" class="px-4 py-2 text-xl"/>
                 </div>

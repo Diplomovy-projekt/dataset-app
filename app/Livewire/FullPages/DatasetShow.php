@@ -6,18 +6,15 @@ use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
 use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
-use App\ImageService\ImageTransformer;
-use App\Jobs\DeleteTempFile;
-use App\Models\Category;
 use App\Models\Dataset;
-use App\Models\DatasetCategory;
 use App\Models\Image;
-use App\Models\MetadataValue;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
-use Livewire\Livewire;
 use Livewire\WithPagination;
 
 class DatasetShow extends Component
@@ -25,19 +22,13 @@ class DatasetShow extends Component
     use WithPagination, ImageRendering;
     public $uniqueName;
     public $dataset;
-    private $perPage = 25;
     public $searchTerm;
-    public $metadata = [];
-    public $categories = [];
-    public $modalStyle;
-    public $selectedImages = [];
-    private string $exportDataset = '';
-    public $exportFormat = '';
-    public $availableFormats = AppConfig::ANNOTATION_FORMATS_INFO;
-    public mixed $progress;
-    public array $failedDownload = [];
-    public string $downloadLink = '';
-    public string $filePath = '';
+    public Collection $metadata;
+    public Collection $categories;
+    public array $toggleClasses;
+    public string $modalStyle;
+    public array $selectedImages = [];
+    public int $perPage = 25;
 
     #[Computed]
     public function paginatedImages()
@@ -49,22 +40,30 @@ class DatasetShow extends Component
     {
         $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
         if (!$dataset) {
-            session()->flash('error', 'Dataset not found.');
             return redirect()->route('dataset.index');
         }
 
         $dataset->stats = $dataset->getStats();
+        foreach($dataset->classes as $class) {
+            $firstFile = collect(Storage::disk('datasets')
+                ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
+            $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
+        }
         $this->dataset = $dataset->toArray();
+        $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
+    }
+    public function updatedPerPage()
+    {
+        unset($this->images);
     }
 
     public function search()
     {
-        // Unsetting computed metadata makes it to recompute, where we fetch images based on search term
+        $this->searchTerm = trim($this->searchTerm);
         unset($this->images);
     }
-
     private function fetchImages()
     {
         if ($this->searchTerm) {
@@ -74,11 +73,11 @@ class DatasetShow extends Component
             return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
         }
     }
-    public function deleteDataset(DatasetActions $datasetService)
+    public function deleteDataset(DatasetActions $datasetService): void
     {
         $result = $datasetService->deleteDataset($this->uniqueName);
         if($result->isSuccessful()){
-            return redirect()->route('profile');
+            redirect()->route('profile');
         }
     }
 
@@ -90,58 +89,14 @@ class DatasetShow extends Component
         }
     }
 
-    public function startDownload()
+    public function cacheQuery($id)
     {
-        $images = Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->get();
-        $response = ExportService::handleExport($images, $this->exportFormat);
-        $this->exportDataset = $response->data['datasetFolder'];
-        $this->filePath = storage_path("app/public/datasets/{$this->exportDataset}");
+        $query = Image::where('dataset_id', $id)->with('annotations.class');
 
-        if (!file_exists($this->filePath)) {
-            abort(404, "File not found.");
-        }
+        $token = Str::random(32);
+        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
 
-        $fileSize = filesize($this->filePath);
-        $chunkSize = 1024 * 1024; // 1MB per chunk
-        $bytesSent = 0;
-
-        $this->progress = 0; // Reset progress when starting the download
-
-        return response()->stream(function () use ($chunkSize, &$bytesSent, $fileSize) {
-            $handle = fopen($this->filePath, 'rb');
-
-            while (!feof($handle)) {
-                $chunk = fread($handle, $chunkSize);
-                echo $chunk;
-                flush();
-                $bytesSent += $chunkSize;
-                // Update the progress in session
-                $this->progress = round(($bytesSent / $fileSize) * 100, 2);
-                session()->put("download_progress_{$this->filePath}", $this->progress);
-            }
-
-            fclose($handle);
-            session()->forget("download_progress_{$this->filePath}");
-        }, 200, [
-            "Content-Type" => "application/zip",
-            "Content-Length" => $fileSize,
-            "Content-Disposition" => "attachment; filename=\"{$this->exportDataset}\"",
-            "Cache-Control" => "no-cache",
-            "Connection" => "keep-alive",
-        ]);
-    }
-
-    public function updateProgress()
-    {
-        // Get the current progress from session
-        $progress = session()->get("download_progress_{$this->exportDataset}", 0);
-
-        // Update the frontend progress
-        if ($progress < 100) {
-            $this->progress = $progress;
-        } else {
-            $this->progress = 100; // Ensure it's 100% when done
-        }
+        $this->dispatch('store-download-token', token: $token);
     }
 
 }

@@ -1,4 +1,5 @@
-window.addEventListener('alpine:init', ()=>{
+/*
+document.addEventListener('alpine:init', ()=>{
     Alpine.data('chunkedUpload', (livewireComponent) => ({
         progress: 0,
         lock: livewireComponent.entangle('lockUpload'),
@@ -9,7 +10,6 @@ window.addEventListener('alpine:init', ()=>{
         uploadChunks() {
             // Prevent multiple uploads
             if (this.lock) {
-                console.log('Upload already in progress');
                 return;
             }
 
@@ -32,7 +32,6 @@ window.addEventListener('alpine:init', ()=>{
         },
 
         async livewireUploadChunk(file, start) {
-            console.log('Uploading chunk', start);
             const chunkSize = livewireComponent.$get('chunkSize');
             const chunkEnd = Math.min(start + chunkSize, file.size);
             const chunk = file.slice(start, chunkEnd, file.type);
@@ -44,16 +43,13 @@ window.addEventListener('alpine:init', ()=>{
                         'fileChunk',
                         chunkFile,
                         (resolve) => {
-                            console.error('Resolve:', resolve);
                             livewireComponent.$set('lockUpload', false, true);
                         },
                         (error) => {
-                            console.error('Upload error:', error);
                             livewireComponent.$set('lockUpload', false);
                             reject(error);
                         },
                         (event) => {
-                            console.log(event.detail.progress);
                             this.progress = ((start + event.detail.progress) / file.size) * 100;
 
                             if (event.detail.progress == 100) {
@@ -93,3 +89,4 @@ window.addEventListener('alpine:init', ()=>{
         }
     }));
 })
+*/

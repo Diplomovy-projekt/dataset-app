@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class Navbar extends Component
@@ -10,4 +11,14 @@ class Navbar extends Component
     {
         return view('livewire.navbar');
     }
+
+    public function logout()
+    {
+        auth()->logout();
+        Session::invalidate();
+        Session::regenerateToken();
+
+        return redirect()->route('login');
+    }
+
 }

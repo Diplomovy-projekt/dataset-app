@@ -65,6 +65,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'timing' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/timing.log'),
+            'level' => 'debug',
+        ],
+
+        'info_channel' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/info.log'),
+            'level' => 'info',
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

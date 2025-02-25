@@ -35,12 +35,19 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $classesToSample = [];
             foreach ($classes['names'] as $categoryName) {
                 $class = AnnotationClass::updateOrCreate([
-                    'dataset_id' => $dataset->id,
-                    'name' => $categoryName,
+                    'dataset_id'   => $dataset->id,
+                    'name'         => $categoryName,
                     'supercategory' => $classes['superCategory'] ?? null,
                 ]);
                 $classIds[] = $class->id;
                 if ($class->wasRecentlyCreated) {
+                    $classesToSample[] = $class->id;
+                }
+                // Check if the sample count is low and add the class
+                $filesCount = count(Storage::disk('datasets')->files(
+                    "{$dataset->unique_name}/" . AppConfig::CLASS_IMG_FOLDER . "/{$class->id}"
+                ));
+                if ($filesCount < AppConfig::SAMPLES_COUNT) {
                     $classesToSample[] = $class->id;
                 }
             }
@@ -51,7 +58,8 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             // 4. Save Images and Annotations
             $this->saveImageWithAnnotations($imageData, $dataset, $classIds);
 
-            return Response::success(data: ['classesToSample' => $classesToSample,]);
+            return Response::success(data: ['classesToSample' => $classesToSample,
+                                            'newImages' => $this->newImages]);
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());
         }
