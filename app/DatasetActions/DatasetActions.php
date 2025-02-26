@@ -52,7 +52,7 @@ class DatasetActions
                 $image->delete();
             }
 
-            FileUtil::deleteEmptyDirectories(AppConfig::DATASETS_PATH . $dataset->unique_name);
+            FileUtil::deleteEmptyDirectories(AppConfig::DATASETS_PATH['public'] . $dataset->unique_name);
             $this->deleteUnusedClassesFromDb();
             $result = $this->createSamplesForClasses($dataset->unique_name, $dataset->classes->pluck('id')->toArray(), $dataset->images()->pluck('filename')->toArray());
             $dataset->updateImageCount(-count($ids));

@@ -13,12 +13,8 @@
                 class="absolute z-20 top-2 right-2 h-5 w-5
            accent-blue-400 bg-gray-700 border-gray-600">
             {{-- Image--}}
-            <div class="relative">
-                <img src="{{asset($category['image']['path'])}}"
-                     alt="{{ $category['name'] }}"
-                     class="h-full w-full object-cover group-hover:opacity-80 transition-opacity duration-300">
-                <x-annotation-overlay :image="$category['image']"></x-annotation-overlay>
-            </div>
+            <x-images.annotated-image :image="$category['image']"/>
+
             {{-- Category name--}}
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-slate-800 bg-opacity-80">
                 <h3 class="text-lg font-semibold text-gray-200 truncate">

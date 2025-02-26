@@ -93,7 +93,7 @@ trait ImageProcessor
             // Validate file type (only process images with supported extensions)
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
                 $source = $file;
-                $destination = AppConfig::DATASETS_PATH . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
+                $destination = AppConfig::DATASETS_PATH['public'] . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
 
                 try {
                     FileUtil::ensureFolderExists($destination);

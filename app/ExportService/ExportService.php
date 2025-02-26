@@ -14,11 +14,11 @@ class ExportService
 
     public static function handleExport($images, $format)
     {
-        $mapper = ExportComponentFactory::createMapper($format);
-
         try {
-            //1. Create and map the dataset folder
             $datasetFolder = uniqid('custom_dataset_build_');
+            $mapper = ExportComponentFactory::createMapper($format);
+
+            //1. Create and map the dataset folder
             $mapper->handle($images, $datasetFolder);
 
             //2. Create a zip file from the dataset folder
@@ -27,7 +27,7 @@ class ExportService
 
             //3. Delete the dataset folder and create job to delete zip
             Storage::disk('datasets')->deleteDirectory($datasetFolder);
-            DeleteTempFile::dispatch(AppConfig::DATASETS_PATH . $datasetFolder . '.zip')
+            DeleteTempFile::dispatch(AppConfig::DATASETS_PATH['public'] . $datasetFolder . '.zip')
                 ->delay(now()->add(AppConfig::EXPIRATION['TMP_FILE']['value'], AppConfig::EXPIRATION['TMP_FILE']['unit']))
                 ->onQueue('temp-files');
 

@@ -44,14 +44,14 @@ class InviteUser extends Component
                 'token' => $token,
             ]);
             Mail::to($this->email)->send(new UserInvitationMail($invitation));
-            $this->dispatch('flash-msg', [
-                'type' => 'success',
-                'message' => 'Invitation sent successfully!'
-            ]);
+            $this->dispatch('flash-msg', type: 'success', message: 'Invitation email sent successfully.');
+            $this->reset();
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to send invitation. Please try again.');
+            $this->dispatch('flash-msg', [
+                'type' => 'error',
+                'message' => 'Failed to send invitation email.' . $e->getMessage()
+            ]);
         }
-        $this->reset();
 
     }
 
@@ -66,7 +66,7 @@ class InviteUser extends Component
     private function checkIfUserExists()
     {
         if (User::where('email', $this->email)->exists()) {
-            session()->flash('error', 'User already exists with this email.');
+            $this->dispatch('flash-msg', type: 'error', message: 'User already exists.');
             $this->reset();
             return true; // Indicate that user exists
         }

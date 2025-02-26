@@ -14,6 +14,11 @@ export default defineConfig({
             usePolling: true
         }
     },*/
+    server: {
+        watch: {
+            ignored: ['**/storage/**'] // Ignore the entire storage folder
+        }
+    },
     plugins: [
         laravel({
             input: [

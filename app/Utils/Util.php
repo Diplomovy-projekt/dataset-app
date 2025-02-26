@@ -3,7 +3,9 @@
 namespace App\Utils;
 
 use App\Configs\AppConfig;
+use App\Models\Dataset;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Util
 {
@@ -96,5 +98,21 @@ class Util
         Log::channel('timing')->info("End: $message | Duration: " . number_format($duration, 4) . " seconds");
         unset(self::$startTime[$message]);
     }
+
+    public static function getDatasetPath(Dataset|string $dataset, $absolute = false): string {
+        if (is_string($dataset)) {
+            $dataset = Dataset::where('unique_name', $dataset)->firstOrFail();
+        }
+
+        $path = ($dataset->is_public ? AppConfig::DATASETS_PATH['public'] : AppConfig::DATASETS_PATH['private'])
+            . $dataset->unique_name . '/';
+
+        if ($absolute) {
+            return Storage::path($path);
+        }
+
+        return $path;
+    }
+
 
 }

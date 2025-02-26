@@ -69,8 +69,8 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
     {
         // Roll back new images in the htree folders
         foreach ($this->newImages as $image) {
-            $fullImg = AppConfig::DATASETS_PATH . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::FULL_IMG_FOLDER . $image;
-            $thumbnail = AppConfig::DATASETS_PATH . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::IMG_THUMB_FOLDER . $image;
+            $fullImg = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::FULL_IMG_FOLDER . $image;
+            $thumbnail = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::IMG_THUMB_FOLDER . $image;
             if(Storage::disk('storage')->exists($fullImg)){
                 Storage::disk('storage')->delete($fullImg);
             }

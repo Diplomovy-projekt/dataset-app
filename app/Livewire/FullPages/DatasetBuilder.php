@@ -129,6 +129,7 @@ class DatasetBuilder extends Component
         if($this->currentStage > 1){
             $this->currentStage--;
             $this->completedStages =array_values(array_diff($this->completedStages, [$this->currentStage]));
+            $this->applyStageFilters();
         }
     }
 
@@ -221,9 +222,10 @@ class DatasetBuilder extends Component
         $this->selectedImages = [];
     }
 
-
     private function finalStage()
     {
+        $this->selectedImages = [];
+        unset($this->paginatedImages);
         $this->finalDataset['stats'] = $this->getCustomStats();
     }
     private function imagesQuery()
@@ -263,7 +265,6 @@ class DatasetBuilder extends Component
 
     public function cacheQuery()
     {
-        $this->validate();
         $query = $this->imagesQuery();
 
         $token = Str::random(32);

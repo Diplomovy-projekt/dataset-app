@@ -43,11 +43,13 @@ class FileUtil
 
         if ($useStorage) {
             if (!Storage::exists($folderPath)) {
-                Storage::makeDirectory($folderPath);
+                $absolutePath = Storage::path($folderPath);
+                File::makeDirectory($absolutePath, 0777, true);
             }
         } else {
             if (!File::exists($folderPath)) {
-                File::makeDirectory($folderPath, 0755, true);
+                mkdir($folderPath, 0777, true);
+                //File::makeDirectory($folderPath, 0777, true);
             }
         }
     }

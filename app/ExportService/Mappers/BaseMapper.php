@@ -3,6 +3,8 @@
 namespace App\ExportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
+use App\Models\Dataset;
+use App\Utils\Util;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,6 +12,9 @@ abstract class BaseMapper
 {
     protected array $classMap = [];
 
+    /**
+     * @throws \Exception
+     */
     public function mapAnnotations($images, $datasetFolder): void
     {
         foreach ($images as $image) {
@@ -37,10 +42,16 @@ abstract class BaseMapper
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function linkImages($images, $datasetFolder): void
     {
+        $datasets = Dataset::whereIn('id', array_column($images, 'dataset_id'))->get()->keyBy('id');
+
         foreach ($images as $image) {
-            $source = storage_path($image['path']);
+            $dataset = $datasets[$image['dataset_id']];
+            $source = Util::getDatasetPath($dataset, true) . 'full-images/' . $image['filename'];
             $destination = $this->getImageDestinationPath($datasetFolder, $image);
 
             // Ensure destination directory exists

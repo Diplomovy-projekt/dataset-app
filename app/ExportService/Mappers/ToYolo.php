@@ -76,7 +76,7 @@ class ToYolo extends BaseMapper
 
     protected function getAnnotationDestinationPath($datasetFolder, $image): string
     {
-        return AppConfig::DATASETS_PATH .
+        return AppConfig::DATASETS_PATH['public'] .
                 $datasetFolder . '/' .
                 YoloConfig::LABELS_FOLDER . '/' .
                 pathinfo($image['filename'], PATHINFO_FILENAME) . '.' .

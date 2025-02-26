@@ -8,11 +8,14 @@ use App\Models\Dataset;
 use App\Models\Image;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
-
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 class AdminDatasets extends Component
 {
     use WithPagination;
@@ -38,7 +41,7 @@ class AdminDatasets extends Component
     {
         return Dataset::query()
             ->select('datasets.*')
-            ->with(['categories:id,name', 'user:id,email'])
+            ->with(['categories:id,name', 'user:id,email,name'])
             ->leftJoin('users', 'datasets.user_id', '=', 'users.id')
             ->when($this->sortColumn === 'user.email', function ($query) {
                 $query->orderBy('users.email', $this->sortDirection);
@@ -73,21 +76,35 @@ class AdminDatasets extends Component
 
     public function toggleVisibility($id)
     {
-        $dataset = Dataset::find($id);
-        $dataset->update(['is_public' => !$dataset->is_public]);
-    }
-
-    public function changeOwner($id, $userId)
-    {
         try {
-            $dataset = Dataset::find($id);
-            $dataset->update(['user_id' => $userId]);
-            $this->dispatch('flash-msg', type: 'success', message: 'Owner changed successfully');
+            DB::beginTransaction();
+            $dataset = Dataset::findOrFail($id);
+            $newVisibility = !$dataset->is_public;
 
+            $fromPath = AppConfig::DATASETS_PATH[$dataset->is_public ? "public" : "private"] . $dataset->unique_name;
+            $toPath = AppConfig::DATASETS_PATH[$newVisibility ? "public" : "private"] . $dataset->unique_name;
+
+            if (Storage::exists($fromPath)) {
+                Storage::move($fromPath, $toPath);
+                Log::info("Moved dataset: {$fromPath} → {$toPath}");
+
+                $dataset->update(['is_public' => $newVisibility]);
+                $visibilityText = $newVisibility ? 'public' : 'private';
+                $this->dispatch('flash-msg', type: 'success', message: "Dataset visibility changed to {$visibilityText}");
+                DB::commit();
+                return;
+            }
+
+            Log::error("Source directory not found: {$fromPath}");
+            DB::rollBack();
+            $this->dispatch('flash-msg', type: 'error', message: 'Dataset not found');
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Exception in toggleVisibility: " . $e->getMessage());
             $this->dispatch('flash-msg', type: 'error', message: 'An error occurred');
         }
     }
+
 
     public function deleteDataset(DatasetActions $datasetService, $uniqueName)
     {
@@ -95,6 +112,18 @@ class AdminDatasets extends Component
         if($result->isSuccessful()){
             unset($this->paginatedDatasets);
         }
+    }
+
+    public function changeOwner($id, $newOwnerId)
+    {
+        try {
+            $dataset = Dataset::findOrFail($id);
+            $dataset->update(['user_id' => $newOwnerId]);
+            $this->dispatch('flash-msg', type: 'success', message: 'Owner changed successfully!');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', type: 'error', message: 'An error occurred');
+        }
+        unset($this->paginatedDatasets);
     }
 
     public function cacheQuery($id)

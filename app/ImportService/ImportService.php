@@ -95,7 +95,8 @@ class ImportService
             $datasetService = new DatasetActions();
             $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'],
                 $savedToDb->data['classesToSample'],
-                $savedToDb->data['newImages']);
+                array_column($mappedData['images'], 'filename')
+            );
             Util::logEnd("Creating class samples");
 
             if (!$createdClassCrops->isSuccessful()) {

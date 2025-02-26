@@ -56,37 +56,45 @@
 
         <!-- Class Cards Grid -->
         <div class="p-2 max-h-[400px] overflow-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 w-full">
-            <template x-for="classItem in classes" :key="'toggle-class-key-' + classItem.id">
+            @foreach($this->toggleClasses as $classItem)
                 <div class="rounded-lg min-w-28"
-                     :style="'border-color: ' + classItem.rgb + ';'"
-                     x-show="!activeSearch.trim() || classItem.name.toLowerCase().includes(activeSearch.toLowerCase())">
+                     :style="'border-color: {{ $classItem['rgb'] }};'"
+                     x-show="!activeSearch.trim() || '{{ strtolower($classItem['name']) }}'.includes(activeSearch.toLowerCase())">
                     <div class="flex items-center gap-1">
                         <!-- Class Image -->
                         <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
-                            <img :src="imageBasePath + classItem.image"
-                                 :alt="classItem.name"
-                                 fetchpriority="high"
-                                 @load="console.log('Toggle image loaded')"
-                                 class="object-cover w-full h-full cursor-pointer"
-                                 @click="const imgSrc = $event.target.src;
-                                        $dispatch('open-full-screen-image', { src: imgSrc, overlayId: 'null' })">
-                            <div class="absolute bottom-0 left-0 right-0 h-4" :style="'background-color: ' + classItem.rgb + '80;'"></div>
+                            <x-images.img dataset="{{ $this->dataset['unique_name'] }}"
+                                          folder="{{ $classItem['image']['folder'] }}"
+                                          filename="{{ $classItem['image']['filename'] }}"
+                                          id="{{ $classItem['image']['filename'] }}"
+                                          fetchpriority="high"
+                                          @load="console.log('Toggle image loaded')"
+                                          class="object-cover w-full h-full cursor-pointer"
+                                          @click="const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
+                                      $dispatch('open-full-screen-image', { src: imgSrc, overlayId: null })">
+                            </x-images.img>
+                            <div class="absolute bottom-0 left-0 right-0 h-4" style="background-color: {{ $classItem['rgb'] }}80;"></div>
                         </div>
+
                         <!-- Controls and Name -->
                         <div>
-                            <p class="font-base text-slate-300 pr-2 whitespace-normal break-words" x-text="classItem.name"></p>
-                            <div class="w-fit flex divide-x-0 border rounded-lg border-slate-300" :style="'border-color: ' + classItem.rgb + ';'">
-                                <div class="w-6 h-6 cursor-pointer flex items-center justify-center" @click="toggleClass(classItem.id)" :class="{ 'text-green-500': selectedClasses.includes(classItem.id), 'text-gray-300': !selectedClasses.includes(classItem.id) }">
+                            <p class="font-base text-slate-300 pr-2 whitespace-normal break-words">{{ $classItem['name'] }}</p>
+                            <div class="w-fit flex divide-x-0 border rounded-lg border-slate-300" style="border-color: {{ $classItem['rgb'] }};">
+                                <div class="w-6 h-6 cursor-pointer flex items-center justify-center"
+                                     @click="toggleClass({{ $classItem['id'] }})"
+                                     :class="{ 'text-green-500': selectedClasses.includes({{ $classItem['id'] }}), 'text-gray-300': !selectedClasses.includes({{ $classItem['id'] }}) }">
                                     <x-tni-tick-small-o class="w-5 h-5"/>
                                 </div>
-                                <div class="w-6 h-6 cursor-pointer flex items-center justify-center" @click="toggleClass(classItem.id)" :class="{ 'text-red-500': !selectedClasses.includes(classItem.id), 'text-gray-300': selectedClasses.includes(classItem.id) }">
+                                <div class="w-6 h-6 cursor-pointer flex items-center justify-center"
+                                     @click="toggleClass({{ $classItem['id'] }})"
+                                     :class="{ 'text-red-500': !selectedClasses.includes({{ $classItem['id'] }}), 'text-gray-300': selectedClasses.includes({{ $classItem['id'] }}) }">
                                     <x-tni-x-small class="w-5 h-5"/>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </template>
+            @endforeach
         </div>
     </div>
 </div>
@@ -117,6 +125,8 @@
             }
             this.filteredClasses = [...this.classes];
             this.classes = [...this.classes];
+            // consoloe log classes
+            console.log(this.classes[0].image.filename);
         },
 
         toggleClass(classId) {

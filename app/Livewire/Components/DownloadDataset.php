@@ -17,6 +17,18 @@ class DownloadDataset extends Component
     public  $failedDownload = null;
     public string $exportFormat = '';
     public string $token = '';
+    #[Locked]
+    public bool $locked = false;
+    protected $rules = [
+        'exportFormat' => 'required|string',
+        'token' => 'required|string',
+    ];
+
+    protected $messages = [
+        'exportFormat.required' => 'Please select an export format.',
+        'token.required' => 'Download token not set. Please wait for data preparation to complete and try again.',
+    ];
+
 
 
     #[On('store-download-token')]
@@ -27,18 +39,43 @@ class DownloadDataset extends Component
 
     private function fetchImages()
     {
+        if (empty($this->token)) {
+            $this->failedDownload = [
+                'message' => 'Download token not provided',
+                'data' => null
+            ];
+            return [];
+        }
+
         $serializedQuery = Cache::get("download_query_{$this->token}");
 
         if (!$serializedQuery) {
-            abort(404, 'Download request expired or invalid.');
+            $this->failedDownload = [
+                'message' => 'Download request expired or invalid',
+                'data' => null
+            ];
+            return [];
         }
+
         return \EloquentSerialize::unserialize($serializedQuery)->get()->toArray();
     }
     public function download()
     {
+        $this->validate();
+        if($this->locked) {
+            return;
+        }
+        $this->locked = true;
         $images = $this->fetchImages();
 
         $response = ExportService::handleExport($images, $this->exportFormat);
+        if(!$response->isSuccessful()) {
+            $this->failedDownload = [
+                'message' => $response->message,
+                'data' => $response->data
+            ];
+            return;
+        }
         $this->exportDataset = $response->data['datasetFolder'];
         $this->filePath = storage_path("app/public/datasets/{$this->exportDataset}");
 
@@ -67,6 +104,7 @@ class DownloadDataset extends Component
 
             fclose($handle);
             session()->forget("download_progress_{$this->exportDataset}");
+            $this->locked = false;
         }, 200, [
             "Content-Type" => "application/zip",
             "Content-Length" => $fileSize,

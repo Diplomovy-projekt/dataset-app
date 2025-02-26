@@ -36,7 +36,8 @@ abstract class BaseStrategy
         foreach ($imageData as $img) {
             $image = Image::create([
                 'dataset_id' => $dataset->id,
-                'path' => AppConfig::DATASETS_PATH . $dataset->unique_name . '/' . AppConfig::FULL_IMG_FOLDER . $img['filename'],
+                'dataset_folder' => $dataset->unique_name,
+                'path' => AppConfig::DATASETS_PATH['public'] . $dataset->unique_name . '/' . AppConfig::FULL_IMG_FOLDER . $img['filename'],
                 'filename' => $img['filename'],
                 'width' => $img['width'],
                 'height' => $img['height'],

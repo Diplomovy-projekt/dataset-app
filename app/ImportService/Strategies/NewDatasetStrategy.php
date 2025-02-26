@@ -65,8 +65,9 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
                 ]);
             }
 
-            return Response::success(data: ['classesToSample' => $classIds,
-                                            'newImages' => array_column($imageData, 'filename')
+            return Response::success(data: [
+                'classesToSample' => $classIds,
+                'newImages' => array_column($mappedData['images'], 'filename')
             ]);
         } catch (\Exception $e) {
             return Response::error("An error occurred while saving to the database ".$e->getMessage());

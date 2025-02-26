@@ -1,5 +1,5 @@
 <div>
-    <x-modals.fixed-modal modalId="invite-user">
+    <x-modals.fixed-modal modalId="invite-user" class="w-fit">
         <div x-data="{ email: '' }" class="p-4 space-y-6">
             <!-- Header Section -->
             <div class="flex items-center gap-3">
@@ -12,7 +12,7 @@
 
             <!-- Form Section -->
             <div class="bg-slate-800 rounded-xl py-6">
-                <form wire:submit.prevent="sendInvitation" class="space-y-6">
+                <div class="space-y-6">
                     <div class="flex flex-col gap-2">
                         <label for="email" class="text-gray-300 font-medium">User Email</label>
                         <input type="email" id="email" x-model="email" wire:model="email"
@@ -31,14 +31,16 @@
                     </div>
 
                     <div class="flex w-full">
-                        <button type="submit"
-                                wire:click="sendInvitation"
-                                class="w-full px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 justify-center transition-all flex items-center gap-2">
-                            <x-icon name="o-paper-airplane" class="w-5 h-5" />
-                            <span>Send Invitation</span>
-                        </button>
+                        <x-misc.button type="submit"
+                                       full="true"
+                                       variant="primary"
+                                       wire:click="sendInvitation"
+                                       :icon="@svg('o-paper-airplane')->toHtml()"
+                        >
+                        Send Invitation
+                        </x-misc.button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 

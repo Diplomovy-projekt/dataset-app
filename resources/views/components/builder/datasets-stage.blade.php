@@ -37,7 +37,7 @@
                             <div class="flex flex-col md:flex-row gap-3">
                                 {{--Classes preview button--}}
                                 <div x-data="{open: false}">
-                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses.{{$dataset['id']}}"/>
+                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueName="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses.{{$dataset['id']}}"/>
                                     <button
                                         @click.prevent="open = 'display-classes'"
                                         :disabled="!selectedDatasets[{{$dataset['id']}}]"
@@ -95,7 +95,7 @@
             <p class="text-gray-400">No datasets found</p>
         @endforelse
     </div>
-    <x-images.full-screen-image/>
+    {{--<x-images.full-screen-image/>--}}
 </div>
 
 @script

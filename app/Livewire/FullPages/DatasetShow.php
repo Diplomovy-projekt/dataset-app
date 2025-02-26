@@ -8,6 +8,7 @@ use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
@@ -44,16 +45,22 @@ class DatasetShow extends Component
         }
 
         $dataset->stats = $dataset->getStats();
-        foreach($dataset->classes as $class) {
-            $firstFile = collect(Storage::disk('datasets')
-                ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
-            $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
+        foreach ($dataset->classes as $class) {
+            $datasetPath = Util::getDatasetPath($dataset);
+            $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
+                ->first();
+            $class->image = [
+                'filename' => basename($firstFile),
+                'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
+            ];
         }
+
         $this->dataset = $dataset->toArray();
         $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
     }
+
     public function updatedPerPage()
     {
         unset($this->images);

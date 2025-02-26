@@ -4,7 +4,8 @@
     'size' => 'md',
     'type' => 'button',
     'full' => false,
-    'variant' => 'secondary'
+    'variant' => 'secondary',
+    'icon' => null
 ])
 
 @php
@@ -69,8 +70,10 @@
             x-bind:class="{ 'opacity-0': loading }"
         @endif
     >
-        @if ($icon ?? false)
-            {{ $icon }}
+        @if ($icon)
+            <span class="w-5 h-5 mr-2">
+                    {!! $icon !!}
+                </span>
         @endif
 
         {{ $slot }}

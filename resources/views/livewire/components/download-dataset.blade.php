@@ -22,7 +22,13 @@
                 </div>
             </div>
             @error('exportFormat')
-            <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span>
+            <span class="w-64 mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
+            @enderror
+            @error('token')
+            <span class="w-64 mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
+            @enderror
+            @error('locked')
+            <span class="w-64 mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
             @enderror
             @if(isset($this->failedDownload))
                 <x-dataset.dataset-errors
@@ -31,14 +37,17 @@
                 </x-dataset.dataset-errors>
             @endif
             <!-- Download Button -->
-            <button wire:click="download" id="download-btn"
-                    class="w-64 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-                <x-eva-download class="w-4 h-4"/>
-                Download
-            </button>
-            {{--<div wire:poll.1500ms="updateProgress"> <!-- Poll every 500ms -->
-                <span>{{ $this->progress ?? null }}</span>
-            </div>--}}
+            <x-misc.button wire:click="download" id="download-btn"
+                           class="w-64 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                           :icon="@svg('eva-download')->toHtml()"
+            >
+                Download Datatset
+            </x-misc.button>
+            @if($this->locked)
+                <div wire:poll.1500ms="updateProgress"> <!-- Poll every 500ms -->
+                    <span>{{ $this->progress ?? null }}</span>
+                </div>
+            @endif
         </div>
     </x-modals.fixed-modal>
 </div>

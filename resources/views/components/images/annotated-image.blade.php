@@ -1,17 +1,20 @@
-@props(
-    [
-        'image'
-    ]
-)
-<div {{$attributes->merge(['class' => 'relative'])}}>
-    <img id="{{$image['filename']}}"
-         src="{{asset($image['path'])}}"
-         alt="{{ $image['filename'] }}"
-         @load="console.log('Main image loaded')"
-         fetchpriority="high"
-         class="h-full w-full object-cover group-hover:opacity-80 transition-opacity duration-300"
-         @click="
-                const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
-                $dispatch('open-full-screen-image', { src: imgSrc, overlayId: `svg-{{ $image['filename'] }}` })">
+@props([
+    'image',
+    'dataset' => null,
+    'folder' => 'thumbnails',
+    'filename' => null,
+])
+
+
+<div {{ $attributes->merge(['class' => 'relative']) }}>
+    <x-images.img
+        dataset="{{ $image['dataset_folder'] }}"
+        folder="{{ $folder }}"
+        filename="{{ $image['filename'] }}"
+        id="{{ $image['filename'] }}"
+        fetchpriority="high"
+        class="h-full w-full object-cover group-hover:opacity-80 transition-opacity duration-300"
+    ></x-images.img>
+
     <x-annotation-overlay :image="$image"></x-annotation-overlay>
 </div>
