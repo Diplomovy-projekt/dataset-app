@@ -133,14 +133,37 @@
             <hr class="border border-slate-700">
 
             @if(count($annotationCount) > 0)
-                <div class="min-w-48 max-w-96 flex flex-col sm:flex-row gap-5">
-                    <div>
-                        <label class="block font-semibold mt-3">Min Annotations {{$minAnnotations}}</label>
-                        <input type="range" min="{{ min(array_column($this->originalAnnotationCount, 'count')) }}" max="{{ max(array_column($this->originalAnnotationCount, 'count')) }}" wire:model.live="minAnnotations" class="w-full mt-1" />
-                    </div>
-                    <div>
-                        <label class="block font-semibold mt-3">Max Annotations {{$maxAnnotations}}</label>
-                        <input type="range" min="{{ min(array_column($this->originalAnnotationCount, 'count')) }}" max="{{ max(array_column($this->originalAnnotationCount, 'count')) }}" wire:model.live="maxAnnotations" class="w-full mt-1" />
+                <div class="bg-slate-800 rounded-lg border border-slate-700 p-3">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <!-- Min Annotations Slider -->
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-sm text-gray-300">Min: <span class="text-blue-400 font-medium">{{$minAnnotations}}</span></label>
+                                <span class="text-xs text-slate-500">{{ min(array_column($this->originalAnnotationCount, 'count')) }}-{{ max(array_column($this->originalAnnotationCount, 'count')) }}</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="{{ min(array_column($this->originalAnnotationCount, 'count')) }}"
+                                max="{{ max(array_column($this->originalAnnotationCount, 'count')) }}"
+                                wire:model.live="minAnnotations"
+                                class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer"
+                            />
+                        </div>
+
+                        <!-- Max Annotations Slider -->
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-sm text-gray-300">Max: <span class="text-green-400 font-medium">{{$maxAnnotations}}</span></label>
+                                <span class="text-xs text-slate-500">{{ min(array_column($this->originalAnnotationCount, 'count')) }}-{{ max(array_column($this->originalAnnotationCount, 'count')) }}</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="{{ min(array_column($this->originalAnnotationCount, 'count')) }}"
+                                max="{{ max(array_column($this->originalAnnotationCount, 'count')) }}"
+                                wire:model.live="maxAnnotations"
+                                class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green-500 [&::-moz-range-thumb]:cursor-pointer"
+                            />
+                        </div>
                     </div>
                 </div>
             @endif
