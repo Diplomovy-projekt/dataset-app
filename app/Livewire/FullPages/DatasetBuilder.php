@@ -265,13 +265,15 @@ class DatasetBuilder extends Component
 
     public function cacheQuery()
     {
-        $query = $this->imagesQuery();
+        $payload['query'] = \EloquentSerialize::serialize($this->imagesQuery());
+        $payload['classIds'] = $this->getSelectedClassesForSelectedDatasets();
+        $payload['selectedImages'] = $this->selectedImages;
+        $payload['datasets'] = $this->selectedDatasets;
 
         $token = Str::random(32);
-        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
+        Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
-
     }
 
     private function getSelectedClassesForSelectedDatasets(): array

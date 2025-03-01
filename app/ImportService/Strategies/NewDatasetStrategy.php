@@ -31,7 +31,7 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
                 'num_images' => count($imageData),
                 'total_size' => array_sum(array_column($imageData, 'size')),
                 'annotation_technique' => $requestData['technique'],
-                'is_public' => false,
+                'is_public' => true,
             ]);
             // 2. Save Classes
             $classIds = [];

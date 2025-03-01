@@ -58,7 +58,7 @@ class ClassesSample extends Component
             $datasetPath = Util::getDatasetPath($dataset);
             $images = Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id);
             $class->images = array_map(fn($image) => [
-                'filename' => basename($image),
+                'filename' => pathinfo($image, PATHINFO_BASENAME),
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
             ], $images);
         }

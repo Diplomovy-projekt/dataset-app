@@ -22,9 +22,29 @@ class UserSeeder extends Seeder
             'password' => Hash::make('asd'),
         ]);
 
-        User::factory()
-            ->count(3)
-            ->create();
+        User::create([
+            'name' => 'John Doe',
+            'email' => 'john.doe@example.com',
+            'role' => 'user',
+            'is_active' => true,
+            'password' => Hash::make('password123'),
+        ]);
+
+        User::create([
+            'name' => 'Jane Smith',
+            'email' => 'jane.smith@example.com',
+            'role' => 'user',
+            'is_active' => true,
+            'password' => Hash::make('password123'),
+        ]);
+
+        User::create([
+            'name' => 'Alice Brown',
+            'email' => 'alice.brown@example.com',
+            'role' => 'user',
+            'is_active' => true,
+            'password' => Hash::make('password123'),
+        ]);
 
     }
 }

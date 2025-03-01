@@ -129,9 +129,11 @@ class AdminDatasets extends Component
     public function cacheQuery($id)
     {
         $query = Image::where('dataset_id', $id)->with('annotations.class');
+        $payload['query'] = \EloquentSerialize::serialize($query);
+        $payload['datasets'] = [$id];
 
         $token = Str::random(32);
-        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
+        Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
     }

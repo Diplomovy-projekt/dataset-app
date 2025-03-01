@@ -8,7 +8,7 @@
     $folder = trim($folder, '/');
     $publicPath = asset("storage/datasets/{$dataset}/{$folder}/{$filename}");
     $privatePath = route('private.image', ['dataset' => $dataset, 'filename' => base64_encode("{$folder}/{$filename}")]);
-    //dd($publicPath, $privatePath, $dataset, $folder, $filename);
+    //dump( $filename);
 @endphp
 
 <img src="{{ $publicPath }}"

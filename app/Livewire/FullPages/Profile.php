@@ -10,6 +10,7 @@ use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Jobs\DeleteTempFile;
 use App\Models\Dataset;
+use App\Models\Image;
 use App\Utils\QueryUtil;
 use Livewire\Component;
 
@@ -19,6 +20,21 @@ class Profile extends Component
     public $datasets;
     public function render(ExportService $es)
     {
+        $classIds = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+        $this->selectedDatasets = [4, 5, 6];
+
+        $query = Image::whereIn('dataset_id', array_keys(array_filter($this->selectedDatasets)))
+            ->whereNotIn('id', $this->selectedImages ?? [])
+            // Only include images that has annotations with selected classes
+            ->whereHas('annotations.class', function ($query) use ($classIds) {
+                $query->whereIn('id', $classIds);
+            })
+            // Include only annotations with selected classes for the images
+            ->with(['annotations' => function ($query) use ($classIds) {
+                $query->whereIn('annotation_class_id', $classIds);
+            }, 'annotations.class']);
+
+        $bindings = $query->getBindings();
         $this->loadDatasets();
         return view('livewire.full-pages.profile');
     }

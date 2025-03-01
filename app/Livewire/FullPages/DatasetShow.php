@@ -50,7 +50,7 @@ class DatasetShow extends Component
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
                 ->first();
             $class->image = [
-                'filename' => basename($firstFile),
+                'filename' => pathinfo($firstFile, PATHINFO_BASENAME),
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
             ];
         }
@@ -99,9 +99,11 @@ class DatasetShow extends Component
     public function cacheQuery($id)
     {
         $query = Image::where('dataset_id', $id)->with('annotations.class');
+        $payload['query'] = \EloquentSerialize::serialize($query);
+        $payload['datasets'] = [$id];
 
         $token = Str::random(32);
-        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
+        Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
     }
