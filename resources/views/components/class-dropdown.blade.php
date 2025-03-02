@@ -125,8 +125,6 @@
             }
             this.filteredClasses = [...this.classes];
             this.classes = [...this.classes];
-            // consoloe log classes
-            console.log(this.classes[0].image.filename);
         },
 
         toggleClass(classId) {
@@ -177,7 +175,6 @@
         },
 
         performSearch(e) {
-            console.log('Performing search', this.searchInput);
             e.preventDefault();
             this.activeSearch = this.searchInput;
             this.showSuggestions = false;

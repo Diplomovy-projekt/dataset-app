@@ -10,6 +10,7 @@ use App\Models\Image;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -22,8 +23,8 @@ class DownloadDataset extends Component
     public  $failedDownload = null;
     public string $exportFormat = '';
     public string $token = '';
-    public array|Collection $annotationCount = [];
-    public array|Collection $originalAnnotationCount = [];
+    public array|Collection $classesData = [];
+    public array|Collection $originalclassesData = [];
     public array $stats = [];
     public int $minAnnotations;
     public int $maxAnnotations;
@@ -44,8 +45,8 @@ class DownloadDataset extends Component
     public function storeDownloadToken($token)
     {
         $this->token = $token;
-        $this->setAnnotationCount($this->getFromCache());
-        $this->calculateStats($this->annotationCount);
+        $this->setclassesData($this->getFromCache());
+        $this->calculateStats($this->classesData);
     }
 
     public function render()
@@ -84,6 +85,8 @@ class DownloadDataset extends Component
         $payload = $this->getFromCache();
 
         $images = \EloquentSerialize::unserialize($payload['query'])->get()->toArray();
+        $images = $this->filterAnnotationsByClasses($images, $this->classesData);
+
         $response = ExportService::handleExport($images, $this->exportFormat);
         if(!$response->isSuccessful()) {
             $this->failedDownload = [
@@ -133,21 +136,15 @@ class DownloadDataset extends Component
     public function updateProgress()
     {
         $progress = session()->get("download_progress_{$this->exportDataset}", 0);
-
-        if ($progress < 100) {
-            $this->progress = $progress;
-        } else {
-            $this->progress = 100;
-        }
     }
 
-    private function setAnnotationCount(mixed $payload)
+    private function setclassesData(mixed $payload)
     {
         $classIds = $payload['classIds'] ?? Dataset::find($payload['datasets'][0])->classes->pluck('id')->toArray();
         $excludedImages = $payload['selectedImages'] ?? [];
         $datasets = $payload['datasets'];
 
-        $this->originalAnnotationCount = AnnotationClass::whereIn('id', $classIds)
+        $this->originalclassesData = AnnotationClass::whereIn('id', $classIds)
             ->withCount([
                 'annotations as annotation_count' => function ($query) use ($datasets, $excludedImages) {
                     $query->whereHas('image', function ($q) use ($datasets, $excludedImages) {
@@ -167,8 +164,9 @@ class DownloadDataset extends Component
                     'dataset_id' => $class->dataset_id,
                 ];
             });
-        $this->originalAnnotationCount = $this->originalAnnotationCount->toArray();
-        foreach ($this->originalAnnotationCount as &$class) { // Add &
+
+        $this->originalclassesData = $this->originalclassesData->toArray();
+        foreach ($this->originalclassesData as &$class) { // Add &
             $datasetPath = Util::getDatasetPath($class['dataset_id']);
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class['id']))->first();
 
@@ -179,42 +177,141 @@ class DownloadDataset extends Component
             ];
         }
         unset($class); // Unset reference to avoid unexpected behavior
-        $this->maxAnnotations = max(array_column($this->originalAnnotationCount, 'count'));
-        $this->minAnnotations = min(array_column($this->originalAnnotationCount, 'count'));
-        $this->annotationCount = $this->originalAnnotationCount;
+        $this->maxAnnotations = max(array_column($this->originalclassesData, 'count'));
+        $this->minAnnotations = min(array_column($this->originalclassesData, 'count'));
+        $this->classesData = $this->originalclassesData;
     }
 
-    private function adjustAnnotationCountForThresholds(): void
+    private function adjustclassesDataForThresholds(): void
     {
-        if (empty($this->originalAnnotationCount)) {
+        if (empty($this->originalclassesData)) {
             return;
         }
 
-        $this->annotationCount = array_values(array_map(
+        $this->classesData = array_values(array_map(
             function ($class) {
                 $class['count'] = min($class['count'], $this->maxAnnotations);
                 return $class;
             },
-            array_filter($this->originalAnnotationCount, fn($class) => $class['count'] >= $this->minAnnotations)
+            array_filter($this->originalclassesData, fn($class) => $class['count'] >= $this->minAnnotations)
         ));
     }
 
     public function updatedMinAnnotations(): void
     {
-        $this->adjustAnnotationCountForThresholds();
-        $this->calculateStats($this->annotationCount);
+        $this->adjustclassesDataForThresholds();
+        $this->calculateStats($this->classesData);
     }
 
     public function updatedMaxAnnotations(): void
     {
-        $this->adjustAnnotationCountForThresholds();
-        $this->calculateStats($this->annotationCount);
+        $this->adjustclassesDataForThresholds();
+        $this->calculateStats($this->classesData);
     }
-    private function calculateStats(array $annotationCount): void
+
+    /**
+     * Filter images with annotations based on pre-filtered class data with randomization
+     *
+     * @param array $images Array of images with annotations from the query
+     * @param array $classesData Array of already filtered classes with final counts
+     * @param bool $randomizeImages Whether to randomize the images order
+     * @param bool $randomizeAnnotations Whether to randomize annotations within each class
+     * @return array Filtered images with annotations
+     */
+    function filterAnnotationsByClasses(
+        array $images,
+        array $classesData,
+        bool $randomizeAnnotations = true
+    ): array
+    {
+        $targetCounts = [];
+        foreach ($classesData as $classData) {
+            $targetCounts[$classData['id']] = $classData['count'];
+        }
+
+        if (empty($targetCounts)) {
+            return [];
+        }
+
+        // Group annotations by class for randomized selection
+        if ($randomizeAnnotations) {
+            shuffle($images);
+            $annotationsByClass = [];
+
+            // Initialize the classes
+            foreach (array_keys($targetCounts) as $classId) {
+                $annotationsByClass[$classId] = [];
+            }
+
+            // Collect all annotations by class
+            foreach ($images as $imageIndex => $image) {
+                foreach ($image['annotations'] as $annotationIndex => $annotation) {
+                    $classId = $annotation['class']['id'];
+
+                    if (isset($targetCounts[$classId])) {
+                        $annotationsByClass[$classId][] = [
+                            'image_index' => $imageIndex,
+                            'annotation' => $annotation
+                        ];
+                    }
+                }
+            }
+
+            // Randomize annotations within each class and take only what we need
+            foreach ($annotationsByClass as $classId => &$annotations) {
+                shuffle($annotations);
+                $annotations = array_slice($annotations, 0, $targetCounts[$classId]);
+            }
+            unset($annotations);
+
+            // Clear all annotations from images first
+            foreach ($images as &$image) {
+                $image['annotations'] = [];
+            }
+            unset($image);
+
+            // Add selected annotations back to their respective images
+            foreach ($annotationsByClass as $classId => $annotations) {
+                foreach ($annotations as $item) {
+                    $images[$item['image_index']]['annotations'][] = $item['annotation'];
+                }
+            }
+        } else {
+            // Original non-randomized annotation filtering
+            $currentCounts = array_fill_keys(array_keys($targetCounts), 0);
+
+            foreach ($images as &$image) {
+                $filteredAnnotations = [];
+
+                foreach ($image['annotations'] as $annotation) {
+                    $classId = $annotation['class']['id'];
+
+                    if (!isset($targetCounts[$classId]) || $currentCounts[$classId] >= $targetCounts[$classId]) {
+                        continue;
+                    }
+
+                    $filteredAnnotations[] = $annotation;
+                    $currentCounts[$classId]++;
+                }
+
+                $image['annotations'] = $filteredAnnotations;
+            }
+            unset($image);
+        }
+
+        // Remove images with no annotations
+        $result = array_values(array_filter($images, function($image) {
+            return !empty($image['annotations']);
+        }));
+
+        return $result;
+    }
+
+    private function calculateStats(array $classesData): void
     {
         $this->stats = [
             'totalCount' => $this->calculateTotalCount(),
-            'classCount' => count($annotationCount),
+            'classCount' => count($classesData),
             'maxClass' => $this->findMaxClass(),
             'minClass' => $this->findMinClass(),
             'avgCount' => $this->calculateAverage(),
@@ -226,31 +323,31 @@ class DownloadDataset extends Component
 
     private function calculateTotalCount(): int
     {
-        $counts = array_column($this->annotationCount, 'count');
+        $counts = array_column($this->classesData, 'count');
         return array_sum($counts);
     }
 
     private function findMaxClass(): array
     {
-        $counts = array_column($this->annotationCount, 'count');
-        return $this->annotationCount[array_search(max($counts), $counts)];
+        $counts = array_column($this->classesData, 'count');
+        return $this->classesData[array_search(max($counts), $counts)];
     }
 
     private function findMinClass(): array
     {
-        $counts = array_column($this->annotationCount, 'count');
-        return $this->annotationCount[array_search(min($counts), $counts)];
+        $counts = array_column($this->classesData, 'count');
+        return $this->classesData[array_search(min($counts), $counts)];
     }
 
     private function calculateAverage(): int
     {
-        $counts = array_column($this->annotationCount, 'count');
+        $counts = array_column($this->classesData, 'count');
         return round(array_sum($counts) / count($counts));
     }
 
     private function calculateMedian(): int
     {
-        $counts = array_column($this->annotationCount, 'count');
+        $counts = array_column($this->classesData, 'count');
         sort($counts);
         $count = count($counts);
         return $count % 2 === 0
@@ -260,7 +357,7 @@ class DownloadDataset extends Component
 
     private function calculateStdDev(): int
     {
-        $counts = array_column($this->annotationCount, 'count');
+        $counts = array_column($this->classesData, 'count');
         $mean = $this->calculateAverage();
         $variance = array_sum(array_map(fn($x) => pow($x - $mean, 2), $counts)) / count($counts);
         return round(sqrt($variance));
@@ -268,7 +365,7 @@ class DownloadDataset extends Component
 
     private function calculateImbalance(): float
     {
-        $counts = array_column($this->annotationCount, 'count');
+        $counts = array_column($this->classesData, 'count');
         return round(max($counts) / max(1, min($counts)), 1);
     }
 

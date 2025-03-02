@@ -88,7 +88,7 @@ class UploadDataset extends Component
             $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
             $this->errors['message'] = $datasetImported->message;
             $this->lockUpload = false;
-            $this->reset($this->finalFile, $this->fileChunk, $this->displayName, $this->uniqueName, $this->fileSize);
+            $this->reset('finalFile', 'fileChunk', 'displayName', 'uniqueName', 'fileSize');
         }
     }
 

@@ -268,7 +268,7 @@ class DatasetBuilder extends Component
         $payload['query'] = \EloquentSerialize::serialize($this->imagesQuery());
         $payload['classIds'] = $this->getSelectedClassesForSelectedDatasets();
         $payload['selectedImages'] = $this->selectedImages;
-        $payload['datasets'] = $this->selectedDatasets;
+        $payload['datasets'] = array_keys(array_filter($this->selectedDatasets));
 
         $token = Str::random(32);
         Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));

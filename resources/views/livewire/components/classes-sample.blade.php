@@ -77,7 +77,7 @@
                                     data-value="{{$class['name']}}">
                                     {{$class['name']}}
                                 </h3>
-                                {{--Image and Class count--}}
+                                {{--Image and Annotation count--}}
                                 <div class="flex gap-2">
                                     <div
                                         class="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full"
@@ -141,17 +141,28 @@
 
             const parentContainer = document.querySelector('#classes-sample-container');
             if (!parentContainer) {
-                console.warn("Parent container not found.");
                 return;
             }
             const classes = [...parentContainer.querySelectorAll('.group')];
             classes.sort((a, b) => {
-                const aVal = a.querySelector(`[data-type=${this.sortType}]`).getAttribute('data-value').toLowerCase();
-                const bVal = b.querySelector(`[data-type=${this.sortType}]`).getAttribute('data-value').toLowerCase();
+                const aElement = a.querySelector(`[data-type=${this.sortType}]`);
+                const bElement = b.querySelector(`[data-type=${this.sortType}]`);
 
-                if (aVal < bVal) return this.sortOrder === 'asc' ? -1 : 1;
-                if (aVal > bVal) return this.sortOrder === 'asc' ? 1 : -1;
-                return 0;
+                if (!aElement || !bElement) return 0;
+
+                const aVal = aElement.getAttribute('data-value');
+                const bVal = bElement.getAttribute('data-value');
+
+                // Detect if values are numeric
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+                const isNumeric = !isNaN(aNum) && !isNaN(bNum);
+
+                if (isNumeric) {
+                    return this.sortOrder === 'asc' ? aNum - bNum : bNum - aNum;
+                } else {
+                    return this.sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                }
             });
 
             classes.forEach((el) => el.parentElement.appendChild(el));
