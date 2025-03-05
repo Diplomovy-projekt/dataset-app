@@ -24,7 +24,7 @@ class DownloadDataset extends Component
     public string $exportFormat = '';
     public string $token = '';
     public array|Collection $classesData = [];
-    public array|Collection $originalclassesData = [];
+    public array|Collection $originalClassesData = [];
     public array $stats = [];
     public int $minAnnotations;
     public int $maxAnnotations;
@@ -144,7 +144,7 @@ class DownloadDataset extends Component
         $excludedImages = $payload['selectedImages'] ?? [];
         $datasets = $payload['datasets'];
 
-        $this->originalclassesData = AnnotationClass::whereIn('id', $classIds)
+        $this->originalClassesData = AnnotationClass::whereIn('id', $classIds)
             ->withCount([
                 'annotations as annotation_count' => function ($query) use ($datasets, $excludedImages) {
                     $query->whereHas('image', function ($q) use ($datasets, $excludedImages) {
@@ -165,8 +165,8 @@ class DownloadDataset extends Component
                 ];
             });
 
-        $this->originalclassesData = $this->originalclassesData->toArray();
-        foreach ($this->originalclassesData as &$class) { // Add &
+        $this->originalClassesData = $this->originalClassesData->toArray();
+        foreach ($this->originalClassesData as &$class) { // Add &
             $datasetPath = Util::getDatasetPath($class['dataset_id']);
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class['id']))->first();
 
@@ -177,14 +177,14 @@ class DownloadDataset extends Component
             ];
         }
         unset($class); // Unset reference to avoid unexpected behavior
-        $this->maxAnnotations = max(array_column($this->originalclassesData, 'count'));
-        $this->minAnnotations = min(array_column($this->originalclassesData, 'count'));
-        $this->classesData = $this->originalclassesData;
+        $this->maxAnnotations = max(array_column($this->originalClassesData, 'count'));
+        $this->minAnnotations = min(array_column($this->originalClassesData, 'count'));
+        $this->classesData = $this->originalClassesData;
     }
 
     private function adjustclassesDataForThresholds(): void
     {
-        if (empty($this->originalclassesData)) {
+        if (empty($this->originalClassesData)) {
             return;
         }
 
@@ -193,7 +193,7 @@ class DownloadDataset extends Component
                 $class['count'] = min($class['count'], $this->maxAnnotations);
                 return $class;
             },
-            array_filter($this->originalclassesData, fn($class) => $class['count'] >= $this->minAnnotations)
+            array_filter($this->originalClassesData, fn($class) => $class['count'] >= $this->minAnnotations)
         ));
     }
 

@@ -127,12 +127,12 @@
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1">
                             <label class="text-sm text-gray-300">Min annotations: <span class="text-blue-400 font-medium">{{$minAnnotations}}</span></label>
-                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalclassesData, 'count')) }}-{{ max(array_column($this->originalclassesData, 'count')) }}</span>
+                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalClassesData, 'count')) }}-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
                         </div>
                         <input
                             type="range"
-                            min="{{ min(array_column($this->originalclassesData, 'count')) }}"
-                            max="{{ max(array_column($this->originalclassesData, 'count')) }}"
+                            min="{{ min(array_column($this->originalClassesData, 'count')) }}"
+                            max="{{ max(array_column($this->originalClassesData, 'count')) }}"
                             wire:model.live="minAnnotations"
                             class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer"
                         />
@@ -142,19 +142,18 @@
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1">
                             <label class="text-sm text-gray-300">Max annotations: <span class="text-green-400 font-medium">{{$maxAnnotations}}</span></label>
-                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalclassesData, 'count')) }}-{{ max(array_column($this->originalclassesData, 'count')) }}</span>
+                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalClassesData, 'count')) }}-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
                         </div>
                         <input
                             type="range"
-                            min="{{ min(array_column($this->originalclassesData, 'count')) }}"
-                            max="{{ max(array_column($this->originalclassesData, 'count')) }}"
+                            min="{{ min(array_column($this->originalClassesData, 'count')) }}"
+                            max="{{ max(array_column($this->originalClassesData, 'count')) }}"
                             wire:model.live="maxAnnotations"
                             class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green-500 [&::-moz-range-thumb]:cursor-pointer"
                         />
                     </div>
                 </div>
             </div>
-
 
 
             <!-- Download Format Selection - Always visible -->
