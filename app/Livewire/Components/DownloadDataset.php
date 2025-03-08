@@ -123,7 +123,7 @@ class DownloadDataset extends Component
     public function streamDownload()
     {
         $fileSize = filesize($this->filePath);
-        $chunkSize = 1024 * 1024; // 1MB per chunk
+        $chunkSize = AppConfig::DOWNLOAD_CHUNK_SIZE;
         $this->progress = 0; // Reset progress when starting the download
 
         return response()->stream(function () use ($chunkSize, $fileSize) {

@@ -1,7 +1,6 @@
 <div x-data="classSampleSort(@this)"
-     id="classes-sample-container">
+     id="classes-sample-container-{{$this->dataset['unique_name']}}">
     <x-modals.fixed-modal modalId="display-classes" class="sm:max-w-11/12">
-
         <!-- Modal Title -->
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-200">Class Sample Preview</h1>
@@ -10,7 +9,7 @@
         @if($this->selectable)
             <p class="text-gray-500 font-sm mb-2">Here you can choose which classes to include in your dataset.</p>
         @endif
-        <div class="mb-8" wire:key="livewire-classes-sample-comp-{{$this->dataset['unique_name']}}">
+        <div class="mb-8" {{--wire:key="livewire-classes-sample-comp-{{$this->dataset['unique_name']}}"--}}>
             <!-- Dataset Header -->
             <div class="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-slate-800 to-slate-900 p-4 rounded-t-xl border-b border-slate-700">
                 <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -134,12 +133,13 @@
         sortOrder: 'asc',
         sortType: 'class-name',
         selectedClasses: livewireComponent.entangle('selectedClasses'),
+        uniqueName: livewireComponent.dataset.unique_name,
         init() {
         },
         sortBy(sortBy = null) {
             this.sortType = sortBy ?? this.sortType;
 
-            const parentContainer = document.querySelector('#classes-sample-container');
+            const parentContainer = document.querySelector('#classes-sample-container-' + this.uniqueName);
             if (!parentContainer) {
                 return;
             }

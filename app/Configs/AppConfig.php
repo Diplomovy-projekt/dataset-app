@@ -30,7 +30,7 @@ class AppConfig
     public const FULL_IMG_FOLDER = 'full-images/';
     public const IMG_THUMB_FOLDER = 'thumbnails/';
     public const CLASS_IMG_FOLDER = 'class-images/';
-    public const SAMPLES_COUNT = 3;
+    public const SAMPLES_COUNT = 1;
     public const array MB_SIZE_LOOKUP = [
         '1MB' => 1000000,
         '2MB' => 2000000,

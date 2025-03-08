@@ -56,7 +56,7 @@ class ClassesSample extends Component
 
             // Images
             $datasetPath = Util::getDatasetPath($dataset);
-            $images = Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id);
+            $images = array_slice(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id), 0, AppConfig::SAMPLES_COUNT);
             $class->images = array_map(fn($image) => [
                 'filename' => pathinfo($image, PATHINFO_BASENAME),
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
@@ -72,6 +72,7 @@ class ClassesSample extends Component
 
     public function render()
     {
+        $idk = $this->dataset;
         return view('livewire.components.classes-sample');
     }
 }
