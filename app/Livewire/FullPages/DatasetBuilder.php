@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
 use App\ImageService\ImageRendering;
+use App\Models\AnnotationClass;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
@@ -318,9 +319,13 @@ class DatasetBuilder extends Component
     private function getCustomStats()
     {
         $images = $this->imagesQuery()->get()->toArray();
+        $classCount = AnnotationClass::whereIn('id', $this->getSelectedClassesForSelectedDatasets())
+            ->get(['name'])
+            ->unique('name')
+            ->count();
         return [
             'numImages' => count($images),
-            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
+            'numClasses' => $classCount,
             'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $images)),
         ];
     }

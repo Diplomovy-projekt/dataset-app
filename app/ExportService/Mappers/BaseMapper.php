@@ -50,13 +50,13 @@ abstract class BaseMapper
             $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
 
             foreach($image['annotations'] as $annotation) {
-                $dbClassId = $annotation['class']['id'];
+                $className = $annotation['class']['name'];
 
                 File::ensureDirectoryExists($annotationPath);
 
-                if (!isset($this->classMap[$dbClassId])) {
+                if (!isset($this->classMap[$className])) {
                     $newClassId = count($this->classMap);
-                    $this->classMap[$dbClassId] = [
+                    $this->classMap[$className] = [
                         'id' => $newClassId,
                         'name' => $annotation['class']['name'],
                     ];

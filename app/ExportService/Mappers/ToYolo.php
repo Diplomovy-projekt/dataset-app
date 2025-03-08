@@ -45,7 +45,7 @@ class ToYolo extends BaseMapper
     protected function mapBbox(mixed $annotation): string
     {
         // Centering x and y coordinates because In DB they are stored as top-left corner
-        $classId = $this->classMap[$annotation['class']['id']]['id'];
+        $classId = $this->classMap[$annotation['class']['name']]['id'];
         $x = $annotation['x'] + $annotation['width'] / 2;
         $y = $annotation['y'] + $annotation['height'] / 2;
         $width = $annotation['width'];
@@ -56,7 +56,7 @@ class ToYolo extends BaseMapper
 
     protected function mapPolygon(mixed $annotation): string
     {
-        $classId = $this->classMap[$annotation['class']['id']]['id'];
+        $classId = $this->classMap[$annotation['class']['name']]['id'];
         $polygon = json_decode($annotation['segmentation'], true);
 
         $points = '';
