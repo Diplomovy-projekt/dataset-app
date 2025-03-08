@@ -31,7 +31,7 @@ class AppConfig
     public const IMG_THUMB_FOLDER = 'thumbnails/';
     public const CLASS_IMG_FOLDER = 'class-images/';
     public const SAMPLES_COUNT = 3;
-    public const array UPLOAD_CHUNK_SIZES = [
+    public const array MB_SIZE_LOOKUP = [
         '1MB' => 1000000,
         '2MB' => 2000000,
         '5MB' => 5000000,
@@ -41,7 +41,8 @@ class AppConfig
         '100MB' => 100000000,
         '200MB' => 200000000,
     ];
-    public const int UPLOAD_CHUNK_SIZE = AppConfig::UPLOAD_CHUNK_SIZES['100MB'];
+    public const int UPLOAD_CHUNK_SIZE = AppConfig::MB_SIZE_LOOKUP['100MB'];
+    public const int DOWNLOAD_CHUNK_SIZE = AppConfig::MB_SIZE_LOOKUP['100MB'];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
     public const PER_PAGE_OPTIONS = [
         "10" => 10,

@@ -12,14 +12,14 @@ use Illuminate\Support\Facades\Storage;
 class ExportService
 {
 
-    public static function handleExport($images, $format)
+    public static function handleExport($images, $format, $annotationTechnique)
     {
         try {
             $datasetFolder = uniqid('custom_dataset_build_');
             $mapper = ExportComponentFactory::createMapper($format);
 
             //1. Create and map the dataset folder
-            $mapper->handle($images, $datasetFolder);
+            $mapper->handle($images, $datasetFolder, $annotationTechnique);
 
             //2. Create a zip file from the dataset folder
             $absolutePath = Storage::disk('datasets')->path($datasetFolder);

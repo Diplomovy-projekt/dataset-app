@@ -77,24 +77,40 @@ class DownloadDataset extends Component
     public function download()
     {
         $this->validate();
-        if($this->locked) {
+        if ($this->locked) {
             return;
         }
         $this->locked = true;
 
         $payload = $this->getFromCache();
+        $images = $this->getFilteredImages($payload['query']);
+        $annotationTechnique = $this->findOutAnnotationTechnique($payload['datasets']);
 
-        $images = \EloquentSerialize::unserialize($payload['query'])->get()->toArray();
-        $images = $this->filterAnnotationsByClasses($images, $this->classesData);
+        $response = $this->exportDataset($images, $annotationTechnique);
+        if (!$response) {
+            return;
+        }
 
-        $response = ExportService::handleExport($images, $this->exportFormat);
-        if(!$response->isSuccessful()) {
+        return $this->streamDownload();
+    }
+    private function getFilteredImages(string $query): array
+    {
+        $images = \EloquentSerialize::unserialize($query)->get()->toArray();
+        return $this->filterAnnotationsByClasses($images, $this->classesData);
+    }
+    private function exportDataset(array $images, string $annotationTechnique): bool
+    {
+        $response = ExportService::handleExport($images, $this->exportFormat, $annotationTechnique);
+
+        if (!$response->isSuccessful()) {
             $this->failedDownload = [
                 'message' => $response->message,
                 'data' => $response->data
             ];
-            return;
+            $this->unlock();
+            return false;
         }
+
         $this->exportDataset = $response->data['datasetFolder'];
         $this->filePath = storage_path("app/public/datasets/{$this->exportDataset}");
 
@@ -102,21 +118,24 @@ class DownloadDataset extends Component
             abort(404, "File not found.");
         }
 
+        return true;
+    }
+    public function streamDownload()
+    {
         $fileSize = filesize($this->filePath);
         $chunkSize = 1024 * 1024; // 1MB per chunk
-        $bytesSent = 0;
-
         $this->progress = 0; // Reset progress when starting the download
 
-        return response()->stream(function () use ($chunkSize, &$bytesSent, $fileSize) {
+        return response()->stream(function () use ($chunkSize, $fileSize) {
             $handle = fopen($this->filePath, 'rb');
+            $bytesSent = 0;
 
             while (!feof($handle)) {
                 $chunk = fread($handle, $chunkSize);
                 echo $chunk;
                 flush();
 
-                $bytesSent += strlen($chunk); // Track actual bytes read
+                $bytesSent += strlen($chunk);
                 $this->progress = round(($bytesSent / $fileSize) * 100, 2);
                 session()->put("download_progress_{$this->exportDataset}", $this->progress);
             }
@@ -367,6 +386,20 @@ class DownloadDataset extends Component
     {
         $counts = array_column($this->classesData, 'count');
         return round(max($counts) / max(1, min($counts)), 1);
+    }
+
+    private function findOutAnnotationTechnique(mixed $datasets)
+    {
+        $annotationTechniques = Dataset::whereIn('id', $datasets)
+            ->pluck('annotation_technique')
+            ->unique();
+
+        // If both bounding box and polygon are present, return bounding box
+        if ($annotationTechniques->count() === 2) {
+            return AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
+        } else {
+            return $annotationTechniques->first();
+        }
     }
 
 }

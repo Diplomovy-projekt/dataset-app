@@ -8,6 +8,7 @@ use App\Models\AnnotationData;
 use App\Models\Image;
 use App\Utils\Util;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 abstract class BaseStrategy
 {
@@ -28,6 +29,38 @@ abstract class BaseStrategy
             SET rgb = CASE $updates END
             WHERE id IN ($ids)
         ");
+    }
+
+    public function saveClasses($classes, $dataset)
+    {
+        $classIds = [];
+        $classesToSample = [];
+        $duplicateClassMap = [];
+
+        foreach ($classes['names'] as $categoryName) {
+            if (!isset($duplicateClassMap[$categoryName])) {
+                $class = AnnotationClass::firstOrCreate([
+                    'dataset_id'   => $dataset->id,
+                    'name'         => $categoryName,
+                    'supercategory' => $classes['superCategory'] ?? null,
+                ]);
+
+                $duplicateClassMap[$categoryName] = $class->id;
+            }
+
+            // Used to store all class ids accounting for duplicates needed for image annotations
+            $classIds[] = $duplicateClassMap[$categoryName];
+
+            $filesCount = count(Storage::disk('datasets')->files(
+                "{$dataset->unique_name}/" . AppConfig::CLASS_IMG_FOLDER . "/{$duplicateClassMap[$categoryName]}"
+            ));
+            $shouldSample = $class->wasRecentlyCreated || $filesCount < AppConfig::SAMPLES_COUNT;
+            if ($shouldSample && !in_array($duplicateClassMap[$categoryName], $classesToSample)) {
+                $classesToSample[] = $duplicateClassMap[$categoryName];
+            }
+        }
+        return [$classIds, $classesToSample];
+
     }
 
     public function saveImageWithAnnotations($imageData, $dataset, $classIds): void

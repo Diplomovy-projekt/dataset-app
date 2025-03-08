@@ -13,13 +13,27 @@ trait DatasetImportHelper
     public function normalizeErrors($errors): array
     {
         if (is_array($errors)) {
-            return collect($errors)
-                ->flatten()
-                ->toArray();
+            $flattenedErrors = [];
+
+            // Iterate through each file's errors
+            foreach ($errors as $filename => $errorArray) {
+                // Check if the value is an array and flatten it
+                if (is_array($errorArray)) {
+                    foreach ($errorArray as $error) {
+                        $flattenedErrors[] = ['filename' => $filename, 'error' => $error];
+                    }
+                } else {
+                    // In case there's a single error for the file, just add it
+                    $flattenedErrors[] = ['filename' => $filename, 'error' => $errorArray];
+                }
+            }
+
+            return $flattenedErrors;
         }
 
-        return [$errors];
+        return [['error' => $errors]]; // Handle case when it's not an array
     }
+
 
     public function chunkUpload()
     {

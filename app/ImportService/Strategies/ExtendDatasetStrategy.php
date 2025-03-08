@@ -24,6 +24,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
             $this->newImages = array_column($imageData, 'filename');
+
             // 1. Dataset update
             $dataset = Dataset::where('unique_name', $requestData['parent_dataset_unique_name'])->first();
             $dataset->num_images += count($imageData);
@@ -31,26 +32,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $dataset->save();
 
             // 2. Save New Classes
-            $classIds = [];
-            $classesToSample = [];
-            foreach ($classes['names'] as $categoryName) {
-                $class = AnnotationClass::updateOrCreate([
-                    'dataset_id'   => $dataset->id,
-                    'name'         => $categoryName,
-                    'supercategory' => $classes['superCategory'] ?? null,
-                ]);
-                $classIds[] = $class->id;
-                if ($class->wasRecentlyCreated) {
-                    $classesToSample[] = $class->id;
-                }
-                // Check if the sample count is low and add the class
-                $filesCount = count(Storage::disk('datasets')->files(
-                    "{$dataset->unique_name}/" . AppConfig::CLASS_IMG_FOLDER . "/{$class->id}"
-                ));
-                if ($filesCount < AppConfig::SAMPLES_COUNT) {
-                    $classesToSample[] = $class->id;
-                }
-            }
+            list($classIds, $classesToSample) = $this->saveClasses($classes, $dataset);
 
             // 3. Assign colors to classes
             $this->assignColorsToClasses($classIds);

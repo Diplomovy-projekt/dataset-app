@@ -29,30 +29,36 @@ class DatasetBuilder extends Component
     #[Locked]
     public $stageData = [
         1 => [
+            'title' => 'Annotation Technique',
+            'description' => 'Select the annotation technique you want to use for your project.',
+            'component' => 'builder.annotation-technique-stage',
+            'method' => 'annotationTechniqueStage',
+        ],
+        2 => [
             'title' => 'Select Categories',
             'description' => 'Choose the categories relevant to your dataset for this project.',
             'component' => 'builder.categories-stage',
             'method' => 'categoriesStage',
         ],
-        2 => [
+        3 => [
             'title' => 'Dataset Origin',
             'description' => 'Specify the source or origin of the dataset you want to use.',
             'component' => 'builder.origin-stage',
             'method' => 'originStage',
         ],
-        3 => [
+        4 => [
             'title' => 'Datasets Selection',
             'description' => 'Select the specific datasets required for your project.',
             'component' => 'builder.datasets-stage',
             'method' => 'datasetsStage',
         ],
-        4 => [
+        5 => [
             'title' => 'Final Selection',
             'description' => 'Select any images that you wish to EXCLUDE from your final dataset',
             'component' => 'builder.final-stage',
             'method' => 'finalStage',
         ],
-        5 => [
+        6 => [
             'title' => 'Download',
             'description' => 'Download the final prepared dataset for your project.',
             'component' => 'builder.download-stage',
@@ -60,6 +66,7 @@ class DatasetBuilder extends Component
         ],
     ];
 
+    public string $selectedAnnotationTechnique = AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
     #[Locked]
     public $categories = [];
     public $selectedCategories = [];
@@ -69,8 +76,7 @@ class DatasetBuilder extends Component
     public $skipTypes = [];
     #[Locked]
     public $datasets = [];
-    public array $selectedDatasets = [
-    ];
+    public array $selectedDatasets = [];
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
@@ -79,6 +85,8 @@ class DatasetBuilder extends Component
         'metadataValues' => [],
         'categories' => [],
     ];
+    public array $polygonDatasetsStats = [];
+    public array $allDatasetsStats = [];
     public int $perPage = 25;
 
     #[Computed]
@@ -90,7 +98,6 @@ class DatasetBuilder extends Component
     #[On('add-selected')]
     public function receiveSelected($selectedClasses, $datasetId)
     {
-        //$this->selectedClasses = $this->selectedClasses + $selectedClasses;
         $this->selectedClasses[$datasetId] = $selectedClasses;
 
     }
@@ -141,7 +148,6 @@ class DatasetBuilder extends Component
         $stageDetails = $this->stageData[$this->currentStage] ?? null;
 
         if ($stageDetails && method_exists($this, $stageDetails['method'])) {
-            //$this->{$stageDetails['method']}();
             $method = $stageDetails['method'];
 
             // Resolve method dependencies
@@ -153,9 +159,28 @@ class DatasetBuilder extends Component
         }
     }
 
+    public function annotationTechniqueStage()
+    {
+        // Get ids of datasets that have the selected annotation technique polygon
+        $polygonDatasetIds = Dataset::where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
+            ->pluck('id')
+            ->all();
+        $this->polygonDatasetsStats = QueryUtil::getDatasetCounts($polygonDatasetIds);
+
+        $this->allDatasetsStats = QueryUtil::getDatasetCounts();
+
+    }
     private function categoriesStage()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();
+        // If selectedAnnotationTechnique is set to polygon, remove the categories  that are linked to datasets with no polygon annotations
+        if ($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
+            $this->categories = $this->categories->filter(function ($category) {
+                return Dataset::whereRelation('categories', 'category_id', $category->id)
+                    ->where('annotation_technique', 'Polygon')
+                    ->exists();
+            });
+        }
         $this->categories = $this->categories->map(function ($category) {
             $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
             $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
@@ -210,6 +235,9 @@ class DatasetBuilder extends Component
         $datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique();
 
         $this->datasets = Dataset::whereIn('id', $datasetIds)
+            ->when($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'], function ($query) {
+                return $query->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON']);
+            })
             ->with(['classes', 'metadataValues', 'categories'])
             ->get()
             ->map(function ($dataset) {

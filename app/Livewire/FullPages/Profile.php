@@ -18,23 +18,8 @@ class Profile extends Component
 {
     use ImageRendering;
     public $datasets;
-    public function render(ExportService $es)
+    public function render()
     {
-        $classIds = [10, 11, 12, 13, 14, 15, 16, 17, 18];
-        $this->selectedDatasets = [4, 5, 6];
-
-        $query = Image::whereIn('dataset_id', array_keys(array_filter($this->selectedDatasets)))
-            ->whereNotIn('id', $this->selectedImages ?? [])
-            // Only include images that has annotations with selected classes
-            ->whereHas('annotations.class', function ($query) use ($classIds) {
-                $query->whereIn('id', $classIds);
-            })
-            // Include only annotations with selected classes for the images
-            ->with(['annotations' => function ($query) use ($classIds) {
-                $query->whereIn('annotation_class_id', $classIds);
-            }, 'annotations.class']);
-
-        $bindings = $query->getBindings();
         $this->loadDatasets();
         return view('livewire.full-pages.profile');
     }
@@ -57,7 +42,6 @@ class Profile extends Component
             }
             $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            //$datasets[$key]['images'] = $processedImage;
             $dataset->images = $processedImage;
             $dataset->stats = $dataset->getStats();
         }

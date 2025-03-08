@@ -15,10 +15,10 @@ class ToYolo extends BaseMapper
     /**
      * @throws \Exception
      */
-    public function handle($images, $datasetFolder): void
+    public function handle($images, $datasetFolder, $annotationTechnique): void
     {
         $this->linkImages($images, $datasetFolder);
-        $this->mapAnnotations($images, $datasetFolder);
+        $this->mapAnnotations($images, $datasetFolder, $annotationTechnique);
         $this->populateDataFile($datasetFolder);
     }
 

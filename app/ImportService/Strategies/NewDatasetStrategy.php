@@ -33,15 +33,9 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
                 'annotation_technique' => $requestData['technique'],
                 'is_public' => true,
             ]);
+
             // 2. Save Classes
-            $classIds = [];
-            foreach ($classes['names'] as $categoryName) {
-                $classIds[] = AnnotationClass::create([
-                    'dataset_id' => $dataset->id,
-                    'name' => $categoryName,
-                    'supercategory' => $classes['superCategory'] ?? null,
-                ])->id;
-            }
+            list($classIds, $classesToSample) = $this->saveClasses($classes, $dataset);
 
             // 3. Assign colors to classes
             $this->assignColorsToClasses($classIds);
@@ -66,7 +60,7 @@ class NewDatasetStrategy extends BaseStrategy implements DatasetSavingStrategyIn
             }
 
             return Response::success(data: [
-                'classesToSample' => $classIds,
+                'classesToSample' => $classesToSample,
                 'newImages' => array_column($mappedData['images'], 'filename')
             ]);
         } catch (\Exception $e) {

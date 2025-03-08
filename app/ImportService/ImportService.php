@@ -33,27 +33,20 @@ class ImportService
      */
     public function handleImport(array $requestData): Response
     {
-        Util::logStart("Import process");
 
         $this->importPreprocessor = new ImportPreprocess($requestData['format']);
 
-        Util::logStart("Preprocessing dataset");
         $result = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
-        Util::logEnd("Preprocessing dataset");
 
         if (!$result->isSuccessful()) {
             return Response::error($result->message, $result->data);
         }
 
-        Util::logStart("Saving dataset");
         $isSaved = $this->saveDataset($result->data, $requestData);
-        Util::logEnd("Saving dataset");
 
         if (!$isSaved->isSuccessful()) {
             return Response::error($isSaved->message);
         }
-
-        Util::logEnd("Import process");
 
         return Response::success("Dataset imported successfully");
     }

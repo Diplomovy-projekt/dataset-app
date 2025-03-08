@@ -3,6 +3,7 @@
 namespace App\ExportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
+use App\Configs\AppConfig;
 use App\Models\Dataset;
 use App\Utils\Util;
 use Illuminate\Support\Facades\File;
@@ -12,35 +13,6 @@ abstract class BaseMapper
 {
     protected array $classMap = [];
 
-    /**
-     * @throws \Exception
-     */
-    public function mapAnnotations($images, $datasetFolder): void
-    {
-        foreach ($images as $image) {
-            $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
-
-            foreach($image['annotations'] as $annotation) {
-                $dbClassId = $annotation['class']['id'];
-
-                File::ensureDirectoryExists($annotationPath);
-
-                if (!isset($this->classMap[$dbClassId])) {
-                    $newClassId = count($this->classMap);
-                    $this->classMap[$dbClassId] = [
-                        'id' => $newClassId,
-                        'name' => $annotation['class']['name'],
-                    ];
-                }
-
-                $mappedAnnotation = $annotation['segmentation'] ? $this->mapPolygon($annotation) : $this->mapBbox($annotation);
-
-                if (!Storage::append($annotationPath, $mappedAnnotation)) {
-                    throw new \Exception("Failed to write annotation to file");
-                }
-            }
-        }
-    }
 
     /**
      * @throws \Exception
@@ -68,6 +40,42 @@ abstract class BaseMapper
             }
         }
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function mapAnnotations($images, $datasetFolder, $annotationTechnique): void
+    {
+        foreach ($images as $image) {
+            $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
+
+            foreach($image['annotations'] as $annotation) {
+                $dbClassId = $annotation['class']['id'];
+
+                File::ensureDirectoryExists($annotationPath);
+
+                if (!isset($this->classMap[$dbClassId])) {
+                    $newClassId = count($this->classMap);
+                    $this->classMap[$dbClassId] = [
+                        'id' => $newClassId,
+                        'name' => $annotation['class']['name'],
+                    ];
+                }
+
+                $mappedAnnotation = match ($annotationTechnique) {
+                    AppConfig::ANNOTATION_TECHNIQUES['POLYGON'] => $this->mapPolygon($annotation),
+                    AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'] => $this->mapBbox($annotation),
+                    default => throw new \Exception("Invalid annotation technique"),
+                };
+
+                if (!Storage::append($annotationPath, $mappedAnnotation)) {
+                    throw new \Exception("Failed to write annotation to file");
+                }
+            }
+        }
+    }
+
+
     abstract protected function getImageDestinationPath($datasetFolder, $image): string;
 
     abstract protected function getAnnotationDestinationPath($datasetFolder, $image): string;

@@ -34,15 +34,15 @@
                 <!-- Statistics -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_images'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numImages'] }}</div>
                         <div class="text-gray-400">Images</div>
                     </div>
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_annotations'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numAnnotations'] }}</div>
                         <div class="text-gray-400">Annotations</div>
                     </div>
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_classes'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numClasses'] }}</div>
                         <div class="text-gray-400">Classes</div>
                     </div>
                 </div>

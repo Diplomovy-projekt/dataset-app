@@ -43,9 +43,14 @@
                  class="px-4 py-3">
                 <ul class="space-y-2">
                     @foreach($errorData as $error)
-                        <li class="flex items-center text-slate-300 text-sm">
-                            <span class="mr-2">•</span>
-                            {{ $error }}
+                        <li class="text-slate-300 text-sm">
+                            <div class="font-semibold overflow-auto max-h-12">
+                                <span class="mr-2">•</span>
+                                {{ $error['filename'] ?? '' }}
+                            </div>
+                            <div class="overflow-auto max-h-24">
+                                {{ $error['error'] }}
+                            </div>
                         </li>
                     @endforeach
                 </ul>
