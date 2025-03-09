@@ -62,10 +62,13 @@ trait CoordsTransformer
         if($bbox instanceof Model || $bbox instanceof Collection){
             $bbox = $bbox->toArray();
         }
-        $pixelized_x = (float)$bbox['x'] * (float)$imgWidth;
-        $pixelized_y = (float)$bbox['y'] * (float)$imgHeight;
-        $pixelized_width = (float)$bbox['width'] * (float)$imgWidth;
-        $pixelized_height = (float)$bbox['height'] * (float)$imgHeight;
+        $imgWidth = (float)$imgWidth;
+        $imgHeight = (float)$imgHeight;
+
+        $pixelized_x = (float)$bbox['x'] * $imgWidth;
+        $pixelized_y = (float)$bbox['y'] * $imgHeight;
+        $pixelized_width = (float)$bbox['width'] * $imgWidth;
+        $pixelized_height = (float)$bbox['height'] * $imgHeight;
 
         if ($coordsAreCentered) {
             $pixelized_x -= $pixelized_width / 2;
@@ -90,22 +93,33 @@ trait CoordsTransformer
 
         $pixelizedPolygon = [];
 
+        $imgWidth = (float)$imgWidth;
+        $imgHeight = (float)$imgHeight;
+
         // Do this if $segment is our internal structure [['x' => x1, 'y' => y1], ...]
         if (isset($segment[0]['x']) && isset($segment[0]['y'])) {
-            foreach ($segment as $point) {
-                $pixelizedPolygon[] = [
-                    'x' => (float)$point['x'] * (float)$imgWidth,
-                    'y' => (float)$point['y'] * (float)$imgHeight
+            $count = count($segment);
+            $pixelizedPolygon = array_fill(0, $count, []);
+
+            for ($i = 0; $i < $count; $i++) {
+                $pixelizedPolygon[$i] = [
+                    'x' => $segment[$i]['x'] * $imgWidth,
+                    'y' => $segment[$i]['y'] * $imgHeight
                 ];
             }
         } else {
-            // Split the polygon array into chunks of 2 (x, y pairs)
-            foreach (array_chunk($segment, 2) as $pair) {
-                // Normalize each x, y pair
-                $pixelizedPolygon[] = [
-                    'x' => (float)$pair[0] * (float)$imgWidth,
-                    'y' => (float)$pair[1] * (float)$imgHeight
-                ];
+            // For flat arrays, avoid array_chunk for better performance
+            $count = count($segment);
+            if ($count % 2 == 0) { // Ensure we have pairs
+                $pairs = $count / 2;
+                $pixelizedPolygon = array_fill(0, $pairs, []);
+
+                for ($i = 0, $j = 0; $i < $count; $i += 2, $j++) {
+                    $pixelizedPolygon[$j] = [
+                        'x' => $segment[$i] * $imgWidth,
+                        'y' => $segment[$i + 1] * $imgHeight
+                    ];
+                }
             }
         }
 

@@ -45,8 +45,12 @@ class DownloadDataset extends Component
     public function storeDownloadToken($token)
     {
         $this->token = $token;
+        Util::logStart("setting classes data");
         $this->setClassesData($this->getFromCache());
+        Util::logEnd("setting classes data");
+        Util::logStart("calculate stats");
         $this->calculateStats($this->classesData);
+        Util::logEnd("calculate stats");
     }
 
     public function render()
@@ -80,6 +84,7 @@ class DownloadDataset extends Component
         if ($this->locked) {
             return;
         }
+        $this->failedDownload = null;
         $this->locked = true;
 
         $payload = $this->getFromCache();
@@ -107,7 +112,7 @@ class DownloadDataset extends Component
                 'message' => $response->message,
                 'data' => $response->data
             ];
-            $this->unlock();
+            $this->locked = false;
             return false;
         }
 
@@ -143,6 +148,7 @@ class DownloadDataset extends Component
             fclose($handle);
             session()->forget("download_progress_{$this->exportDataset}");
             $this->locked = false;
+            $this->failedDownload = null;
         }, 200, [
             "Content-Type" => "application/zip",
             "Content-Length" => $fileSize,

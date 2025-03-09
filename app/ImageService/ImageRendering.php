@@ -24,10 +24,11 @@ trait ImageRendering
             $image->path = Util::constructImagePath($image->dataset->unique_name, $image->filename);
 
             $image->annotations->each(function ($annotation) use ($image) {
-                $annotation->bbox = $this->pixelizeBbox($annotation, $image->width, $image->height);
                 if ($annotation->segmentation) {
                     $pixelizedSegment = $this->pixelizePolygon($annotation->segmentation, $image->width, $image->height);
                     $annotation->polygonString = $this->transformPolygonToSvgString($pixelizedSegment);
+                } else {
+                    $annotation->bbox = $this->pixelizeBbox($annotation, $image->width, $image->height);
                 }
             });
         }
@@ -37,12 +38,18 @@ trait ImageRendering
 
     private function transformPolygonToSvgString($segmentation): string
     {
-        $svgString = '';
-        foreach ($segmentation as $point) {
-            $svgString .= $point['x'] . ',' . $point['y'] . ' ';
+        if (empty($segmentation)) {
+            return '';
         }
-        $svgString = rtrim($svgString);
-        return $svgString;
+
+        $count = count($segmentation);
+        $parts = array_fill(0, $count, '');
+
+        for ($i = 0; $i < $count; $i++) {
+            $parts[$i] = $segmentation[$i]['x'] . ',' . $segmentation[$i]['y'];
+        }
+
+        return implode(' ', $parts);
     }
 
 }

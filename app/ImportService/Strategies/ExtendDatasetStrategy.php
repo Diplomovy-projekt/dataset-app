@@ -49,7 +49,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
 
     public function handleRollback($requestData): void
     {
-        // Roll back new images in the htree folders
+        // Roll back new images in the three folders
         foreach ($this->newImages as $image) {
             $fullImg = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::FULL_IMG_FOLDER . $image;
             $thumbnail = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::IMG_THUMB_FOLDER . $image;

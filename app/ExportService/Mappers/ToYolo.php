@@ -15,11 +15,29 @@ class ToYolo extends BaseMapper
     /**
      * @throws \Exception
      */
-    public function handle($images, $datasetFolder, $annotationTechnique): void
+    public function handle(array $images, string $datasetFolder, string $annotationTechnique): void
     {
         $this->linkImages($images, $datasetFolder);
-        $this->mapAnnotations($images, $datasetFolder, $annotationTechnique);
+        $this->createAnnotations($images, $datasetFolder, $annotationTechnique);
         $this->populateDataFile($datasetFolder);
+    }
+
+    public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void
+    {
+        foreach ($images as $image) {
+            $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
+
+            foreach($image['annotations'] as $annotation) {
+                $this->mapClass($annotation['class']['name']);
+
+                $mappedAnnotation = $this->mapAnnotation($annotationTechnique, $annotation);
+
+                File::ensureDirectoryExists($annotationPath);
+                if (!Storage::append($annotationPath, $mappedAnnotation)) {
+                    throw new \Exception("Failed to write annotation to file");
+                }
+            }
+        }
     }
 
     /**
@@ -42,10 +60,10 @@ class ToYolo extends BaseMapper
         }
     }
 
-    protected function mapBbox(mixed $annotation): string
+    protected function mapBbox(mixed $annotation, array $imgDims = null): mixed
     {
         // Centering x and y coordinates because In DB they are stored as top-left corner
-        $classId = $this->classMap[$annotation['class']['name']]['id'];
+        $classId = $this->getClassId($annotation['class']['name']);
         $x = $annotation['x'] + $annotation['width'] / 2;
         $y = $annotation['y'] + $annotation['height'] / 2;
         $width = $annotation['width'];
@@ -54,9 +72,9 @@ class ToYolo extends BaseMapper
         return "$classId $x $y $width $height";
     }
 
-    protected function mapPolygon(mixed $annotation): string
+    protected function mapPolygon(mixed $annotation, array $imgDims = null): mixed
     {
-        $classId = $this->classMap[$annotation['class']['name']]['id'];
+        $classId = $this->getClassId($annotation['class']['name']);
         $polygon = json_decode($annotation['segmentation'], true);
 
         $points = '';
@@ -67,19 +85,25 @@ class ToYolo extends BaseMapper
         return "$classId " . rtrim($points, ' ');
     }
 
-
+    /**
+     * @throws \Exception
+     */
     protected function getImageDestinationPath($datasetFolder, $image): string
     {
-        return Storage::disk('datasets')->path($datasetFolder) . '/' .
-                YoloConfig::IMAGE_FOLDER . '/' . $image['filename'];
+        $path = AppConfig::DATASETS_PATH['public'] . $datasetFolder . '/' . YoloConfig::IMAGE_FOLDER . '/' . $image['filename'];
+        return Storage::path($path);
     }
 
-    protected function getAnnotationDestinationPath($datasetFolder, $image): string
+
+    /**
+     * @throws \Exception
+     */
+    protected function getAnnotationDestinationPath($datasetFolder, $image = null): string
     {
         return AppConfig::DATASETS_PATH['public'] .
-                $datasetFolder . '/' .
-                YoloConfig::LABELS_FOLDER . '/' .
-                pathinfo($image['filename'], PATHINFO_FILENAME) . '.' .
-                YoloConfig::LABEL_EXTENSION;
+            $datasetFolder . '/' .
+            YoloConfig::LABELS_FOLDER . '/' .
+            pathinfo($image['filename'], PATHINFO_FILENAME) . '.' .
+            YoloConfig::LABEL_EXTENSION;
     }
 }

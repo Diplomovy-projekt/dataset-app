@@ -13,7 +13,6 @@ class Image extends Model
     protected $fillable = [
         'dataset_id',
         'dataset_folder',
-        'path',
         'filename',
         'width',
         'height',

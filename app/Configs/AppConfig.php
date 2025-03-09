@@ -25,6 +25,7 @@ class AppConfig
         'public' => 'app/public/datasets/',
         'private' => 'app/private/datasets/',
     ];
+    public const string DEFAULT_DATASET_LOCATION = self::DATASETS_PATH['public'];
     public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
     public const FULL_IMG_FOLDER = 'full-images/';
@@ -41,14 +42,13 @@ class AppConfig
         '100MB' => 100000000,
         '200MB' => 200000000,
     ];
-    public const int UPLOAD_CHUNK_SIZE = AppConfig::MB_SIZE_LOOKUP['100MB'];
-    public const int DOWNLOAD_CHUNK_SIZE = AppConfig::MB_SIZE_LOOKUP['100MB'];
+    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['100MB'];
+    public const int DOWNLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['100MB'];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
     public const PER_PAGE_OPTIONS = [
         "10" => 10,
         "25" => 25,
         "50" => 50,
-        "100" => 100,
     ];
     public const AUTH_ROLES = [
         'user' => 'User',

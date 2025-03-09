@@ -56,44 +56,44 @@ class ImportService
         DB::beginTransaction();
 
         try {
-            Util::logStart("Saving to database");
-            $savedToDb = $this->strategy->saveToDatabase($mappedData, $requestData);
-            Util::logEnd("Saving to database");
+            // 1. Move images to full-image folder
+            $result = $this->moveFullImages(
+                imageFileNames: array_column($mappedData['images'], 'filename'),
+                sourceFolder: $requestData['unique_name'] . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
+                destinationFolder: $requestData['parent_dataset_unique_name'] ?? $requestData['unique_name']
+            );
+            if (!$result->isSuccessful()) {
+                throw new DatasetImportException($result->message);
+            }
+            $datasetFolder = $result->data['datasetFolder'];
 
+            // 2. Add unique suffixes to image filenames
+            $result = $this->strategy->addUniqueSuffixes($datasetFolder, $mappedData);
+            if(!$result->isSuccessful()){
+                throw new DatasetImportException($result->message);
+            }
+            $imageFilenames = array_column($mappedData['images'], 'filename');
+
+            // 3. Create thumbnails
+            $thumbnails = $this->createThumbnails($datasetFolder, $imageFilenames);
+            if (count($thumbnails) != count($imageFilenames)) {
+                throw new DatasetImportException("Failed to create thumbnails for some images");
+            }
+
+            // 4. Save to DB
+            $savedToDb = $this->strategy->saveToDatabase($mappedData, $requestData);
             if (!$savedToDb->isSuccessful()) {
                 throw new DatasetImportException($savedToDb->message);
             }
 
-            Util::logStart("Moving images to public storage");
-            $imagesMoved = $this->moveImagesToPublicDataset(
-                sourceFolder: $requestData['unique_name'],
-                imageFolder: get_class($this->importPreprocessor->config)::IMAGE_FOLDER,
-                destinationFolder: $requestData['parent_dataset_unique_name'] ?? null
-            );
-            Util::logEnd("Moving images to public storage");
-
-            if (!$imagesMoved->isSuccessful()) {
-                throw new DatasetImportException($imagesMoved->message);
-            }
-
-            Util::logStart("Creating thumbnails");
-            $thumbnails = $this->createThumbnails($imagesMoved->data['destinationFolder'], $imagesMoved->data['images']);
-            Util::logEnd("Creating thumbnails");
-
-            if (count($thumbnails) != count($imagesMoved->data['images'])) {
-                throw new DatasetImportException("Failed to create thumbnails for some images");
-            }
-
-            Util::logStart("Creating class samples");
+            // 5. Create class crops
             $datasetService = new DatasetActions();
-            $createdClassCrops = $datasetService->createSamplesForClasses($imagesMoved->data['destinationFolder'],
+            $createdClassCrops = $datasetService->createSamplesForClasses($datasetFolder,
                 $savedToDb->data['classesToSample'],
-                array_column($mappedData['images'], 'filename')
+                $imageFilenames
             );
-            Util::logEnd("Creating class samples");
-
             if (!$createdClassCrops->isSuccessful()) {
-                throw new DatasetImportException($imagesMoved->message);
+                throw new DatasetImportException($createdClassCrops->message);
             }
 
             DB::commit();

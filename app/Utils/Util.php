@@ -77,6 +77,11 @@ class Util
         return AppConfig::LINK_DATASETS_PATH . $datasetUniqueName . "/" . $folder . $filename;
     }
 
+    public static function formatNumber(float $value, int $decimals = 2): float|int
+    {
+        return ($value == floor($value)) ? (int) $value : round($value, $decimals);
+    }
+
     protected static $startTime = [];
 
     public static function logStart($message)
