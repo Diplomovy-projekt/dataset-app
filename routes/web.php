@@ -35,7 +35,9 @@ Route::get('/', function () {
     $statistics = \App\Utils\QueryUtil::getDatasetCounts();
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
-
+Route::get('/zip-format-info', function(){
+    return view('zip-format-info');
+})->name('zip.format.info');
 ////////////////////////////////////////////////////////////////////////////////
 ///                     DATASET ROUTES
 ////////////////////////////////////////////////////////////////////////////////

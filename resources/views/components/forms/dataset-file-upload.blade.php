@@ -43,6 +43,8 @@
                     These will be added to the existing dataset
                 @endif
             </p>
+            <a wire:navigate href="{{ route('zip.format.info') }}" class="text-xs text-indigo-500 hover:underline">See format guidelines</a>
+
         </div>
         {{-- FORMAT SELECT --}}
         <x-mary-select
