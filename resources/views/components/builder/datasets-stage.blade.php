@@ -72,6 +72,7 @@
                         <div class="flex flex-col gap-2">
                             <!-- Stats -->
                             <x-dataset.dataset-stats :stats="$dataset['stats']" class="text-base" svgSize="w-5 h-5"/>
+                            <x-dataset.image-stats :image_stats="$dataset['image_stats']" class="p-0"  />
 
                             <!-- Dataset Properties -->
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">

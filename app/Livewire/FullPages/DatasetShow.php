@@ -35,94 +35,9 @@ class DatasetShow extends Component
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
     {
-        // Fetch images as LengthAwarePaginator
-        $imagesPaginator = $this->fetchImages();
-
-        // Get memory usage before processing the LengthAwarePaginator
-        $beforePaginatorMemory = memory_get_usage();
-
-        // Serialize the paginator to get its memory size (before converting to array)
-        $serializedPaginator = serialize($imagesPaginator);
-
-        // Get memory usage after serializing the paginator
-        $afterPaginatorMemory = memory_get_usage();
-
-        // Calculate the memory size difference for the paginator in bytes
-        $paginatorMemorySize = $afterPaginatorMemory - $beforePaginatorMemory;
-
-        // Convert to MB
-        $paginatorMemorySizeMB = $paginatorMemorySize / 1048576;
-
-        echo "LengthAwarePaginator Memory Size (Before Conversion): " . round($paginatorMemorySizeMB, 2) . " MB\n";
-
-        // Prepare images for rendering (with LengthAwarePaginator, this is the first case)
-        $preparedImagesPaginator = $this->prepareImagesForSvgRendering($imagesPaginator);
-
-        // Get memory usage before serializing the prepared images (LengthAwarePaginator)
-        $beforePreparedPaginatorMemory = memory_get_usage();
-
-        // Serialize the prepared images to get its memory size
-        $serializedPreparedPaginator = serialize($preparedImagesPaginator);
-
-        // Get memory usage after serializing the prepared images
-        $afterPreparedPaginatorMemory = memory_get_usage();
-
-        // Calculate the memory size difference for the prepared images (LengthAwarePaginator) in bytes
-        $preparedPaginatorMemorySize = $afterPreparedPaginatorMemory - $beforePreparedPaginatorMemory;
-
-        // Convert to MB
-        $preparedPaginatorMemorySizeMB = $preparedPaginatorMemorySize / 1048576;
-
-        echo "Prepared Images (LengthAwarePaginator) Memory Size: " . round($preparedPaginatorMemorySizeMB, 2) . " MB\n";
-
-        // Convert LengthAwarePaginator to array for the second case (images + annotations)
-        $imagesArray = $imagesPaginator->toArray();
-
-        // Get memory usage before processing the array (second part)
-        $beforeArrayMemory = memory_get_usage();
-
-        // Serialize the images array to get its memory size (second case)
-        $serializedArray = serialize($imagesArray);
-
-        // Get memory usage after serializing the images array
-        $afterArrayMemory = memory_get_usage();
-
-        // Calculate the memory size difference for the array in bytes
-        $arrayMemorySize = $afterArrayMemory - $beforeArrayMemory;
-
-        // Convert to MB
-        $arrayMemorySizeMB = $arrayMemorySize / 1048576;
-
-        echo "Array Memory Size (with images and annotations): " . round($arrayMemorySizeMB, 2) . " MB\n";
-
-        // Prepare images for rendering (with the array of images, this is the second case)
-        $preparedImagesArray = $this->prepareImagesForSvgRendering($imagesPaginator)->toArray();
-
-        // Get memory usage before serializing the prepared images (Array)
-        $beforePreparedArrayMemory = memory_get_usage();
-
-        // Serialize the prepared images to get its memory size (Array)
-        $serializedPreparedArray = serialize($preparedImagesArray);
-
-        // Get memory usage after serializing the prepared images
-        $afterPreparedArrayMemory = memory_get_usage();
-
-        // Calculate the memory size difference for the prepared images (Array) in bytes
-        $preparedArrayMemorySize = $afterPreparedArrayMemory - $beforePreparedArrayMemory;
-
-        // Convert to MB
-        $preparedArrayMemorySizeMB = $preparedArrayMemorySize / 1048576;
-
-        echo "Prepared Images (Array) Memory Size: " . round($preparedArrayMemorySizeMB, 2) . " MB\n";
-
-        /*dd(
-            "LengthAwarePaginator Memory Size (Before Conversion): " . round($paginatorMemorySizeMB, 2) . " MB\n",
-            "Prepared Images (LengthAwarePaginator) Memory Size: " . round($preparedPaginatorMemorySizeMB, 2) . " MB\n",
-            "Array Memory Size (with images and annotations): " . round($arrayMemorySizeMB, 2) . " MB\n",
-            "Prepared Images (Array) Memory Size: " . round($preparedArrayMemorySizeMB, 2) . " MB\n"
-        );*/
-        // Return the final prepared images (either as paginator or array)
-        return $preparedImagesPaginator;  // Or you can return $preparedImagesPaginator based on your needs
+        $images = $this->fetchImages();
+        $preparedImages = $this->prepareImagesForSvgRendering($images);
+        return $preparedImages;
     }
 
     public function mount()
@@ -145,6 +60,7 @@ class DatasetShow extends Component
         }
 
         $this->dataset = $dataset->toArray();
+        $this->dataset['image_stats'] = Util::getImageSizeStats([$dataset->id]);
         $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();

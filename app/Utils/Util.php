@@ -4,6 +4,7 @@ namespace App\Utils;
 
 use App\Configs\AppConfig;
 use App\Models\Dataset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -117,6 +118,33 @@ class Util
         }
 
         return $path;
+    }
+
+    public static function getImageSizeStats(array $ids, bool $isImageId = false): array
+    {
+        $query = DB::table('images')
+            ->selectRaw('
+            AVG(width) as average_width,
+            AVG(height) as average_height,
+            MIN(width) as min_width,
+            MIN(height) as min_height,
+            MAX(width) as max_width,
+            MAX(height) as max_height
+        ');
+
+        if ($isImageId) {
+            $query->whereIn('id', $ids);
+        } else {
+            $query->whereIn('dataset_id', $ids);
+        }
+
+        $stats = $query->first();
+
+        return [
+            'average' => (int)$stats->average_width . 'x' . (int)$stats->average_height,
+            'min' =>  (int)$stats->min_width . 'x' . (int)$stats->min_height,
+            'max' => (int)$stats->max_width . 'x' . (int)$stats->max_height,
+        ];
     }
 
 

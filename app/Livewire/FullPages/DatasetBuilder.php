@@ -12,6 +12,7 @@ use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -106,12 +107,13 @@ class DatasetBuilder extends Component
     {
         /*$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
             ->orderBy('id', 'desc')
-            ->limit(6) // Get only the last two
+            ->limit(2) // Get only the last two
             ->get();
 
         foreach ($this->datasets as $dataset) {
             $dataset->stats = $dataset->getStats();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
+            $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
             $dataset->image = $dataset->image->toArray();
         }
         $this->datasets = $this->datasets->toArray();*/
@@ -244,6 +246,7 @@ class DatasetBuilder extends Component
             ->map(function ($dataset) {
                 $dataset->stats = $dataset->getStats();
                 $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
+                $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
                 return $dataset;
             })
             ->toArray();
@@ -256,6 +259,7 @@ class DatasetBuilder extends Component
         $this->selectedImages = [];
         unset($this->paginatedImages);
         $this->finalDataset['stats'] = $this->getCustomStats();
+        $this->finalDataset['image_stats'] = Util::getImageSizeStats($this->imagesQuery()->pluck('id')->toArray(), true);
     }
     private function imagesQuery()
     {
@@ -278,6 +282,7 @@ class DatasetBuilder extends Component
         $this->images = $this->imagesQuery()->get()->toArray();
 
         $this->finalDataset['stats'] = $this->getCustomStats();
+        $this->finalDataset['image_stats'] = Util::getImageSizeStats(array_column($this->images, 'id'), true);
         $datasetIds = array_keys(array_filter($this->selectedDatasets));
         $this->finalDataset['categories'] = Category::whereIn('id', function ($query) use ($datasetIds) {
             $query->select('category_id')

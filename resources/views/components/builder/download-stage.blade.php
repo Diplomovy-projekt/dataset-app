@@ -5,8 +5,9 @@
     <!-- Main Container -->
     <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-6 space-y-6">
         <!-- Dataset Stats Section -->
-        <div class="dataset-stats">
+        <div class="flex flex-col gap-3">
             <x-dataset.dataset-stats :stats="$this->finalDataset['stats']" class="text-base ml-2" svgSize="w-6 h-6"/>
+            <x-dataset.image-stats :image_stats="$this->finalDataset['image_stats']" class="p-0" />
         </div>
 
         <!-- Categories and Metadata -->
