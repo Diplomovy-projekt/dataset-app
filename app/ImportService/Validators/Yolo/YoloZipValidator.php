@@ -4,11 +4,12 @@ namespace App\ImportService\Validators\Yolo;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\ImportService\Validators\BaseValidator\BaseZipValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Yaml\Yaml;
 
-class YoloZipValidator
+class YoloZipValidator extends BaseZipValidator
 {
     public function validate(string $fileName): Response
     {
@@ -19,7 +20,7 @@ class YoloZipValidator
             }
 
             $resultDataFile = $this->validateDataFile($filePath);
-            $resultImages = $this->validateImageFolder($filePath);
+            $resultImages = $this->validateImageFolder($filePath, YoloConfig::IMAGE_FOLDER);
             $resultAnnotation = $this->validateAnnotationFolder($filePath);
 
             // Collect all errors in an array
@@ -63,23 +64,6 @@ class YoloZipValidator
         return true;
     }
 
-    private function validateImageFolder(string $filePath)
-    {
-        $imagesPath = $filePath . '/' . YoloConfig::IMAGE_FOLDER;
-        $images = collect(Storage::files($imagesPath));
-
-        // Filter out invalid image files
-        $invalidImages = $images->filter(function ($image) {
-            return !in_array(pathinfo($image, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png']);
-        });
-
-        if ($invalidImages->isNotEmpty()) {
-            return ["Invalid image files found" => $invalidImages->toArray()];
-        }
-
-        return true;
-    }
-
     private function validateAnnotationFolder(string $filePath)
     {
         $labelsPath = $filePath . '/' . YoloConfig::LABELS_FOLDER;
@@ -96,7 +80,4 @@ class YoloZipValidator
 
         return true;
     }
-
-
-
 }

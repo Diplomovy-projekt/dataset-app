@@ -27,8 +27,8 @@ trait ImageProcessor
             return [];
         }
 
-        $source = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
-        $destination = Storage::disk('datasets')->path($datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
+        $source = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
+        $destination = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
         FileUtil::ensureFolderExists($destination);
         $createdThumbnails = [];
         foreach($images as $image){
@@ -67,44 +67,25 @@ trait ImageProcessor
         return $classCounts;
     }
 
-    /**
-     * Moves images from a temporary folder to a public static dataset folder.
-     *
-     * @param string $sourceFolder Dataset folder in tmp storage (source of dataset).
-     * @param string $imageFolder The subfolder within the temporary folder where the images are stored(it's specific to annotation format).
-     * @return \App\Utils\Response A response indicating the success or failure of the operation.
-     */
-    public function moveImagesToPublicDataset($sourceFolder, $imageFolder, $destinationFolder = null): Response
+
+    public function moveFullImages($imageFileNames, $sourceFolder, $destinationFolder): Response
     {
-        $destinationFolder = $destinationFolder ?? $sourceFolder;
-
-        $imageFolderPath = AppConfig::LIVEWIRE_TMP_PATH . $sourceFolder . '/' . $imageFolder;
-        $files = Storage::files($imageFolderPath);
-
-        if (empty($files)) {
-            return Response::error("No images found in the dataset");
-        }
-        $filesMoved = [];
-        // Iterate over each file in the folder
-        foreach ($files as $file) {
-            $filename = pathinfo($file, PATHINFO_FILENAME);
+        foreach ($imageFileNames as $file) {
             $extension = pathinfo($file, PATHINFO_EXTENSION);
 
-            // Validate file type (only process images with supported extensions)
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $source = $file;
-                $destination = AppConfig::DATASETS_PATH . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $filename . '.' . $extension;
+                $source = AppConfig::LIVEWIRE_TMP_PATH . $sourceFolder . '/' .  $file;
+                $destination = AppConfig::DEFAULT_DATASET_LOCATION . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $file;
 
                 try {
                     FileUtil::ensureFolderExists($destination);
-                    Storage::disk('storage')->move($source, $destination);
-                    $filesMoved[] = pathinfo($file, PATHINFO_BASENAME);
+                    Storage::move($source, $destination);
                 } catch (\Exception $e) {
                     Response::error("An error occurred while moving images to public static storage: " . $e->getMessage());
                 }
             }
         }
 
-        return Response::success(data: ['images' => $filesMoved, 'destinationFolder' => $destinationFolder]);
+        return Response::success(data: ['datasetFolder' => $destinationFolder]);
     }
 }

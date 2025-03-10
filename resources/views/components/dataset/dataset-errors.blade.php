@@ -13,20 +13,22 @@
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                           clip-rule="evenodd" />
                 </svg>
-                <h3 class="font-medium text-red-400">{{ $errorMessage }}</h3>
+                <h3 class="font-medium text-red-400">{{ $errorMessage ?? "An unexpected error occurred" }}</h3>
             </div>
 
             {{-- Toggle Arrow --}}
-            <svg class="w-5 h-5 text-red-400 transform transition-transform duration-200"
-                 :class="{'rotate-180': !isOpen}"
-                 fill="none"
-                 stroke="currentColor"
-                 viewBox="0 0 24 24">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7" />
-            </svg>
+            @if(isset($errorData) && count($errorData) > 0)
+                <svg class="w-5 h-5 text-red-400 transform transition-transform duration-200"
+                     :class="{'rotate-180': !isOpen}"
+                     fill="none"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7" />
+                </svg>
+            @endif
         </div>
 
         {{-- Collapsible Error Details --}}
@@ -41,9 +43,14 @@
                  class="px-4 py-3">
                 <ul class="space-y-2">
                     @foreach($errorData as $error)
-                        <li class="flex items-center text-slate-300 text-sm">
-                            <span class="mr-2">•</span>
-                            {{ $error }}
+                        <li class="text-slate-300 text-sm">
+                            <div class="font-semibold overflow-auto max-h-12">
+                                <span class="mr-2">•</span>
+                                {{ $error['filename'] ?? '' }}
+                            </div>
+                            <div class="overflow-auto max-h-24">
+                                {{ $error['error'] }}
+                            </div>
                         </li>
                     @endforeach
                 </ul>

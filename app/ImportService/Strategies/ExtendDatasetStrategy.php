@@ -24,6 +24,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $classes = $mappedData['classes'];
             $imageData = $mappedData['images'];
             $this->newImages = array_column($imageData, 'filename');
+
             // 1. Dataset update
             $dataset = Dataset::where('unique_name', $requestData['parent_dataset_unique_name'])->first();
             $dataset->num_images += count($imageData);
@@ -31,26 +32,7 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
             $dataset->save();
 
             // 2. Save New Classes
-            $classIds = [];
-            $classesToSample = [];
-            foreach ($classes['names'] as $categoryName) {
-                $class = AnnotationClass::updateOrCreate([
-                    'dataset_id'   => $dataset->id,
-                    'name'         => $categoryName,
-                    'supercategory' => $classes['superCategory'] ?? null,
-                ]);
-                $classIds[] = $class->id;
-                if ($class->wasRecentlyCreated) {
-                    $classesToSample[] = $class->id;
-                }
-                // Check if the sample count is low and add the class
-                $filesCount = count(Storage::disk('datasets')->files(
-                    "{$dataset->unique_name}/" . AppConfig::CLASS_IMG_FOLDER . "/{$class->id}"
-                ));
-                if ($filesCount < AppConfig::SAMPLES_COUNT) {
-                    $classesToSample[] = $class->id;
-                }
-            }
+            list($classIds, $classesToSample) = $this->saveClasses($classes, $dataset);
 
             // 3. Assign colors to classes
             $this->assignColorsToClasses($classIds);
@@ -67,10 +49,10 @@ class ExtendDatasetStrategy extends BaseStrategy implements DatasetSavingStrateg
 
     public function handleRollback($requestData): void
     {
-        // Roll back new images in the htree folders
+        // Roll back new images in the three folders
         foreach ($this->newImages as $image) {
-            $fullImg = AppConfig::DATASETS_PATH . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::FULL_IMG_FOLDER . $image;
-            $thumbnail = AppConfig::DATASETS_PATH . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::IMG_THUMB_FOLDER . $image;
+            $fullImg = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::FULL_IMG_FOLDER . $image;
+            $thumbnail = AppConfig::DATASETS_PATH['public'] . $requestData['parent_dataset_unique_name'] . '/' . AppConfig::IMG_THUMB_FOLDER . $image;
             if(Storage::disk('storage')->exists($fullImg)){
                 Storage::disk('storage')->delete($fullImg);
             }

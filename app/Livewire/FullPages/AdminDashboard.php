@@ -2,6 +2,7 @@
 
 namespace App\Livewire\FullPages;
 
+use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use App\Models\MetadataValue;
@@ -15,15 +16,18 @@ class AdminDashboard extends Component
     public int $userCount;
     public int $datasetCount;
     public float $totalStorage;
-    public array $metadata =  [];
+    public array $metadata = [];
+    public array $categories = [];
 
     public function mount()
     {
         $this->userCount = User::count();
         $this->datasetCount = Dataset::count();
         $this->totalStorage = $this->getTotalDatasetSize();
-        $this->setMetadta();
+        $this->categories = Category::get()->toArray();
+        $this->setMetadata();
     }
+
     public function render()
     {
         return view('livewire.full-pages.admin-dashboard');
@@ -43,13 +47,14 @@ class AdminDashboard extends Component
         return round($size / 1024 / 1024 / 1024, 2); // GB
     }
 
-    public function setMetadta()
+    public function setMetadata()
     {
         $this->metadata = MetadataType::select('id', 'name', 'description')
             ->with(['metadataValues' => function ($query) {
                 $query->select('id', 'metadata_type_id', 'value');
             }])->get()->toArray();
     }
+
     public function saveType($name, $id = null, $description = '')
     {
         try {
@@ -58,7 +63,7 @@ class AdminDashboard extends Component
                 ['name' => $name, 'description' => $description]
             );
 
-            $this->setMetadta();
+            $this->setMetadata();
 
             $this->dispatch('flash-msg', type: 'success', message: 'Type saved successfully');
         } catch (\Exception $e) {
@@ -74,7 +79,7 @@ class AdminDashboard extends Component
                 ['metadata_type_id' => $typeId, 'value' => $value, 'description' => $description]
             );
 
-            $this->setMetadta();
+            $this->setMetadata();
 
             $this->dispatch('flash-msg', type: 'success', message: 'Value saved successfully');
         } catch (\Exception $e) {
@@ -86,7 +91,7 @@ class AdminDashboard extends Component
     {
         try {
             MetadataType::where('id', $id)->delete();
-            $this->setMetadta();
+            $this->setMetadata();
             $this->dispatch('flash-msg', type: 'success', message: 'Type deleted successfully');
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete type');
@@ -98,12 +103,37 @@ class AdminDashboard extends Component
     {
         try {
             MetadataValue::where('id', $id)->delete();
-            $this->setMetadta();
+            $this->setMetadata();
             $this->dispatch('flash-msg', type: 'success', message: 'Value deleted successfully');
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete value');
         }
     }
 
+    public function saveCategory($name, $id = null)
+    {
+        try {
+            Category::updateOrCreate(
+                ['id' => $id],
+                ['name' => $name]
+            );
 
+            $this->categories = Category::get()->toArray();
+
+            $this->dispatch('flash-msg', type: 'success', message: 'Category saved successfully');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to save category');
+        }
+    }
+
+    public function deleteCategory($id)
+    {
+        try {
+            Category::where('id', $id)->delete();
+            $this->categories = Category::get()->toArray();
+            $this->dispatch('flash-msg', type: 'success', message: 'Category deleted successfully');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete category');
+        }
+    }
 }

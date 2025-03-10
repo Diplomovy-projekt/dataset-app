@@ -10,6 +10,7 @@ use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
 use App\Jobs\DeleteTempFile;
 use App\Models\Dataset;
+use App\Models\Image;
 use App\Utils\QueryUtil;
 use Livewire\Component;
 
@@ -17,7 +18,7 @@ class Profile extends Component
 {
     use ImageRendering;
     public $datasets;
-    public function render(ExportService $es)
+    public function render()
     {
         $this->loadDatasets();
         return view('livewire.full-pages.profile');
@@ -41,7 +42,6 @@ class Profile extends Component
             }
             $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            //$datasets[$key]['images'] = $processedImage;
             $dataset->images = $processedImage;
             $dataset->stats = $dataset->getStats();
         }

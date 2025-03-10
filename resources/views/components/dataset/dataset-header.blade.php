@@ -13,11 +13,15 @@
                     <x-dataset.dataset-stats :stats="$this->dataset['stats']" class="px-4 py-2 text-xl"/>
                 </div>
 
-                {{-- Statistics --}}
-                <p class="mt-2 text-sm text-slate-400 max-w-2xl">
-                    {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
-                </p>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2">
+                    <p class="mt-2 text-sm text-slate-400 max-w-2xl">
+                        {{ empty($this->dataset['description']) ? 'No description available' : $this->dataset['description'] }}
+                    </p>
+                    <x-dataset.image-stats :image_stats="$this->dataset['image_stats']" />
+
+                </div>
             </div>
+
 
             {{-- Categories --}}
             <div class="mt-6 flex flex-wrap items-center gap-x-12 gap-y-4">
@@ -30,9 +34,9 @@
                 {{-- Metadata --}}
                 @foreach($this->metadata as $metadata)
                     <div class="flex items-center gap-3">
-                        <span class="text-sm text-slate-400">{{$metadata['name']}}:</span> <!-- Accessing 'type' and 'name' keys -->
-                        @foreach($metadata['metadataValues'] as $metadataValue) <!-- Accessing 'values' array -->
-                        <span class="text-sm text-slate-300">{{$metadataValue['value']}}</span> <!-- Accessing 'value' key -->
+                        <span class="text-sm text-slate-400">{{$metadata['name']}}:</span>
+                        @foreach($metadata['metadataValues'] as $metadataValue)
+                            <span class="text-sm text-slate-300">{{$metadataValue['value']}}</span>
                         @endforeach
                     </div>
                 @endforeach

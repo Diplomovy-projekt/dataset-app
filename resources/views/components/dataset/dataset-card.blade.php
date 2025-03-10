@@ -7,13 +7,7 @@
    class="block w-60 overflow-hidden rounded-lg bg-slate-900 backdrop-blur-sm border border-slate-800 transition-all hover:border-slate-700 ">
 
     {{-- Thumbnail Section --}}
-    <div class="relative h-48">
-        <img src="{{asset($dataset['thumbnail'])}}"
-             alt="{{ $dataset['display_name'] }}"
-             class="h-full w-full object-cover"
-             loading="lazy">
-        <x-annotation-overlay :image="$dataset['images'][0] ?? null"></x-annotation-overlay>
-    </div>
+    <x-images.annotated-image :image="$dataset['images'][0] ?? null" class="h-48"/>
 
     {{-- Content Section --}}
     <div class="p-4">

@@ -8,9 +8,11 @@ use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -30,39 +32,51 @@ class DatasetShow extends Component
     public array $selectedImages = [];
     public int $perPage = 25;
 
-    #[Computed]
+    #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
     {
         $images = $this->fetchImages();
-        return $this->prepareImagesForSvgRendering($images);
+        $preparedImages = $this->prepareImagesForSvgRendering($images);
+        return $preparedImages;
     }
+
     public function mount()
     {
+        Util::logStart("dataset show MOUNT");
         $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
         if (!$dataset) {
             return redirect()->route('dataset.index');
         }
 
         $dataset->stats = $dataset->getStats();
-        foreach($dataset->classes as $class) {
-            $firstFile = collect(Storage::disk('datasets')
-                ->files($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER . $class->id))->first();
-            $class->image = AppConfig::LINK_DATASETS_PATH . $firstFile;
+        foreach ($dataset->classes as $class) {
+            $datasetPath = Util::getDatasetPath($dataset);
+            $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
+                ->first();
+            $class->image = [
+                'filename' => pathinfo($firstFile, PATHINFO_BASENAME),
+                'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
+            ];
         }
+
         $this->dataset = $dataset->toArray();
+        $this->dataset['image_stats'] = Util::getImageSizeStats([$dataset->id]);
         $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
+        Util::logEnd("dataset show MOUNT");
+
     }
+
     public function updatedPerPage()
     {
-        unset($this->images);
+        unset($this->paginatedImages);
     }
 
     public function search()
     {
         $this->searchTerm = trim($this->searchTerm);
-        unset($this->images);
+        unset($this->paginatedImages);
     }
     private function fetchImages()
     {
@@ -91,12 +105,17 @@ class DatasetShow extends Component
 
     public function cacheQuery($id)
     {
+        Util::logStart("dataset show CACHE QUERY");
         $query = Image::where('dataset_id', $id)->with('annotations.class');
+        $payload['query'] = \EloquentSerialize::serialize($query);
+        $payload['datasets'] = [$id];
 
         $token = Str::random(32);
-        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
-
+        Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
+        Util::logEnd("dataset show CACHE QUERY");
+        Util::logStart("dataset show DISPATCH");
         $this->dispatch('store-download-token', token: $token);
+        Util::logEnd("dataset show DISPATCH");
     }
 
 }

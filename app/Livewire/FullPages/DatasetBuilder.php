@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
 use App\ImageService\ImageRendering;
+use App\Models\AnnotationClass;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
@@ -11,6 +12,7 @@ use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\QueryUtil;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -29,30 +31,36 @@ class DatasetBuilder extends Component
     #[Locked]
     public $stageData = [
         1 => [
+            'title' => 'Annotation Technique',
+            'description' => 'Select the annotation technique you want to use for your project.',
+            'component' => 'builder.annotation-technique-stage',
+            'method' => 'annotationTechniqueStage',
+        ],
+        2 => [
             'title' => 'Select Categories',
             'description' => 'Choose the categories relevant to your dataset for this project.',
             'component' => 'builder.categories-stage',
             'method' => 'categoriesStage',
         ],
-        2 => [
+        3 => [
             'title' => 'Dataset Origin',
             'description' => 'Specify the source or origin of the dataset you want to use.',
             'component' => 'builder.origin-stage',
             'method' => 'originStage',
         ],
-        3 => [
+        4 => [
             'title' => 'Datasets Selection',
             'description' => 'Select the specific datasets required for your project.',
             'component' => 'builder.datasets-stage',
             'method' => 'datasetsStage',
         ],
-        4 => [
+        5 => [
             'title' => 'Final Selection',
             'description' => 'Select any images that you wish to EXCLUDE from your final dataset',
             'component' => 'builder.final-stage',
             'method' => 'finalStage',
         ],
-        5 => [
+        6 => [
             'title' => 'Download',
             'description' => 'Download the final prepared dataset for your project.',
             'component' => 'builder.download-stage',
@@ -60,6 +68,7 @@ class DatasetBuilder extends Component
         ],
     ];
 
+    public string $selectedAnnotationTechnique = AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
     #[Locked]
     public $categories = [];
     public $selectedCategories = [];
@@ -69,8 +78,7 @@ class DatasetBuilder extends Component
     public $skipTypes = [];
     #[Locked]
     public $datasets = [];
-    public array $selectedDatasets = [
-    ];
+    public array $selectedDatasets = [];
     public $selectedClasses = [];
     private $images = [];
     public $selectedImages = [];
@@ -79,6 +87,8 @@ class DatasetBuilder extends Component
         'metadataValues' => [],
         'categories' => [],
     ];
+    public array $polygonDatasetsStats = [];
+    public array $allDatasetsStats = [];
     public int $perPage = 25;
 
     #[Computed]
@@ -90,7 +100,6 @@ class DatasetBuilder extends Component
     #[On('add-selected')]
     public function receiveSelected($selectedClasses, $datasetId)
     {
-        //$this->selectedClasses = $this->selectedClasses + $selectedClasses;
         $this->selectedClasses[$datasetId] = $selectedClasses;
 
     }
@@ -98,12 +107,13 @@ class DatasetBuilder extends Component
     {
         /*$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
             ->orderBy('id', 'desc')
-            ->limit(6) // Get only the last two
+            ->limit(2) // Get only the last two
             ->get();
 
         foreach ($this->datasets as $dataset) {
             $dataset->stats = $dataset->getStats();
             $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
+            $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
             $dataset->image = $dataset->image->toArray();
         }
         $this->datasets = $this->datasets->toArray();*/
@@ -129,6 +139,7 @@ class DatasetBuilder extends Component
         if($this->currentStage > 1){
             $this->currentStage--;
             $this->completedStages =array_values(array_diff($this->completedStages, [$this->currentStage]));
+            $this->applyStageFilters();
         }
     }
 
@@ -140,7 +151,6 @@ class DatasetBuilder extends Component
         $stageDetails = $this->stageData[$this->currentStage] ?? null;
 
         if ($stageDetails && method_exists($this, $stageDetails['method'])) {
-            //$this->{$stageDetails['method']}();
             $method = $stageDetails['method'];
 
             // Resolve method dependencies
@@ -152,9 +162,28 @@ class DatasetBuilder extends Component
         }
     }
 
+    public function annotationTechniqueStage()
+    {
+        // Get ids of datasets that have the selected annotation technique polygon
+        $polygonDatasetIds = Dataset::where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
+            ->pluck('id')
+            ->all();
+        $this->polygonDatasetsStats = QueryUtil::getDatasetCounts($polygonDatasetIds);
+
+        $this->allDatasetsStats = QueryUtil::getDatasetCounts();
+
+    }
     private function categoriesStage()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();
+        // If selectedAnnotationTechnique is set to polygon, remove the categories  that are linked to datasets with no polygon annotations
+        if ($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
+            $this->categories = $this->categories->filter(function ($category) {
+                return Dataset::whereRelation('categories', 'category_id', $category->id)
+                    ->where('annotation_technique', 'Polygon')
+                    ->exists();
+            });
+        }
         $this->categories = $this->categories->map(function ($category) {
             $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
             $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
@@ -209,11 +238,15 @@ class DatasetBuilder extends Component
         $datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique();
 
         $this->datasets = Dataset::whereIn('id', $datasetIds)
+            ->when($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'], function ($query) {
+                return $query->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON']);
+            })
             ->with(['classes', 'metadataValues', 'categories'])
             ->get()
             ->map(function ($dataset) {
                 $dataset->stats = $dataset->getStats();
                 $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
+                $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
                 return $dataset;
             })
             ->toArray();
@@ -221,10 +254,12 @@ class DatasetBuilder extends Component
         $this->selectedImages = [];
     }
 
-
     private function finalStage()
     {
+        $this->selectedImages = [];
+        unset($this->paginatedImages);
         $this->finalDataset['stats'] = $this->getCustomStats();
+        $this->finalDataset['image_stats'] = Util::getImageSizeStats($this->imagesQuery()->pluck('id')->toArray(), true);
     }
     private function imagesQuery()
     {
@@ -247,6 +282,7 @@ class DatasetBuilder extends Component
         $this->images = $this->imagesQuery()->get()->toArray();
 
         $this->finalDataset['stats'] = $this->getCustomStats();
+        $this->finalDataset['image_stats'] = Util::getImageSizeStats(array_column($this->images, 'id'), true);
         $datasetIds = array_keys(array_filter($this->selectedDatasets));
         $this->finalDataset['categories'] = Category::whereIn('id', function ($query) use ($datasetIds) {
             $query->select('category_id')
@@ -263,14 +299,15 @@ class DatasetBuilder extends Component
 
     public function cacheQuery()
     {
-        $this->validate();
-        $query = $this->imagesQuery();
+        $payload['query'] = \EloquentSerialize::serialize($this->imagesQuery());
+        $payload['classIds'] = $this->getSelectedClassesForSelectedDatasets();
+        $payload['selectedImages'] = $this->selectedImages;
+        $payload['datasets'] = array_keys(array_filter($this->selectedDatasets));
 
         $token = Str::random(32);
-        Cache::put("download_query_{$token}", \EloquentSerialize::serialize($query), now()->addMinutes(30));
+        Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
-
     }
 
     private function getSelectedClassesForSelectedDatasets(): array
@@ -287,9 +324,13 @@ class DatasetBuilder extends Component
     private function getCustomStats()
     {
         $images = $this->imagesQuery()->get()->toArray();
+        $classCount = AnnotationClass::whereIn('id', $this->getSelectedClassesForSelectedDatasets())
+            ->get(['name'])
+            ->unique('name')
+            ->count();
         return [
             'numImages' => count($images),
-            'numClasses' => count($this->getSelectedClassesForSelectedDatasets()),
+            'numClasses' => $classCount,
             'numAnnotations' => array_sum(array_map(fn($image) => count($image['annotations']), $images)),
         ];
     }

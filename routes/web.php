@@ -9,6 +9,7 @@ use App\Livewire\FullPages\DatasetBuilder;
 use App\Livewire\FullPages\DatasetIndex;
 use App\Livewire\FullPages\DatasetShow;
 use App\Livewire\FullPages\Profile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 
@@ -34,7 +35,9 @@ Route::get('/', function () {
     $statistics = \App\Utils\QueryUtil::getDatasetCounts();
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
-
+Route::get('/zip-format-info', function(){
+    return view('zip-format-info');
+})->name('zip.format.info');
 ////////////////////////////////////////////////////////////////////////////////
 ///                     DATASET ROUTES
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,3 +64,24 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
     Route::get('admin/logs', AdminLogs::class)->name('admin.logs');
 });
+
+Route::get('/private-image/{dataset}/{filename}', function ($dataset, $filename) {
+    $filename = base64_decode($filename);
+
+    $datasetRecord = \App\Models\Dataset::where('id', $dataset)
+        ->orWhere('unique_name', $dataset)
+        ->first();
+
+    if (!auth()->check() || auth()->user()->isAdmin()) {
+        //abort(403);
+    }
+    // Define image path
+    $path = storage_path("app/private/datasets/{$datasetRecord->unique_name}/{$filename}");
+
+    // Check if the file exists
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->where('filename', '.*')->name('private.image');

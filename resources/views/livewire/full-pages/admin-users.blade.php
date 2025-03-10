@@ -254,7 +254,7 @@
                 <div class="max-h-48 overflow-y-auto space-y-1">
                     @foreach($users as $user)
                         @if($user['id'] !== auth()->id())
-                            <label class="flex items-center justify-between gap-3 px-3 py-2 hover:bg-slate-700 rounded-md transition-colors cursor-pointer">
+                            <label class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3 py-2 hover:bg-slate-700 rounded-md transition-colors cursor-pointer">
                                 <div class="flex items-center gap-3">
                                     <input type="radio" x-model="inheritUser" value="{{ $user['id'] }}" class="form-radio text-blue-500">
                                     <div class="bg-slate-600 p-1.5 rounded-full">
@@ -265,10 +265,10 @@
                                         <p class="text-gray-400 text-xs">{{ $user['email'] }}</p>
                                     </div>
                                 </div>
-                                <span class="px-2 py-0.5 text-xs font-semibold rounded-md"
+                                <div class="w-fit px-2 py-0.5 text-xs font-semibold rounded-md"
                                       :class="{ 'bg-red-600 text-white': {{ $user['role'] === 'admin' ? 'true' : 'false' }}, 'bg-gray-600 text-gray-200': {{ $user['role'] === 'user' ? 'true' : 'false' }} }">
                                     {{ ucfirst($user['role']) }}
-                                </span>
+                                </div>
                             </label>
                         @endif
                     @endforeach
@@ -279,6 +279,9 @@
                 <div class="mt-3 text-right">
                     <x-misc.button @click="$wire.deleteUser(userToDelete, inheritUser)" color="red" size="sm" x-bind:disabled="!inheritUser">
                         Delete User & Transfer Ownership
+                    </x-misc.button>
+                    <x-misc.button @click="open = false" color="gray" size="sm">
+                        Cancel
                     </x-misc.button>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-<div x-data x-init="$watch('open', value => document.body.classList.toggle('overflow-hidden', value === '{{ $modalId }}'))">
+<div x-data>
     <div x-cloak x-show="open === '{{ $modalId }}'" id="modal-outter"
          x-transition:enter="transition-opacity ease-out duration-300"
          x-transition:enter-start="opacity-0"

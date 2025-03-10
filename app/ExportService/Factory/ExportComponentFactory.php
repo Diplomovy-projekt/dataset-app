@@ -20,7 +20,7 @@ class ExportComponentFactory
 
         // Check if the class exists
         if (!class_exists($className)) {
-            return Response::error("Mappers {$className} does not exist.");
+            throw new \Exception("Mapper {$className} does not exist.");
         }
 
         return new $className();

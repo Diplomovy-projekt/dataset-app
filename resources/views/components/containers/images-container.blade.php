@@ -15,7 +15,12 @@
                  @mouseleave="hoveredImageIndex = null"
                  class="">
                 <div class="relative w-full group">
-                    <x-images.annotated-image :image="$image" class="h-36 w-36"/>
+                    <x-images.annotated-image :image="$image"
+                                              class="h-36 w-36"
+                                              @click="$dispatch('open-full-screen-image', {
+                                                src: $event.target.src,
+                                                overlayId: `svg-{{ $image['filename'] }}`
+                                                })"/>
                     <input
                         type="checkbox"
                         value="{{ $image->id }}"
@@ -63,5 +68,5 @@
             </div>
         </div>
     @endif
-    <x-images.full-screen-image/>
+    {{--<x-images.full-screen-image/>--}}
 </div>

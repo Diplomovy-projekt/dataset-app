@@ -4,7 +4,7 @@
 
     <livewire:forms.edit-dataset :key="'dataset-show-edit-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:forms.extend-dataset :key="'dataset-show-extend-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
-    <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueNames="$dataset['unique_name']"  />
+    <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueName="$dataset['unique_name']"  />
     <livewire:components.download-dataset :key="'dataset-show-download-dataset'" :datasetId="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
 
     <div class=" mb-5 bg-slate-900/50">
@@ -68,7 +68,7 @@
             </div>
         </div>
     </div>
-    <x-containers.images-container :images="$this->paginatedImages"/>
+    <x-containers.images-container/>
 </div>
 
 

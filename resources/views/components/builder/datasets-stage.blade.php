@@ -1,7 +1,7 @@
 <div x-data="datasetsStage(@this)"
      class="container mx-auto py-4">
     <div class="space-y-3">
-        @forelse($this->datasets as $dataset)
+        @forelse($this->datasets as $index => $dataset)
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
@@ -37,7 +37,12 @@
                             <div class="flex flex-col md:flex-row gap-3">
                                 {{--Classes preview button--}}
                                 <div x-data="{open: false}">
-                                    <livewire:components.classes-sample :key="'classes-sample-in-builder'.$dataset['unique_name']" :uniqueNames="$dataset['unique_name']" :selectable="true" wire:model="selectedClasses.{{$dataset['id']}}"/>
+                                    <livewire:components.classes-sample :key="'classes-sample-'.$index.'-'.$dataset['unique_name']"
+                                                                        :uniqueName="$dataset['unique_name']"
+                                                                        :selectable="true"
+                                                                        wire:model="selectedClasses.{{$dataset['id']}}"
+
+                                                                        />
                                     <button
                                         @click.prevent="open = 'display-classes'"
                                         :disabled="!selectedDatasets[{{$dataset['id']}}]"
@@ -67,6 +72,7 @@
                         <div class="flex flex-col gap-2">
                             <!-- Stats -->
                             <x-dataset.dataset-stats :stats="$dataset['stats']" class="text-base" svgSize="w-5 h-5"/>
+                            <x-dataset.image-stats :image_stats="$dataset['image_stats']" class="p-0"  />
 
                             <!-- Dataset Properties -->
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
@@ -95,7 +101,7 @@
             <p class="text-gray-400">No datasets found</p>
         @endforelse
     </div>
-    <x-images.full-screen-image/>
+    {{--<x-images.full-screen-image/>--}}
 </div>
 
 @script

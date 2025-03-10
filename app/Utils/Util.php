@@ -3,7 +3,10 @@
 namespace App\Utils;
 
 use App\Configs\AppConfig;
+use App\Models\Dataset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Util
 {
@@ -75,6 +78,11 @@ class Util
         return AppConfig::LINK_DATASETS_PATH . $datasetUniqueName . "/" . $folder . $filename;
     }
 
+    public static function formatNumber(float $value, int $decimals = 2): float|int
+    {
+        return ($value == floor($value)) ? (int) $value : round($value, $decimals);
+    }
+
     protected static $startTime = [];
 
     public static function logStart($message)
@@ -96,5 +104,48 @@ class Util
         Log::channel('timing')->info("End: $message | Duration: " . number_format($duration, 4) . " seconds");
         unset(self::$startTime[$message]);
     }
+
+    public static function getDatasetPath(Dataset|string $dataset, $absolute = false): string {
+        if (is_string($dataset)) {
+            $dataset = Dataset::where('unique_name', $dataset)->orWhere('id', $dataset)->firstOrFail();
+        }
+
+        $path = ($dataset->is_public ? AppConfig::DATASETS_PATH['public'] : AppConfig::DATASETS_PATH['private'])
+            . $dataset->unique_name . '/';
+
+        if ($absolute) {
+            return Storage::path($path);
+        }
+
+        return $path;
+    }
+
+    public static function getImageSizeStats(array $ids, bool $isImageId = false): array
+    {
+        $query = DB::table('images')
+            ->selectRaw('
+            AVG(width) as average_width,
+            AVG(height) as average_height,
+            MIN(width) as min_width,
+            MIN(height) as min_height,
+            MAX(width) as max_width,
+            MAX(height) as max_height
+        ');
+
+        if ($isImageId) {
+            $query->whereIn('id', $ids);
+        } else {
+            $query->whereIn('dataset_id', $ids);
+        }
+
+        $stats = $query->first();
+
+        return [
+            'average' => (int)$stats->average_width . 'x' . (int)$stats->average_height,
+            'min' =>  (int)$stats->min_width . 'x' . (int)$stats->min_height,
+            'max' => (int)$stats->max_width . 'x' . (int)$stats->max_height,
+        ];
+    }
+
 
 }

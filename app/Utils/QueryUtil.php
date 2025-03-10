@@ -9,12 +9,14 @@ use App\Models\Image;
 
 class QueryUtil
 {
-    public static function getDatasetCounts()
+    public static function getDatasetCounts(array $datasetIds = null)
     {
+        $datasetIds = $datasetIds ?? Dataset::pluck('id');
         return [
-            'total_images' => Image::distinct()->count(),
-            'total_annotations' => AnnotationData::distinct()->count(),
-            'total_classes' => AnnotationClass::distinct()->count()
+            'numDatasets' => Dataset::whereIn('id', $datasetIds)->count(),
+            'numImages' => Image::whereIn('dataset_id', $datasetIds)->count(),
+            'numAnnotations' => AnnotationData::whereIn('image_id', Image::whereIn('dataset_id', $datasetIds)->pluck('id'))->count(),
+            'numClasses' => AnnotationClass::whereIn('dataset_id', $datasetIds)->distinct('name')->count(),
         ];
     }
 

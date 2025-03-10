@@ -34,60 +34,19 @@
                 <!-- Statistics -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_images'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numImages'] }}</div>
                         <div class="text-gray-400">Images</div>
                     </div>
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_annotations'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numAnnotations'] }}</div>
                         <div class="text-gray-400">Annotations</div>
                     </div>
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['total_classes'] }}</div>
+                        <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numClasses'] }}</div>
                         <div class="text-gray-400">Classes</div>
                     </div>
                 </div>
 
-
-                <!-- Features Section -->
-                {{--<div class="max-w-5xl mx-auto">
-                    <h2 class="text-2xl font-bold text-gray-200 mb-10">
-                        <span class="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
-                            Why Choose Us?
-                        </span>
-                    </h2>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                        <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                            <div class="bg-blue-500/20 p-4 rounded-lg w-16 h-16 mx-auto mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-8 h-8 text-blue-400">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18m9-9H3"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-200 mb-2">Fully Customizable</h3>
-                            <p class="text-gray-400">Tailor your datasets to match your specific requirements</p>
-                        </div>
-
-                        <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                            <div class="bg-blue-500/20 p-4 rounded-lg w-16 h-16 mx-auto mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-8 h-8 text-blue-400">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-200 mb-2">Easy to Use</h3>
-                            <p class="text-gray-400">Intuitive interface designed for efficiency</p>
-                        </div>
-
-                        <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
-                            <div class="bg-blue-500/20 p-4 rounded-lg w-16 h-16 mx-auto mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-8 h-8 text-blue-400">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-200 mb-2">Powerful Insights</h3>
-                            <p class="text-gray-400">Detailed analytics and visualization tools</p>
-                        </div>
-                    </div>
-                </div>--}}
             </div>
         </div>
     </div>
