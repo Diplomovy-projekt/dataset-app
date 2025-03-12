@@ -3,10 +3,12 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
+use App\Configs\TableDefinition;
 use App\DatasetActions\DatasetActions;
 use App\Models\Dataset;
 use App\Models\Image;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,45 +16,52 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 class AdminDatasets extends Component
 {
     use WithPagination;
-
-    public array $headers = [
-        ['label' => 'Display Name', 'field' => 'display_name', 'sortable' => true, 'width' => 'w-64'],
-        ['label' => 'Categories', 'field' => 'categories', 'sortable' => false, 'width' => 'w-20'],
-        ['label' => 'Annotation Technique', 'field' => 'annotation_technique', 'sortable' => true, 'width' => 'w-18'],
-        ['label' => 'Owner', 'field' => 'user.email', 'sortable' => true, 'width' => 'w-18'],
-        ['label' => 'Visibility', 'field' => 'is_public', 'sortable' => true, 'width' => 'w-16'],
-        ['label' => 'Pending Changes', 'field' => 'pending_changes', 'sortable' => false, 'width' => 'w-14'],
-        ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-14'],
-    ];
-
-    public $sortColumn = 'display_name';
-    public $sortDirection = 'asc';
+    private array $tableIds = ['dataset-overview', 'pending-requests', 'accepted-requests', 'rejected-requests'];
+    public array $tables = [];
 
     public array $datasets;
     public array $users = [];
     public string $userSearchTerm = '';
     #[Computed]
-    public function paginatedDatasets()
+    public function paginatedDatasetOverview()
     {
         return Dataset::query()
             ->select('datasets.*')
             ->with(['categories:id,name', 'user:id,email,name'])
             ->leftJoin('users', 'datasets.user_id', '=', 'users.id')
-            ->when($this->sortColumn === 'user.email', function ($query) {
-                $query->orderBy('users.email', $this->sortDirection);
+            ->when($this->tables['dataset-overview']['sortColumn'] === 'user.email', function ($query) {
+                $query->orderBy('users.email', $this->tables['dataset-overview']['sortDirection']);
             }, function ($query) {
-                $query->orderBy($this->sortColumn, $this->sortDirection);
+                $query->orderBy($this->tables['dataset-overview']['sortColumn'], $this->tables['dataset-overview']['sortDirection']);
             })
             ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+    }
+
+    #[Computed]
+    public function paginatedPendingRequests()
+    {
+        return new LengthAwarePaginator(collect([['id' => 1], ['id' => 2]]), 10, 5, 1);
+    }
+    #[Computed]
+    public function paginatedAcceptedRequests()
+    {
+        return new LengthAwarePaginator(collect([['id' => 1], ['id' => 2]]), 10, 5, 1);
+    }
+    #[Computed]
+    public function paginatedRejectedRequests()
+    {
+        return new LengthAwarePaginator(collect([['id' => 1], ['id' => 2]]), 10, 5, 1);
     }
     public function mount()
     {
         $this->users = User::all()->select('email', 'id', 'name', 'role')->toArray();
+        foreach ($this->tableIds as $tableId) {
+            $this->tables[$tableId] = TableDefinition::get($tableId);
+        }
     }
     public function searchUsers()
     {
@@ -63,13 +72,14 @@ class AdminDatasets extends Component
             ->toArray();
     }
 
-    public function sortBy($column)
+    public function sortBy($tableId, $column)
     {
-        if ($this->sortColumn === $column) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        if ($this->tables[$tableId]['sortColumn'] === $column) {
+            $this->tables[$tableId]['sortDirection'] = $this->tables[$tableId]['sortDirection'] === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortColumn = $column;
-            $this->sortDirection = 'asc';
+            // Set new column and default to ascending
+            $this->tables[$tableId]['sortColumn'] = $column;
+            $this->tables[$tableId]['sortDirection'] = 'asc';
         }
         $this->resetPage();
     }
@@ -110,7 +120,7 @@ class AdminDatasets extends Component
     {
         $result = $datasetService->deleteDataset($uniqueName);
         if($result->isSuccessful()){
-            unset($this->paginatedDatasets);
+            unset($this->paginatedDatasetOverview);
         }
     }
 
@@ -123,7 +133,7 @@ class AdminDatasets extends Component
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'An error occurred');
         }
-        unset($this->paginatedDatasets);
+        unset($this->paginatedDatasetOverview);
     }
 
     public function cacheQuery($id)

@@ -33,7 +33,7 @@ class AdminDashboard extends Component
         return view('livewire.full-pages.admin-dashboard');
     }
 
-    public function getTotalDatasetSize()
+    public function getTotalDatasetSize(): float
     {
         $folder = storage_path('app/public/datasets');
         $size = 0;
@@ -47,7 +47,7 @@ class AdminDashboard extends Component
         return round($size / 1024 / 1024 / 1024, 2); // GB
     }
 
-    public function setMetadata()
+    public function setMetadata(): void
     {
         $this->metadata = MetadataType::select('id', 'name', 'description')
             ->with(['metadataValues' => function ($query) {
@@ -55,7 +55,7 @@ class AdminDashboard extends Component
             }])->get()->toArray();
     }
 
-    public function saveType($name, $id = null, $description = '')
+    public function saveType($name, $id = null, $description = ''): void
     {
         try {
             MetadataType::updateOrCreate(
@@ -71,7 +71,7 @@ class AdminDashboard extends Component
         }
     }
 
-    public function saveValue($typeId, $value, $valueId = null, $description = '')
+    public function saveValue($typeId, $value, $valueId = null, $description = ''): void
     {
         try {
             MetadataValue::updateOrCreate(
@@ -87,7 +87,7 @@ class AdminDashboard extends Component
         }
     }
 
-    public function deleteType($id)
+    public function deleteType($id): void
     {
         try {
             MetadataType::where('id', $id)->delete();
@@ -99,7 +99,7 @@ class AdminDashboard extends Component
     }
 
 
-    public function deleteValue($id)
+    public function deleteValue($id): void
     {
         try {
             MetadataValue::where('id', $id)->delete();
@@ -110,7 +110,7 @@ class AdminDashboard extends Component
         }
     }
 
-    public function saveCategory($name, $id = null)
+    public function saveCategory($name, $id = null): void
     {
         try {
             Category::updateOrCreate(
@@ -126,7 +126,7 @@ class AdminDashboard extends Component
         }
     }
 
-    public function deleteCategory($id)
+    public function deleteCategory($id): void
     {
         try {
             Category::where('id', $id)->delete();

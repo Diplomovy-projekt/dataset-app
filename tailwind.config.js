@@ -19,21 +19,21 @@ export default {
             colors: {
                 'hcportal-primary': '#2c3e50', // custom color for hcportal-primary
             },
-            screens: {
+            /*screens: {
                 'xs': '400px',   // custom breakpoint for 'xs'
                 'sm': '576px',   // sm breakpoint
                 'md': '768px',   // md breakpoint
                 'lg': '992px',   // lg breakpoint
                 'xl': '1140px',  // xl breakpoint
-            },
+            },*/
             container: {
                 center: true, // Centers the container
-                screens: {
+                /*screens: {
                     sm: '540px',  // max-width for sm breakpoint (576px)
                     md: '720px',  // max-width for md breakpoint (768px)
                     lg: '960px',  // max-width for lg breakpoint (992px)
                     xl: '1140px', // max-width for xl breakpoint (1200px)
-                },
+                },*/
             },
         },
     },

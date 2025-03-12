@@ -16,7 +16,6 @@ class InviteUser extends Component
 
     public string $email;
     public string $role = 'user';
-    public array $authRoles = AppConfig::AUTH_ROLES;
 
     public function render()
     {

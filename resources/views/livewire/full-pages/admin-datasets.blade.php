@@ -28,135 +28,12 @@
                 </button>
             </div>
         </div>
-
-        <!-- Table Content -->
-        <div class="w-full overflow-x-auto">
-            <table class="table-auto w-full border-collapse">
-                <thead x-data="{ sortField: $wire.entangle('sortColumn'), sortDirection: $wire.entangle('sortDirection')}">
-                <tr>
-                    @foreach($headers as $header)
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-200 {{ $header['width'] }}">
-                            @if($header['sortable'])
-                                <button class="flex items-center gap-2 hover:text-blue-400 transition-colors"
-                                        wire:click="sortBy('{{ $header['field'] }}')">
-                                    {{ $header['label'] }}
-                                    <span class="flex flex-col">
-                                            <svg class="w-4 h-4 -mb-1"
-                                                 :class="{ 'text-blue-400': sortField === '{{ $header['field'] }}' && sortDirection === 'asc' }"
-                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                                            </svg>
-                                            <svg class="w-4 h-4"
-                                                 :class="{ 'text-blue-400': sortField === '{{ $header['field'] }}' && sortDirection === 'desc' }"
-                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                            </svg>
-                                        </span>
-                                </button>
-                            @else
-                                {{ $header['label'] }}
-                            @endif
-                        </th>
-                    @endforeach
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-700">
-                @foreach($this->paginatedDatasets as $dataset)
-                    <tr wire:key="admin-dataset-management-{{ $dataset['id'] }}"
-                        class="hover:bg-slate-750 transition-colors">
-                        {{-- Display name --}}
-                        <td class="px-6 py-3">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-blue-500/10 p-2 rounded-lg">
-                                    <x-icon name="o-folder" class="w-5 h-5 text-blue-400" />
-                                </div>
-                                <a href="{{ route('dataset.show', ['uniqueName' => $dataset['unique_name']])}}"
-                                   wire:navigate
-                                   class="text-gray-200">
-                                    {{ $dataset['display_name'] }}</a>
-                            </div>
-                        </td>
-                        {{-- Categories --}}
-                        <td class="px-6 py-3">
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($dataset['categories'] as $category)
-                                    <span class="px-2 py-1 text-xs rounded-full bg-slate-700 text-gray-200">
-                                            {{ $category['name'] }}
-                                        </span>
-                                @endforeach
-                            </div>
-                        </td>
-                        {{-- Annotation technique --}}
-                        <td class="px-6 py-3">
-                            <x-dataset.annot_technique :annot_technique="$dataset['annotation_technique']" />
-                        </td>
-                        {{-- Owner column --}}
-                        <td class="px-6 py-3">
-                            <button @click="open = 'change-owner'; datasetId = '{{ $dataset['id'] }}';"
-                                    class="flex items-center gap-2 text-gray-200 hover:text-blue-400 transition-colors">
-                                <span>{{ $dataset['user']['email'] }}</span>
-                                <x-icon name="o-chevron-down" class="w-4 h-4" />
-                            </button>
-
-                        </td>
-                        {{-- Visibility --}}
-                        <td class="px-6 py-3">
-                            <div x-data="{ isPublic: {{ $dataset->is_public ? 'true' : 'false' }} }">
-                                <button class="px-3 py-1 rounded-full text-sm"
-                                        :class="isPublic ? 'bg-green-500/10 text-green-400' : 'bg-slate-700 text-gray-400'"
-                                        @click="isPublic = !isPublic; $wire.toggleVisibility({{ $dataset->id }})">
-                                    <span x-text="isPublic ? 'Public' : 'Private'"></span>
-                                </button>
-                            </div>
-                        </td>
-                        {{-- Pending changes --}}
-                        <td class="px-6 py-3">
-                            @if(($dataset['pending_changes'] ?? 0) > 0)
-                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-500/10 text-yellow-400">
-                                        {{ $dataset['pending_changes'] }} changes
-                                    </span>
-                            @else
-                                <span class="text-gray-500">-</span>
-                            @endif
-                        </td>
-                        {{-- Actions --}}
-                        <td class="px-6 py-3">
-                            <x-dropdown-menu direction="left" class="w-50">
-                                <x-dropdown-menu-item
-                                    @click="$dispatch('extend-selected','{{ $dataset['unique_name'] }}'); open = 'extend-dataset'"
-                                    :icon="@svg('eva-upload')->toHtml()">
-                                    Extend Dataset
-                                </x-dropdown-menu-item>
-
-                                <x-dropdown-menu-item
-                                    @click="$dispatch('edit-selected','{{ $dataset['unique_name'] }}'); open = 'edit-dataset'"
-                                    :icon="@svg('eos-edit')->toHtml()">
-                                    Edit Dataset info
-                                </x-dropdown-menu-item>
-
-                                <x-dropdown-menu-item
-                                    @click="$wire.cacheQuery('{{$dataset['id']}}'); open = 'download-dataset'"
-                                    :icon="@svg('eva-download')->toHtml()">
-                                    Download Dataset
-                                </x-dropdown-menu-item>
-
-                                <div class="border-t border-gray-300"></div>
-
-                                <x-dropdown-menu-item
-                                    wire:click="deleteDataset('{{ $dataset['unique_name'] }}')"
-                                    wire:confirm="This will permanently delete the dataset"
-                                    danger
-                                    :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                                    Delete Dataset
-                                </x-dropdown-menu-item>
-                            </x-dropdown-menu>
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
     </div>
+
+    {{--Tables --}}
+    <x-tables.tabs :tables="$tables" />
+
+    {{-- Update dataset owner modal --}}
     <x-modals.fixed-modal modalId="change-owner" class="w-fit">
         <div class="p-4">
             {{-- Header --}}
@@ -206,7 +83,6 @@
 
             </div>
 
-            {{-- Delete User Button (Transfers Ownership Before Deletion) --}}
             <div class="mt-3 text-right">
                 <x-misc.button @click="$wire.changeOwner(datasetId, newOwnerId)" color="blue" size="sm">
                     Update owner
@@ -217,10 +93,6 @@
             </div>
         </div>
     </x-modals.fixed-modal>
-    <!-- Pagination -->
-    <div class="mt-4">
-        {{ $this->paginatedDatasets->links() }}
-    </div>
 </div>
 
 @script
