@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('email')->unique();
             $table->string('role')->default('user');
+            $table->string('invited_by');
             $table->string('token')->unique();
             $table->boolean('used')->default(false);
             $table->timestamps();

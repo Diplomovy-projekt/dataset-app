@@ -9,10 +9,20 @@ class Invitation extends Model
 {
     protected $fillable = [
         'email',
+        'invited_by',
         'role',
         'token',
         'used',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->invited_by = $model->invited_by ?? auth()->user()->email;
+        });
+    }
 
     public function scopeNotExpired($query)
     {

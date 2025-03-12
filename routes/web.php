@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnnotationRendererController;
 use App\Livewire\Forms\Register;
 use App\Livewire\FullPages\AdminDashboard;
 use App\Livewire\FullPages\AdminDatasets;
@@ -38,6 +39,8 @@ Route::get('/', function () {
 Route::get('/zip-format-info', function(){
     return view('zip-format-info');
 })->name('zip.format.info');
+Route::post('/api/annotations', [AnnotationRendererController::class, 'getAnnotations']);
+
 ////////////////////////////////////////////////////////////////////////////////
 ///                     DATASET ROUTES
 ////////////////////////////////////////////////////////////////////////////////

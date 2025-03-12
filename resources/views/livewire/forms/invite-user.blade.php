@@ -24,7 +24,7 @@
                         <label for="role" class="text-gray-300 font-medium">User Role</label>
                         <select id="role" x-model="role" wire:model="role"
                                 class="w-full bg-slate-700 text-gray-200 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            @foreach($authRoles as $key => $value)
+                            @foreach(App\Configs\AppConfig::AUTH_ROLES as $key => $value)
                                 <option value="{{ $key }}">{{ $value }}</option>
                             @endforeach
                         </select>

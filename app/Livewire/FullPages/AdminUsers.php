@@ -3,6 +3,7 @@
 namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
+use App\Configs\TableDefinition;
 use App\Mail\UserInvitationMail;
 use App\Models\Invitation;
 use App\Models\User;
@@ -15,60 +16,52 @@ use Livewire\WithPagination;
 
 class AdminUsers extends Component
 {
-    public array $authRoles = AppConfig::AUTH_ROLES;
-    public int $pendingInvitesCount;
-    public int $expiredInvitesCount;
-
     use WithPagination;
 
-    public array $headers = [
-        ['label' => 'Name', 'field' => 'name', 'sortable' => true, 'width' => 'w-64'],
-        ['label' => 'Email', 'field' => 'email', 'sortable' => true, 'width' => 'w-20'],
-        ['label' => 'Role', 'field' => 'role', 'sortable' => true, 'width' => 'w-18'],
-        ['label' => 'Status', 'field' => 'status', 'sortable' => false, 'width' => 'w-18'],
-        ['label' => 'Datasets', 'field' => 'datasets_count', 'sortable' => true, 'width' => 'w-16'],
-        ['label' => 'Actions', 'field' => 'action', 'sortable' => false, 'width' => 'w-16'],
-    ];
+    private array $tableIds = ['user-overview', 'pending-invites', 'expired-invites'];
+    public array $tables = [];
 
-    public $sortColumn = 'name';
-    public $sortDirection = 'asc';
     public array $users = [];
     public string $userSearchTerm = '';
 
     #[Computed]
-    public function paginatedUsers()
+    public function paginatedUserOverview()
     {
         return User::withCount('datasets')
-            ->orderBy($this->sortColumn, $this->sortDirection)
+            ->orderBy($this->tables['user-overview']['sortColumn'], $this->tables['user-overview']['sortDirection'])
             ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
     }
     #[Computed]
-    public function pendingInvites()
+    public function paginatedPendingInvites()
     {
-        $invitations = Invitation::pending()->get();
-        $this->pendingInvitesCount = $invitations->count();
-        return $invitations;
+        return Invitation::pending()
+            ->orderBy($this->tables['pending-invites']['sortColumn'], $this->tables['pending-invites']['sortDirection'])
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
     }
     #[Computed]
-    public function expiredInvites()
+    public function paginatedExpiredInvites()
     {
-        $expiredInvites = Invitation::expired()->notUsed()->get();
-        $this->expiredInvitesCount = $expiredInvites->count();
-        return $expiredInvites;
+        return Invitation::expired()->notUsed()
+            ->orderBy($this->tables['expired-invites']['sortColumn'], $this->tables['expired-invites']['sortDirection'])
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
     }
 
     public function mount()
     {
         $this->users = User::all()->select('email', 'id', 'role', 'name')->toArray();
+        foreach ($this->tableIds as $tableId) {
+            $this->tables[$tableId] = TableDefinition::get($tableId);
+        }
     }
 
-    public function sortBy($column)
+    public function sortBy($tableId, $column)
     {
-        if ($this->sortColumn === $column) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        if ($this->tables[$tableId]['sortColumn'] === $column) {
+            $this->tables[$tableId]['sortDirection'] = $this->tables[$tableId]['sortDirection'] === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortColumn = $column;
-            $this->sortDirection = 'asc';
+            // Set new column and default to ascending
+            $this->tables[$tableId]['sortColumn'] = $column;
+            $this->tables[$tableId]['sortDirection'] = 'asc';
         }
         $this->resetPage();
     }

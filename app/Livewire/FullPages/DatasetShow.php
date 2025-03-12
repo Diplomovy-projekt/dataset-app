@@ -30,7 +30,7 @@ class DatasetShow extends Component
     public array $toggleClasses;
     public string $modalStyle;
     public array $selectedImages = [];
-    public int $perPage = 25;
+    public int $perPage = 50;
 
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
