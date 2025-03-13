@@ -85,6 +85,16 @@ class Dataset extends Model
         }
         $this->save();
     }
+
+    public function updateSize($size = null): void
+    {
+        if($size){
+            $this->total_size += $size;
+        } else {
+            $this->total_size = $this->images()->sum('size');
+        }
+        $this->save();
+    }
     public function getStats()
     {
         // Get the number of annotations, images and classes

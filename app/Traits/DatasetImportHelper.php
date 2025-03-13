@@ -34,28 +34,6 @@ trait DatasetImportHelper
         return [['error' => $errors]]; // Handle case when it's not an array
     }
 
-
-    /*public function chunkUpload()
-    {
-        $chunkFileName = $this->fileChunk->getFileName();
-        $finalFilePath = 'livewire-tmp/' . $this->uniqueName;
-
-        // Read the chunk file
-        $buff = Storage::disk('private')->get('livewire-tmp/' . $chunkFileName);
-
-        // Append chunk to final file
-        Storage::disk('private')->append($finalFilePath, $buff, null);
-
-        // Delete the chunk file
-        Storage::disk('private')->delete('livewire-tmp/' . $chunkFileName);
-
-        // Check if the file is complete
-        $curSize = Storage::disk('private')->size($finalFilePath);
-        if ($curSize == $this->fileSize) {
-            $this->finalFile = TemporaryUploadedFile::createFromLivewire('/' . $this->uniqueName);
-            $this->finishImport(app(ZipManager::class));
-        }
-    }*/
     public function chunkUpload() {
         $chunkFileName = $this->fileChunk->getFileName();
 

@@ -12,7 +12,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar searchTitle="Search Images..." searchModel="searchTerm" searchMethod="search" />
             <div class="flex">
-                <x-class-dropdown wire:ignore/>
+                <x-class-dropdown />
                 <x-dropdown-menu direction="left" class="w-50">
                     @auth
                         @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])

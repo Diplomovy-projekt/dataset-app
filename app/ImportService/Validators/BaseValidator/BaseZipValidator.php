@@ -5,7 +5,7 @@ namespace App\ImportService\Validators\BaseValidator;
 use App\Configs\Annotations\YoloConfig;
 use Illuminate\Support\Facades\Storage;
 
-class BaseZipValidator
+abstract class BaseZipValidator
 {
     public function validateImageFolder(string $filePath, string $imageFolder): array|bool
     {

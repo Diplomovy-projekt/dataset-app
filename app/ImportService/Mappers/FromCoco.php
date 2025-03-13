@@ -112,6 +112,10 @@ class FromCoco extends BaseMapper
 
     function getClasses($classesSource): array
     {
-        return array_column($classesSource, 'name');
+        return array_map(fn($class) => [
+            'name' => $class['name'],
+            'supercategory' => $class['supercategory'] ?? null
+        ], $classesSource);
     }
+
 }

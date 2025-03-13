@@ -73,6 +73,7 @@ class ExtendDataset extends Component
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
 
         $payload = [
+            "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             "parent_dataset_unique_name" => $this->editingDataset->unique_name,
             'format' => $this->selectedFormat,
@@ -84,7 +85,7 @@ class ExtendDataset extends Component
             return;
         }
 
-        $importService = app(ImportService::class, ['strategy' => new ExtendDatasetStrategy()]);
+        $importService = app(ImportService::class);
         $datasetImported = $importService->handleImport($payload);
 
         if($datasetImported->isSuccessful()){

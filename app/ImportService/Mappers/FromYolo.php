@@ -128,6 +128,8 @@ class FromYolo extends BaseMapper
         $dataContent = Storage::get($dataFilePath);
         $annotationData = Yaml::parse($dataContent);
 
-        return $annotationData['names'];
+        return array_map(fn($name) => [
+            'name' => $name,
+        ], $annotationData['names']);
     }
 }

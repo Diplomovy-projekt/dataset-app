@@ -4,11 +4,12 @@ namespace App\ImportService\Validators\Yolo;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\ImportService\Validators\BaseValidator\BaseAnnotationValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class YoloAnnotationValidator
+class YoloAnnotationValidator extends BaseAnnotationValidator
 {
     public function validate(string $datasetFolder, string $annotationTechnique): Response
     {

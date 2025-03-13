@@ -61,10 +61,6 @@ class EditDataset extends Component
             $this->editingDataset->categories()->sync($this->selectedCategories);
             $this->editingDataset->save();
 
-            /*$this->dispatch('flash-msg', [
-                'type' => 'success',
-                'message' => 'Dataset information updated successfully!'
-            ]);*/
             $this->dispatch('refresh');
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', [

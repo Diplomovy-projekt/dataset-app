@@ -79,7 +79,7 @@ class UploadDataset extends Component
             return;
         }
 
-        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
+        $importService = app(ImportService::class);
         $datasetImported = $importService->handleImport($payload);
 
         if($datasetImported->isSuccessful()){

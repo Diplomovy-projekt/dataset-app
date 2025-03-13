@@ -4,10 +4,11 @@ namespace App\ImportService\Validators\Coco;
 
 use App\Configs\Annotations\CocoConfig;
 use App\Configs\AppConfig;
+use App\ImportService\Validators\BaseValidator\BaseAnnotationValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
-class CocoAnnotationValidator
+class CocoAnnotationValidator extends BaseAnnotationValidator
 {
     public function validate(string $datasetFolder, string $annotationTechnique): Response
     {

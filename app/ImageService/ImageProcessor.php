@@ -5,8 +5,8 @@ namespace App\ImageService;
 use App\Configs\AppConfig;
 use App\Utils\FileUtil;
 use App\Utils\Response;
-use Faker\Core\File;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 trait ImageProcessor
@@ -68,24 +68,26 @@ trait ImageProcessor
     }
 
 
-    public function moveFullImages($imageFileNames, $sourceFolder, $destinationFolder): Response
+    public function moveImages($imageFileNames, $from, $to): Response
     {
         foreach ($imageFileNames as $file) {
             $extension = pathinfo($file, PATHINFO_EXTENSION);
 
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $source = AppConfig::LIVEWIRE_TMP_PATH . $sourceFolder . '/' .  $file;
-                $destination = AppConfig::DEFAULT_DATASET_LOCATION . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $file;
+                $source = rtrim($from, '/') . '/' . $file;
+                $dest = rtrim($to, '/') . '/' . $file;
 
                 try {
-                    FileUtil::ensureFolderExists($destination);
-                    Storage::move($source, $destination);
+                    File::ensureDirectoryExists($dest);
+                    if(!Storage::move($source, $dest)){
+                        throw new \Exception("Failed to move image $file to $to");
+                    }
                 } catch (\Exception $e) {
-                    Response::error("An error occurred while moving images to public static storage: " . $e->getMessage());
+                    Response::error(message:$e->getMessage());
                 }
             }
         }
 
-        return Response::success(data: ['datasetFolder' => $destinationFolder]);
+        return Response::success(data: ['datasetFolder' => $to]);
     }
 }

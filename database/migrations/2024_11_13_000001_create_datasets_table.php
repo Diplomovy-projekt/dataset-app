@@ -15,9 +15,9 @@ return new class extends Migration
         Schema::create('datasets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('display_name');
+            $table->string('display_name')->nullable();
             $table->string('unique_name')->unique();
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->integer('num_images');
             $table->integer('total_size');
             $table->string('annotation_technique');

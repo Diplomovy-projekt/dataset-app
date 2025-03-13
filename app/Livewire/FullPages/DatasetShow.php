@@ -30,7 +30,7 @@ class DatasetShow extends Component
     public array $toggleClasses;
     public string $modalStyle;
     public array $selectedImages = [];
-    public int $perPage = 50;
+    public int $perPage = 25;
 
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
@@ -42,7 +42,6 @@ class DatasetShow extends Component
 
     public function mount()
     {
-        Util::logStart("dataset show MOUNT");
         $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
         if (!$dataset) {
             return redirect()->route('dataset.index');
@@ -64,8 +63,6 @@ class DatasetShow extends Component
         $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
-        Util::logEnd("dataset show MOUNT");
-
     }
 
     public function updatedPerPage()
@@ -100,6 +97,17 @@ class DatasetShow extends Component
         $result = $datasetService->deleteImages($this->uniqueName, $this->selectedImages);
         if($result->isSuccessful()){
             $this->mount();
+            unset($this->paginatedImages);
+            $this->dispatch('flash-msg',
+                type: 'success',
+                message: 'Images deleted successfully',
+            );
+        }
+        else {
+            $this->dispatch('flash-msg',
+                type: 'error',
+                message: $result->message,
+            );
         }
     }
 
