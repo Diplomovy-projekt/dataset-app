@@ -5,6 +5,7 @@ namespace App\ImageService;
 use App\Configs\AppConfig;
 use App\Utils\FileUtil;
 use App\Utils\Response;
+use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -26,9 +27,9 @@ trait ImageProcessor
         if(empty($images)){
             return [];
         }
-
-        $source = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
-        $destination = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
+        $datasetPath = Util::getDatasetPath($datasetFolder);
+        $source = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER);
+        $destination = Storage::path($datasetPath . AppConfig::IMG_THUMB_FOLDER);
         FileUtil::ensureFolderExists($destination);
         $createdThumbnails = [];
         foreach($images as $image){
@@ -42,18 +43,20 @@ trait ImageProcessor
     public function createClassCrops(string $datasetFolder, Collection $images): array
     {
         $classCounts = [];
+        $datasetPath = Util::getDatasetPath($datasetFolder);
         foreach ($images as $image) {
-            $imagePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::FULL_IMG_FOLDER.$image->filename);
+            $imagePath = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER.$image->filename);
 
             foreach ($image->annotations as $index => $annotation) {
                 $classId = $annotation->annotation_class_id;
-                $directoryPath = $datasetFolder . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
+                $directoryPath = $datasetPath . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
 
                 if(!isset($classCounts[$classId])) {
-                    $classCounts[$classId] = count(Storage::disk('datasets')->files($directoryPath));
+                    $classCounts[$classId] = count(Storage::files($directoryPath));
                 }
                 if ($classCounts[$classId] < AppConfig::SAMPLES_COUNT) {
-                    $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
+
+                    $savePath = Storage::path($datasetPath . AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
                     FileUtil::ensureFolderExists($savePath);
 
                     $pixelizedBbox = $this->pixelizeBbox(["x" => $annotation->x, "y" => $annotation->y, "width" => $annotation->width, "height" => $annotation->height], $image['width'], $image['height']);

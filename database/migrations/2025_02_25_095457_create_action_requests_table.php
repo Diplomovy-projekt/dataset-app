@@ -12,13 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dataset_action_requests', function (Blueprint $table) {
+        Schema::create('action_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('dataset_id')->nullable()->constrained()->onDelete('cascade');
-            $table->enum('type', ['new', 'extend', 'edit_info', 'delete']);
+            $table->enum('type', ['new', 'extend', 'edit', 'reduce', 'delete']);
             $table->json('payload');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('comment')->nullable();
+            $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }
@@ -29,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        Schema::dropIfExists('dataset_action_requests');
+        Schema::dropIfExists('action_requests');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 };

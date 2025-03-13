@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('total_size');
             $table->string('annotation_technique');
             $table->boolean('is_public')->default(false);
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
 
             $table->index('unique_name');

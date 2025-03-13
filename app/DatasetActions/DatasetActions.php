@@ -25,7 +25,7 @@ class DatasetActions
     {
         Gate::authorize('delete-dataset', $unique_name);
         try {
-            $dataset = Dataset::where('unique_name', $unique_name)->first();
+            $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $unique_name)->first();
             $datasetPath = Util::getDatasetPath($dataset);
             $dataset->delete();
             if (Storage::exists($datasetPath)) {
@@ -41,10 +41,9 @@ class DatasetActions
     {
         Gate::authorize('delete-dataset', $uniqueName);
         try {
-            $dataset = Dataset::where('unique_name', $uniqueName)->first();
+            $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $uniqueName)->first();
             $datasetPath = Util::getDatasetPath($dataset);
             $images = $dataset->images()->whereIn('id', $ids)->get();
-            $images = Image::whereIn('id', $ids)->get();
             foreach ($images as $image) {
                 Storage::delete($datasetPath . AppConfig::FULL_IMG_FOLDER . $image->filename);
                 Storage::delete($datasetPath . AppConfig::IMG_THUMB_FOLDER . $image->filename);
@@ -78,16 +77,14 @@ class DatasetActions
      */
     public function mergeChildToParent($parentDataset, $childDataset): Response
     {
-        Gate::authorize('delete-dataset', $parentDataset);
-        Gate::authorize('delete-dataset', $childDataset);
-        DB::beginTransaction();
-        $childPath = AppConfig::DEFAULT_DATASET_LOCATION . $childDataset;
-        $parentPath = AppConfig::DEFAULT_DATASET_LOCATION . $parentDataset;
+        //DB::beginTransaction();
+        $childPath = Util::getDatasetPath($childDataset);
+        $parentPath = Util::getDatasetPath($parentDataset);
         try {
-            $parent = Dataset::where('unique_name', $parentDataset)->first();
+            $parent = Dataset::withoutGlobalScopes()->where('unique_name', $parentDataset)->first();
             $parentClasses = $parent->classes()->get()->keyBy('name');
 
-            $child = Dataset::where('unique_name', $childDataset)->first();
+            $child = Dataset::withoutGlobalScopes()->where('unique_name', $childDataset)->first();
             $childImages = $child->images()->get();
             $childAnnotations = AnnotationData::whereIn('image_id', $childImages->pluck('id'))->get();
             $childClasses = $child->classes()->get()->keyBy('id');
@@ -124,18 +121,18 @@ class DatasetActions
             // Move full images
             $this->moveImages(
                 $childImages->pluck('filename')->toArray(),
-                $childPath . '/' . AppConfig::FULL_IMG_FOLDER,
-                $parentPath . '/' . AppConfig::FULL_IMG_FOLDER);
+                $childPath . AppConfig::FULL_IMG_FOLDER,
+                $parentPath . AppConfig::FULL_IMG_FOLDER);
             // Move thumb images
             $this->moveImages(
                 $childImages->pluck('filename')->toArray(),
-                $childPath . '/' . AppConfig::IMG_THUMB_FOLDER,
-                $parentPath . '/' . AppConfig::IMG_THUMB_FOLDER);
+                $childPath . AppConfig::IMG_THUMB_FOLDER,
+                $parentPath . AppConfig::IMG_THUMB_FOLDER);
             // Move class directories
             if(isset($classesToAddToParent)) {
                 foreach($classesToAddToParent as $classId) {
-                    $childClassDir = $childPath . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
-                    $parentClassDir = $parentPath . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
+                    $childClassDir = $childPath . AppConfig::CLASS_IMG_FOLDER . $classId;
+                    $parentClassDir = $parentPath . AppConfig::CLASS_IMG_FOLDER . $classId;
                     if(!Storage::move($childClassDir, $parentClassDir)){
                         throw new \Exception("Failed to move class directory");
                     }
@@ -145,10 +142,10 @@ class DatasetActions
             $parent->updateImageCount(count($child->images));
             $parent->updateSize($childImages->pluck('size')->sum());
         } catch (\Exception $e) {
-            DB::rollBack();
+            //DB::rollBack();
             foreach ($childImages as $image) {
-                $fullImg = $parentPath . '/' . AppConfig::FULL_IMG_FOLDER . $image['filename'];
-                $thumbnail = $parentPath . '/' . AppConfig::IMG_THUMB_FOLDER . $image['filename'];
+                $fullImg = $parentPath . AppConfig::FULL_IMG_FOLDER . $image['filename'];
+                $thumbnail = $parentPath . AppConfig::IMG_THUMB_FOLDER . $image['filename'];
                 if(Storage::disk('storage')->exists($fullImg)){
                     Storage::disk('storage')->delete($fullImg);
                 }
@@ -159,18 +156,17 @@ class DatasetActions
             return Response::error($e->getMessage());
         } finally {
             $child->delete();
-            $dir = AppConfig::DEFAULT_DATASET_LOCATION . $childDataset;
-            if(!Storage::deleteDirectory($dir)) {
+            if(!Storage::deleteDirectory($childPath)) {
                 throw new \Exception("Failed to delete child dataset folder");
             }
-            DB::commit();
+            //DB::commit();
             return Response::success('Datasets merged successfully');
         }
     }
 
     public function createSamplesForClasses(string $datasetFolder, array $classesToSample, array $newImages): Response
     {
-        $dataset = Dataset::where('unique_name', $datasetFolder)->firstOrFail();
+        $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $datasetFolder)->firstOrFail();
         $batchSize = max(ceil(count($newImages) * 0.1), 10); // 10% of new images or at least 10
         $classCounts = [];
 
@@ -239,7 +235,7 @@ class DatasetActions
     public function addUniqueSuffixes($datasetFolder, &$mappedData): Response
     {
         $images = &$mappedData['images'];
-        $datasetPath = AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER;
+        $datasetPath = AppConfig::DATASETS_PATH['private'] . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER;
 
         try {
             foreach ($images as &$image) {
@@ -259,4 +255,23 @@ class DatasetActions
             return Response::error("Failed to add unique suffixes to images", $e->getMessage());
         }
     }
+
+    public static function moveDatasetTo(string $uniqueName, string $targetVisibility): Response
+    {
+        if (!in_array($targetVisibility, ['public', 'private'])) {
+            return Response::error("Invalid target visibility");
+        }
+
+        $fromPath = AppConfig::DATASETS_PATH[$targetVisibility === 'public' ? 'private' : 'public'] . $uniqueName;
+        $toPath = AppConfig::DATASETS_PATH[$targetVisibility] . $uniqueName;
+
+        if (!Storage::move($fromPath, $toPath)) {
+            return Response::error("Failed to move dataset");
+        }
+
+        Dataset::withoutGlobalScopes()->where('unique_name', $uniqueName)->update(['is_public' => $targetVisibility === 'public']);
+
+        return Response::success("Dataset moved to $targetVisibility");
+    }
+
 }

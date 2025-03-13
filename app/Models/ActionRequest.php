@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DatasetActionRequest extends Model
+class ActionRequest extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,9 @@ class DatasetActionRequest extends Model
         'dataset_id',
         'type',
         'payload',
-        'status'
+        'status',
+        'comment',
+        'reviewed_by',
     ];
 
     protected $casts = [

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
@@ -80,13 +81,15 @@ class UploadDataset extends Component
         }
 
         $importService = app(ImportService::class);
-        $datasetImported = $importService->handleImport($payload);
+        $result = $importService->handleImport($payload);
 
-        if($datasetImported->isSuccessful()){
+        if($result->isSuccessful()){
+            $actionPayload = ['dataset_id' => $result->data, 'dataset_unique_name' => $payload['unique_name']];
+            app(ActionRequestService::class)->createRequest('new', $actionPayload);
             $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
         } else {
-            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
-            $this->errors['message'] = $datasetImported->message;
+            $this->errors['data'] = $this->normalizeErrors($result->data);
+            $this->errors['message'] = $result->message;
             $this->lockUpload = false;
             $this->reset('finalFile', 'fileChunk', 'displayName', 'uniqueName', 'fileSize');
         }

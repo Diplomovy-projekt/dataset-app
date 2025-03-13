@@ -25,7 +25,6 @@ class AppConfig
         'public' => 'app/public/datasets/',
         'private' => 'app/private/datasets/',
     ];
-    public const string DEFAULT_DATASET_LOCATION = self::DATASETS_PATH['public'];
     public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
     public const FULL_IMG_FOLDER = 'full-images/';

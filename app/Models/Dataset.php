@@ -23,7 +23,8 @@ class Dataset extends Model
         'num_images',
         'total_size',
         'annotation_technique',
-        'is_public'
+        'is_public',
+        'is_approved'
     ];
 
     protected $casts = [

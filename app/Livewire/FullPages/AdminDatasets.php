@@ -87,34 +87,21 @@ class AdminDatasets extends Component
     public function toggleVisibility($id)
     {
         try {
-            DB::beginTransaction();
             $dataset = Dataset::findOrFail($id);
-            $newVisibility = !$dataset->is_public;
+            $newVisibility = $dataset->is_public ? 'private' : 'public';
 
-            $fromPath = AppConfig::DATASETS_PATH[$dataset->is_public ? "public" : "private"] . $dataset->unique_name;
-            $toPath = AppConfig::DATASETS_PATH[$newVisibility ? "public" : "private"] . $dataset->unique_name;
+            $response = DatasetActions::moveDatasetTo($dataset->unique_name, $newVisibility);
 
-            if (Storage::exists($fromPath)) {
-                Storage::move($fromPath, $toPath);
-                Log::info("Moved dataset: {$fromPath} → {$toPath}");
-
-                $dataset->update(['is_public' => $newVisibility]);
-                $visibilityText = $newVisibility ? 'public' : 'private';
-                $this->dispatch('flash-msg', type: 'success', message: "Dataset visibility changed to {$visibilityText}");
-                DB::commit();
+            if (!$response->isSuccessful()) {
+                $this->dispatch('flash-msg', type: 'error', message: $response->message);
                 return;
             }
 
-            Log::error("Source directory not found: {$fromPath}");
-            DB::rollBack();
-            $this->dispatch('flash-msg', type: 'error', message: 'Dataset not found');
+            $this->dispatch('flash-msg', type: 'success', message: "Dataset visibility changed to {$newVisibility}");
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Exception in toggleVisibility: " . $e->getMessage());
             $this->dispatch('flash-msg', type: 'error', message: 'An error occurred');
         }
     }
-
 
     public function deleteDataset(DatasetActions $datasetService, $uniqueName)
     {

@@ -48,8 +48,8 @@ class DatasetShow extends Component
         }
 
         $dataset->stats = $dataset->getStats();
+        $datasetPath = Util::getDatasetPath($dataset);
         foreach ($dataset->classes as $class) {
-            $datasetPath = Util::getDatasetPath($dataset);
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
                 ->first();
             $class->image = [

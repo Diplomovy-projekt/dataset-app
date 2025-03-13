@@ -5,17 +5,12 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
-use App\ImportService\Strategies\ExtendDatasetStrategy;
-use App\ImportService\Strategies\NewDatasetStrategy;
-use App\Models\Category;
 use App\Models\Dataset;
-use App\Models\MetadataType;
+use App\ActionRequestService\ActionRequestService;
 use App\Traits\DatasetImportHelper;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class ExtendDataset extends Component
@@ -86,13 +81,19 @@ class ExtendDataset extends Component
         }
 
         $importService = app(ImportService::class);
-        $datasetImported = $importService->handleImport($payload);
+        $result = $importService->handleImport($payload);
 
-        if($datasetImported->isSuccessful()){
-            $this->redirectRoute('dataset.show', ['uniqueName' => $this->editingDataset->unique_name]);
+        if($result->isSuccessful()){
+            $actionPayload = [
+                'dataset_id' => Dataset::where('unique_name', $payload['parent_dataset_unique_name'])->first()->id,
+                'dataset_unique_name' => $payload['parent_dataset_unique_name'],
+                'child_unique_name' => $payload['unique_name']
+            ];
+            app(ActionRequestService::class)->createRequest('extend', $actionPayload);
+            //$this->redirectRoute('dataset.show', ['uniqueName' => $this->editingDataset->unique_name]);
         } else {
-            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
-            $this->errors['message'] = $datasetImported->message;
+            $this->errors['data'] = $this->normalizeErrors($result->data);
+            $this->errors['message'] = $result->message;
             $this->lockUpload = false;
             $this->reset('finalFile', 'fileChunk', 'displayName', 'uniqueName', 'fileSize');
         }
