@@ -3,10 +3,11 @@
 namespace App\ActionRequestService\Handlers;
 
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-
-class ReduceDataset extends BaseHandler
+use Illuminate\Database\Eloquent\Model;
+class ReduceDatasetHandler extends BaseHandler
 {
     protected function validationRules(): array
     {
@@ -20,11 +21,16 @@ class ReduceDataset extends BaseHandler
 
     public function approve(array $payload): void
     {
-        // TODO: Implement approve() method.
+        $this->datasetActions->deleteImages($payload['dataset_unique_name'], $payload['image_ids']);
     }
 
     public function reject(array $payload): void
     {
-        // TODO: Implement reject() method.
+        // Nothing needs to be done here.
+    }
+
+    public function reviewChanges(Model $request): mixed
+    {
+        return Redirect::route('dataset.review.reduce', ['requestId' => $request->id]);
     }
 }

@@ -24,13 +24,14 @@
 
     <!-- Table Content Section -->
     @foreach($tables as $tabId => $table)
-        <div x-show="activeTab === '{{ $tabId }}'" x-cloak>
-            <x-dynamic-component :component="'tables.' . $tabId" :table="$table" />
-        </div>
-
         @php
             $variableName = 'paginated' . Illuminate\Support\Str::studly(str_replace('-', ' ', $table['id']));
         @endphp
+
+        <div x-show="activeTab === '{{ $tabId }}'" x-cloak>
+            <x-dynamic-component :component="'tables.' . $tabId" :table="$table" :items="$variableName"/>
+        </div>
+
         <div class="mt-5" x-show="activeTab === '{{ $tabId }}'" x-cloak>
             {{ $this->{$variableName}->links() }}
         </div>

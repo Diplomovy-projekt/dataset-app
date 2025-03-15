@@ -107,7 +107,7 @@ class Util
 
     public static function getDatasetPath(Dataset|string $dataset, $absolute = false): string {
         if (is_string($dataset)) {
-            $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $dataset)->orWhere('id', $dataset)->firstOrFail();
+            $dataset = Dataset::where('unique_name', $dataset)->orWhere('id', $dataset)->firstOrFail();
         }
 
         $path = ($dataset->is_public ? AppConfig::DATASETS_PATH['public'] : AppConfig::DATASETS_PATH['private'])

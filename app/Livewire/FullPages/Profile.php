@@ -26,7 +26,7 @@ class Profile extends Component
 
     private function loadDatasets()
     {
-        $datasets = Dataset::where('user_id', auth()->id()) // Filter datasets by the authenticated user's ID
+        $datasets = Dataset::approved()->where('user_id', auth()->id()) // Filter datasets by the authenticated user's ID
         ->with([
             'images' => function ($query) {
                 $query->limit(1)->with(['annotations.class']);

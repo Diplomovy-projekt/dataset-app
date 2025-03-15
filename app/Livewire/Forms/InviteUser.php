@@ -30,6 +30,7 @@ class InviteUser extends Component
         ]);
 
         if ($this->checkIfUserExists()) {
+            $this->dispatch('flas-msg', type: 'error', message: 'User already exists.');
             return;
         }
 

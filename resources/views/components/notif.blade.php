@@ -22,6 +22,7 @@
      class="fixed top-4 right-4 z-50">
 
     <div x-show="show"
+         x-cloak
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 transform translate-x-8"
          x-transition:enter-end="opacity-100 transform translate-x-0"

@@ -17,7 +17,7 @@
             </nav>
 
             <!-- Main content that grows to fill the available space -->
-            <main class="container relative inset-0 flex-1 overflow-auto">
+            <main class="container relative inset-0 flex-1 overflow-auto p-6">
                 {{$slot}}
             </main>
 

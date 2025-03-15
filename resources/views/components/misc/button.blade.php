@@ -1,4 +1,3 @@
-
 @props([
     'color' => 'blue',
     'size' => 'md',
@@ -30,7 +29,7 @@
         'blue' => 'bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-500/70',
         'red' => 'bg-red-500 text-white hover:bg-red-600 disabled:bg-red-500/70',
         'green' => 'bg-green-500 text-white hover:bg-green-600 disabled:bg-green-500/70',
-        'yellow' => 'bg-yellow-500 text-white hover:bg-yellow-600 disabled:bg-yellow-500/70',
+        'yellow' => 'bg-amber-600 text-white hover:bg-amber-500 disabled:bg-amber-700/70',
         'purple' => 'bg-purple-500 text-white hover:bg-purple-600 disabled:bg-purple-500/70',
         'gray' => 'bg-gray-500 text-white hover:bg-gray-600 disabled:bg-gray-500/70'
     ];
@@ -50,42 +49,49 @@
     // Check if we have an Alpine click handler
     $hasAlpineClick = collect($attributes->getAttributes())
         ->keys()
-        ->contains(fn ($key) => str_starts_with($key, '@click'));
+        ->filter(fn ($key) => str_starts_with($key, '@click'))
+        ->first();
 @endphp
 
-<button x-data="{ loading: false }"
+<button
+    x-data="{ loading: false }"
     {{ $attributes->merge(['type' => $type, 'class' => $classes]) }}
     @if($hasLivewireAction)
         wire:loading.attr="disabled"
     wire:target="{{ $hasLivewireAction }}"
     @endif
+    @if($hasAlpineClick)
+        @if($hasAlpineClick === '@click')
+            @click="loading = true; $event.target.disabled = true; $dispatch('{{ $hasAlpineClick }}'); setTimeout(() => { loading = false; $event.target.disabled = false; }, 500)"
+@else
+    {{ $hasAlpineClick }}="loading = true; $event.target.disabled = true; $dispatch('{{ $hasAlpineClick }}'); setTimeout(() => { loading = false; $event.target.disabled = false; }, 500)"
+@endif
+@endif
 >
-    <span
-        class="inline-flex items-center gap-2"
-        @if($hasLivewireAction)
-            wire:loading.class="opacity-0"
-        wire:target="{{ $hasLivewireAction }}"
-        @endif
-        @if($hasAlpineClick)
-            x-bind:class="{ 'opacity-0': loading }"
-        @endif
-    >
+<span
+    class="inline-flex items-center gap-2"
+    @if($hasLivewireAction)
+        wire:loading.class="opacity-0"
+    wire:target="{{ $hasLivewireAction }}"
+    @endif
+    x-bind:class="{ 'opacity-0': loading }"
+>
         @if ($icon)
-            <span class="w-5 h-5 mr-2">
-                    {!! $icon !!}
-                </span>
-        @endif
+        <span class="w-5 h-5 mr-2">
+                {!! $icon !!}
+            </span>
+    @endif
 
-        {{ $slot }}
+    {{ $slot }}
     </span>
 
-    <span
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        @if($hasLivewireAction)
-            wire:loading.flex
-        wire:target="{{ $hasLivewireAction }}"
-        @else
-            hidden
+<span
+    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+    @if($hasLivewireAction)
+        wire:loading.flex
+    wire:target="{{ $hasLivewireAction }}"
+    @else
+        x-bind:class="{ 'flex': loading, 'hidden': !loading }"
         @endif
     >
         <svg class="w-4 h-4 animate-spin text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -1,8 +1,9 @@
 @props([
-    'table' => []
+    'table' => [],
+    'items'
 ])
 <x-tables.wrapper :table="$table">
-    @foreach($this->paginatedUserOverview as $user)
+    @foreach($this->{$items} as $user)
         <x-tables.table-row id="admin-user-management-{{ $user['id'] }}">
             {{-- Name --}}
             <x-tables.table-cell>

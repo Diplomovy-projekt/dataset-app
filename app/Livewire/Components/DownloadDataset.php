@@ -45,12 +45,8 @@ class DownloadDataset extends Component
     public function storeDownloadToken($token)
     {
         $this->token = $token;
-        Util::logStart("setting classes data");
         $this->setClassesData($this->getFromCache());
-        Util::logEnd("setting classes data");
-        Util::logStart("calculate stats");
         $this->calculateStats($this->classesData);
-        Util::logEnd("calculate stats");
     }
 
     public function render()

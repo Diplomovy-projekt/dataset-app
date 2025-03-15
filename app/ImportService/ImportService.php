@@ -98,7 +98,7 @@ class ImportService
             }
 
             // 6. Assign colors to classes
-            $this->datasetActions->assignColorsToClasses(datasetFolder: $requestData['parent_dataset_unique_name'] ?? $requestData['unique_name']);
+            $this->datasetActions->assignColorsToClasses(datasetFolder: $requestData['unique_name']);
 
             DB::commit();
             return Response::success(data: $savedToDb->data['dataset_id']);
@@ -137,6 +137,8 @@ class ImportService
                     'supercategory' => $class['superCategory'] ?? null,
                 ])->id;
             }
+            $this->datasetActions->assignColorsToClasses($classIds);
+
 
             // 3. Save Images and Annotations
             foreach ($imageData as $img) {

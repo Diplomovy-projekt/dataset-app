@@ -1,11 +1,37 @@
 <div
      x-data="datasetShow(@this)"
      class="container mx-auto pt-3">
+    @if(isset($requestId))
+        <div
+            class="relative w-full z-10 bg-yellow-500/10 text-slate-200 rounded-lg shadow-xl border border-amber-500 mb-3 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0">
+            <div
+                 class="flex items-center justify-between p-4">
+                <h3 class="font-bold text-lg flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    In Review Mode!
+                </h3>
+                <x-misc.button
+                    color="yellow"
+                    variant="primary"
+                    size="md"
+                    @click="$dispatch('init-resolve-request',{requestId: '{{ $requestId }}'});
+                         open = 'resolve-request'">
+                    Resolve
+                </x-misc.button>
+            </div>
+        </div>
+    @endif
 
     <livewire:forms.edit-dataset :key="'dataset-show-edit-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:forms.extend-dataset :key="'dataset-show-extend-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueName="$dataset['unique_name']"  />
     <livewire:components.download-dataset :key="'dataset-show-download-dataset'" :datasetId="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
+    <livewire:components.resolve-request :key="'resolve-request-component'" lazy/>
 
     <div class=" mb-5 bg-slate-900/50">
         <x-dataset.dataset-header></x-dataset.dataset-header>
@@ -13,58 +39,58 @@
             <x-search-bar searchTitle="Search Images..." searchModel="searchTerm" searchMethod="search" />
             <div class="flex">
                 <x-class-dropdown />
-                <x-dropdown-menu direction="left" class="w-50">
-                    @auth
-                        @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
-                            <x-dropdown-menu-item
-                                @click.prevent="open = 'extend-dataset'"
-                                :icon="@svg('eva-upload')->toHtml()">
-                                Extend Dataset
-                            </x-dropdown-menu-item>
+                @if(!isset($this->requestId))
+                    <x-dropdown-menu direction="left" class="w-50">
+                        @auth
+                            @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
+                                <x-dropdown-menu-item
+                                    @click.prevent="open = 'extend-dataset'"
+                                    :icon="@svg('eva-upload')->toHtml()">
+                                    Extend Dataset
+                                </x-dropdown-menu-item>
 
-                            <x-dropdown-menu-item
-                                @click.prevent.stop="open = 'edit-dataset'"
-                                :icon="@svg('eos-edit')->toHtml()">
-                                Edit Dataset info
-                            </x-dropdown-menu-item>
-                        @endif
-                    @endauth
-                    <x-dropdown-menu-item
-                        @click.prevent="open = 'display-classes'"
-                        :icon="@svg('o-tag')->toHtml()">
-                        Preview Classes
-                    </x-dropdown-menu-item>
+                                <x-dropdown-menu-item
+                                    @click.prevent.stop="open = 'edit-dataset'"
+                                    :icon="@svg('eos-edit')->toHtml()">
+                                    Edit Dataset info
+                                </x-dropdown-menu-item>
+                            @endif
+                        @endauth
+                        <x-dropdown-menu-item
+                            @click.prevent="open = 'display-classes'"
+                            :icon="@svg('o-tag')->toHtml()">
+                            Preview Classes
+                        </x-dropdown-menu-item>
 
-                    <x-dropdown-menu-item
-                        @click="$wire.cacheQuery('{{$dataset['id']}}'); open = 'download-dataset'"
-                        :icon="@svg('eva-download')->toHtml()">
-                        Download Dataset
-                    </x-dropdown-menu-item>
+                        <x-dropdown-menu-item
+                            @click="$wire.cacheQuery('{{$dataset['id']}}'); open = 'download-dataset'"
+                            :icon="@svg('eva-download')->toHtml()">
+                            Download Dataset
+                        </x-dropdown-menu-item>
 
-                    @auth
-                        @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
-                            <div class="border-t border-gray-300"></div>
+                        @auth
+                            @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
+                                <div class="border-t border-gray-300"></div>
 
-                            <x-dropdown-menu-item
-                                wire:click="deleteDataset({{ $dataset['id'] }})"
-                                wire:confirm="This will permanently delete the dataset"
-                                danger
-                                :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                                Delete Dataset
-                            </x-dropdown-menu-item>
+                                <x-dropdown-menu-item
+                                    wire:click="deleteDataset({{ $dataset['id'] }})"
+                                    wire:confirm="This will permanently delete the dataset"
+                                    danger
+                                    :icon="@svg('mdi-trash-can-outline')->toHtml()">
+                                    Delete Dataset
+                                </x-dropdown-menu-item>
 
-                            <x-dropdown-menu-item
-                                wire:click="deleteImages()"
-                                wire:confirm="Are you sure you want to delete these images?"
-                                danger
-                                :icon="@svg('mdi-trash-can-outline')->toHtml()">
-                                Delete Images
-                            </x-dropdown-menu-item>
-                        @endif
-                    @endauth
-                </x-dropdown-menu>
-
-
+                                <x-dropdown-menu-item
+                                    wire:click="deleteImages()"
+                                    wire:confirm="Are you sure you want to delete these images?"
+                                    danger
+                                    :icon="@svg('mdi-trash-can-outline')->toHtml()">
+                                    Delete Images
+                                </x-dropdown-menu-item>
+                            @endif
+                        @endauth
+                    </x-dropdown-menu>
+                @endif
             </div>
         </div>
     </div>
@@ -77,6 +103,8 @@
 <script>
     Alpine.data('datasetShow', (livewireComponent) =>({
         open: '',
+        showReviewPanel: false,
+        comment: '',
         init() {
         }
     }));

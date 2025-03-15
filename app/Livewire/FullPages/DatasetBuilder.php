@@ -105,7 +105,7 @@ class DatasetBuilder extends Component
     }
     public function render()
     {
-        /*$this->datasets = Dataset::with(['classes', 'metadataValues', 'categories'])
+        /*$this->datasets = Dataset::approved()->with(['classes', 'metadataValues', 'categories'])
             ->orderBy('id', 'desc')
             ->limit(2) // Get only the last two
             ->get();
@@ -165,7 +165,7 @@ class DatasetBuilder extends Component
     public function annotationTechniqueStage()
     {
         // Get ids of datasets that have the selected annotation technique polygon
-        $polygonDatasetIds = Dataset::where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
+        $polygonDatasetIds = Dataset::approved()->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
             ->pluck('id')
             ->all();
         $this->polygonDatasetsStats = QueryUtil::getDatasetCounts($polygonDatasetIds);
@@ -179,13 +179,13 @@ class DatasetBuilder extends Component
         // If selectedAnnotationTechnique is set to polygon, remove the categories  that are linked to datasets with no polygon annotations
         if ($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
             $this->categories = $this->categories->filter(function ($category) {
-                return Dataset::whereRelation('categories', 'category_id', $category->id)
+                return Dataset::approved()->whereRelation('categories', 'category_id', $category->id)
                     ->where('annotation_technique', 'Polygon')
                     ->exists();
             });
         }
         $this->categories = $this->categories->map(function ($category) {
-            $datasetUniqueName = Dataset::whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
+            $datasetUniqueName = Dataset::approved()->whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
             $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
             return [
                 'id' => $category->id,
@@ -229,7 +229,7 @@ class DatasetBuilder extends Component
             ->distinct()
             ->pluck('dataset_id');
         // Query datasets that have no metadata but belong to selected categories
-        $datasetsWithoutMetadata = Dataset::whereDoesntHave('metadataValues')
+        $datasetsWithoutMetadata = Dataset::approved()->whereDoesntHave('metadataValues')
             ->whereHas('categories', function ($query) {
                 $query->whereIn('category_id', $this->selectedCategories);
             })
@@ -237,7 +237,7 @@ class DatasetBuilder extends Component
         // Merge both sets of datasets
         $datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique();
 
-        $this->datasets = Dataset::whereIn('id', $datasetIds)
+        $this->datasets = Dataset::approved()->whereIn('id', $datasetIds)
             ->when($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'], function ($query) {
                 return $query->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON']);
             })

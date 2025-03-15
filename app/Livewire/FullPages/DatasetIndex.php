@@ -23,7 +23,7 @@ class DatasetIndex extends Component
 
     public function loadDatasets()
     {
-        $datasets = Dataset::with([
+        $datasets = Dataset::approved()->with([
             'images' => function ($query) {
                 $query->limit(1)->with(['annotations.class']);
             },
@@ -34,7 +34,6 @@ class DatasetIndex extends Component
                 $dataset->thumbnail = "placeholder-image.png";
                 continue;
             }
-            $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
             $dataset->images = $processedImage;
             $dataset->stats = $dataset->getStats();

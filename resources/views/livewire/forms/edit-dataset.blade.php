@@ -15,6 +15,9 @@
                 <div>
                     <input type="text" wire:model="displayName" class="mb-2 h-14 w-full border border-slate-900 bg-slate-800 rounded-md p-2" placeholder="Dataset Name">
                 </div>
+                @error('displayName')
+                <p class="text-red-500 text-sm">{{ $message }}</p>
+                @enderror
                 <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
                 {{-- Submit Button--}}
                 <x-misc.button

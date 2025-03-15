@@ -4,13 +4,15 @@ namespace App\Models;
 
 use App\Models\Scopes\DatasetVisibilityScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
-#[ScopedBy(DatasetVisibilityScope::class)]
+/*#[ScopedBy(DatasetVisibilityScope::class)]*/
 class Dataset extends Model
 {
     use HasFactory;
@@ -30,6 +32,15 @@ class Dataset extends Model
     protected $casts = [
         'is_public' => 'boolean',
     ];
+
+    public function scopeApproved(Builder $query): Builder
+    {
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            $query->where('is_public', true);
+        }
+
+        return $query->where('is_approved', true);
+    }
 
     public function user(): BelongsTo
     {
@@ -72,6 +83,7 @@ class Dataset extends Model
     {
         return $this->belongsToMany(MetadataValue::class, 'dataset_metadata');
     }
+
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'dataset_categories');

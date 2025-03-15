@@ -80,6 +80,13 @@
                                         </svg>
                                         My Datasets
                                     </a>
+                                    <a wire:navigate href="{{route('my.requests')}}"
+                                       class="group flex items-center gap-3 px-4 py-2 text-sm text-gray-200 hover:bg-slate-700">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                        My Requests
+                                    </a>
                                     <a wire:navigate href="{{route('profile.settings')}}"
                                        class="group flex items-center gap-3 px-4 py-2 text-sm text-gray-200 hover:bg-slate-700">
                                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,13 +123,6 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                             </svg>
                                             Dataset Management
-                                        </a>
-                                        <a wire:navigate href="{{route('admin.logs')}}"
-                                           class="group flex items-center gap-3 px-4 py-2 text-sm text-gray-200 hover:bg-slate-700">
-                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v18h14V3H5zm2 2h10v14H7V5zm2 2v10h6V7H9z"/>
-                                            </svg>
-                                            Activity Logs
                                         </a>
                                     </div>
                                 @endcan

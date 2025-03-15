@@ -25,11 +25,15 @@ class ActionRequest extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function dataset()
     {
-        return $this->belongsTo(Dataset::class);
+        return $this->belongsTo(Dataset::class, 'dataset_id');
+    }
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

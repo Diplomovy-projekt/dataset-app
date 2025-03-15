@@ -9,7 +9,10 @@ use App\Livewire\FullPages\AdminUsers;
 use App\Livewire\FullPages\DatasetBuilder;
 use App\Livewire\FullPages\DatasetIndex;
 use App\Livewire\FullPages\DatasetShow;
+use App\Livewire\FullPages\MyRequests;
 use App\Livewire\FullPages\Profile;
+use App\Livewire\FullPages\ReviewEditDataset;
+use App\Livewire\FullPages\ReviewReduceDataset;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -46,6 +49,17 @@ Route::post('/api/annotations', [AnnotationRendererController::class, 'getAnnota
 ////////////////////////////////////////////////////////////////////////////////
 Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
 Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
+// Review mode for admins
+Route::get('/dataset/{uniqueName}/review/{requestId}', DatasetShow::class)
+    ->middleware('admin')
+    ->name('dataset.review');
+Route::get('/review-edit/{requestId}', ReviewEditDataset::class)
+    ->middleware('admin')
+    ->name('dataset.review.edit');
+Route::get('/review-reduce/{requestId}', ReviewReduceDataset::class)
+    ->middleware('admin')
+    ->name('dataset.review.reduce');
+
 Route::get('/builder', DatasetBuilder::class)->name('builder');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +67,7 @@ Route::get('/builder', DatasetBuilder::class)->name('builder');
 ////////////////////////////////////////////////////////////////////////////////
 Route::middleware('auth')->group(function () {
     Route::get('/profile', Profile::class)->name('profile');
+    Route::get('/my-requests', MyRequests::class)->name('my.requests');
     Route::get('/profile/settings', function () {
         return view('profile-settings');
     })->name('profile.settings');

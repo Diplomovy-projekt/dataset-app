@@ -30,7 +30,7 @@ class Register extends Component
 
     private function canRender()
     {
-        $invitation = Invitation::where('token', $this->token)->first();
+        $invitation = Invitation::notExpired()->where('token', $this->token)->first();
         if(!$invitation || $invitation->used){
             abort(404);
         }

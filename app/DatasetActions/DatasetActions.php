@@ -21,19 +21,14 @@ class DatasetActions
 {
     use ImageProcessor;
 
-    public function deleteDataset($unique_name): Response
+    public function deleteDataset($unique_name): void
     {
         Gate::authorize('delete-dataset', $unique_name);
-        try {
-            $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $unique_name)->first();
-            $datasetPath = Util::getDatasetPath($dataset);
-            $dataset->delete();
-            if (Storage::exists($datasetPath)) {
-                Storage::delete($datasetPath);
-            }
-            return Response::success('Dataset deleted successfully');
-        } catch (\Exception $e) {
-            return Response::error($e->getMessage());
+        $dataset = Dataset::where('unique_name', $unique_name)->first();
+        $datasetPath = Util::getDatasetPath($dataset);
+        $dataset->delete();
+        if (Storage::exists($datasetPath)) {
+            Storage::delete($datasetPath);
         }
     }
 
@@ -41,7 +36,7 @@ class DatasetActions
     {
         Gate::authorize('delete-dataset', $uniqueName);
         try {
-            $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $uniqueName)->first();
+            $dataset = Dataset::where('unique_name', $uniqueName)->first();
             $datasetPath = Util::getDatasetPath($dataset);
             $images = $dataset->images()->whereIn('id', $ids)->get();
             foreach ($images as $image) {
@@ -77,14 +72,14 @@ class DatasetActions
      */
     public function mergeChildToParent($parentDataset, $childDataset): Response
     {
-        //DB::beginTransaction();
+        DB::beginTransaction();
         $childPath = Util::getDatasetPath($childDataset);
         $parentPath = Util::getDatasetPath($parentDataset);
         try {
-            $parent = Dataset::withoutGlobalScopes()->where('unique_name', $parentDataset)->first();
+            $parent = Dataset::where('unique_name', $parentDataset)->first();
             $parentClasses = $parent->classes()->get()->keyBy('name');
 
-            $child = Dataset::withoutGlobalScopes()->where('unique_name', $childDataset)->first();
+            $child = Dataset::where('unique_name', $childDataset)->first();
             $childImages = $child->images()->get();
             $childAnnotations = AnnotationData::whereIn('image_id', $childImages->pluck('id'))->get();
             $childClasses = $child->classes()->get()->keyBy('id');
@@ -139,18 +134,19 @@ class DatasetActions
                 }
             }
 
+            $this->assignColorsToClasses(datasetFolder: $parentDataset);
             $parent->updateImageCount(count($child->images));
             $parent->updateSize($childImages->pluck('size')->sum());
         } catch (\Exception $e) {
-            //DB::rollBack();
+            DB::rollBack();
             foreach ($childImages as $image) {
                 $fullImg = $parentPath . AppConfig::FULL_IMG_FOLDER . $image['filename'];
                 $thumbnail = $parentPath . AppConfig::IMG_THUMB_FOLDER . $image['filename'];
-                if(Storage::disk('storage')->exists($fullImg)){
-                    Storage::disk('storage')->delete($fullImg);
+                if(Storage::exists($fullImg)){
+                    Storage::delete($fullImg);
                 }
-                if(Storage::disk('storage')->exists($thumbnail)){
-                    Storage::disk('storage')->delete($thumbnail);
+                if(Storage::exists($thumbnail)){
+                    Storage::delete($thumbnail);
                 }
             }
             return Response::error($e->getMessage());
@@ -159,14 +155,14 @@ class DatasetActions
             if(!Storage::deleteDirectory($childPath)) {
                 throw new \Exception("Failed to delete child dataset folder");
             }
-            //DB::commit();
+            DB::commit();
             return Response::success('Datasets merged successfully');
         }
     }
 
     public function createSamplesForClasses(string $datasetFolder, array $classesToSample, array $newImages): Response
     {
-        $dataset = Dataset::withoutGlobalScopes()->where('unique_name', $datasetFolder)->firstOrFail();
+        $dataset = Dataset::where('unique_name', $datasetFolder)->firstOrFail();
         $batchSize = max(ceil(count($newImages) * 0.1), 10); // 10% of new images or at least 10
         $classCounts = [];
 
@@ -269,7 +265,7 @@ class DatasetActions
             return Response::error("Failed to move dataset");
         }
 
-        Dataset::withoutGlobalScopes()->where('unique_name', $uniqueName)->update(['is_public' => $targetVisibility === 'public']);
+        Dataset::where('unique_name', $uniqueName)->update(['is_public' => $targetVisibility === 'public']);
 
         return Response::success("Dataset moved to $targetVisibility");
     }

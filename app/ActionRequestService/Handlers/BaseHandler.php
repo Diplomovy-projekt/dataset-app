@@ -6,6 +6,7 @@ use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
 use App\DatasetActions\DatasetActions;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Model;
 
 abstract class BaseHandler implements ActionRequestHandlerInterface
 {
@@ -41,4 +42,5 @@ abstract class BaseHandler implements ActionRequestHandlerInterface
 
     abstract public function approve(array $payload): void;
     abstract protected function validationRules(): array;
+    abstract public function reviewChanges(Model $request): mixed;
 }

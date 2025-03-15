@@ -1,8 +1,11 @@
 <div x-data="datasetManagement(@this)" class="p-6">
 
+    {{-- Livewire component modals --}}
+    <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
     <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
+    <livewire:components.resolve-request :key="'resolve-request-component'" />
 
     <!-- Header Section -->
     <x-misc.header title="Dataset Management"/>
@@ -18,7 +21,6 @@
                     </div>
                     <h2 class="text-xl font-bold text-gray-200">Datasets</h2>
                 </div>
-                <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
                 <button @click.prevent="open = 'uploadDataset'"
                         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                     <div class="flex items-center gap-2">

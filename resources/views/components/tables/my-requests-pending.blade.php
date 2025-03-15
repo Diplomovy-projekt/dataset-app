@@ -18,11 +18,6 @@
                 </div>
             </x-tables.table-cell>
 
-            {{-- Requested By --}}
-            <x-tables.table-cell>
-                <span class="text-gray-200">{{ $request['user']['email'] }}</span>
-            </x-tables.table-cell>
-
             {{-- Type --}}
             <x-tables.table-cell>
                 @php
@@ -58,20 +53,12 @@
             {{-- Action buttons --}}
             <x-tables.table-cell>
                 <div
-                     class="flex items-center gap-3">
+                    class="flex items-center gap-3">
                     <x-misc.button
-                        wire:click="reviewRequest({{ $request['id'] }})"
-                        color="blue"
+                        wire:click="cancelRequest({{ $request['id'] }})"
+                        color="red"
                         size="sm">
-                        Review
-                    </x-misc.button>
-                    <x-misc.button
-                        @click="$dispatch('init-resolve-request',{requestId: '{{ $request['id'] }}'});
-                                open = 'resolve-request'"
-                        color="blue"
-                        variant="primary"
-                        size="sm">
-                        Resolve
+                        Cancel
                     </x-misc.button>
                 </div>
             </x-tables.table-cell>

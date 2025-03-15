@@ -32,6 +32,9 @@
                         />
                     @endforeach
                 </div>
+                @error('categories')
+                <p class="text-red-500 text-sm">{{ $message }}</p>
+                @enderror
             </div>
         </div>
     </div>

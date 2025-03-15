@@ -22,7 +22,7 @@ class DatasetVisibilityScope implements Scope
             $builder->where('is_public', true);
         }
 
-        //$builder->where('is_approved', true);
+        $builder->where('is_approved', true);
     }
 
 }

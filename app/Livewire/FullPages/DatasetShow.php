@@ -2,12 +2,15 @@
 
 namespace App\Livewire\FullPages;
 
+use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
 use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
+use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Models\Scopes\DatasetVisibilityScope;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -16,21 +19,26 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
     use WithPagination, ImageRendering;
+    #[Locked]
     public $uniqueName;
     public $dataset;
     public $searchTerm;
     public Collection $metadata;
     public Collection $categories;
     public array $toggleClasses;
+    #[Locked]
     public string $modalStyle;
     public array $selectedImages = [];
     public int $perPage = 25;
+    #[Locked]
+    public int $requestId;
 
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
@@ -40,13 +48,28 @@ class DatasetShow extends Component
         return $preparedImages;
     }
 
-    public function mount()
+    public function mount($uniqueName, $requestId = null)
     {
-        $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
+        $query = Dataset::query();
+         if (!isset($this->requestId)) {
+            $query->approved();
+        }
+        else{
+            $request = ActionRequest::where('id', $this->requestId)->where('status', 'pending')->first();
+            if(!$request){
+                abort(404);
+            }
+        }
+
+        $dataset = $query->where('unique_name', $this->uniqueName)->with(['classes'])->first();
         if (!$dataset) {
             return redirect()->route('dataset.index');
         }
+        $this->initProperties($dataset);
+    }
 
+    public function initProperties($dataset)
+    {
         $dataset->stats = $dataset->getStats();
         $datasetPath = Util::getDatasetPath($dataset);
         foreach ($dataset->classes as $class) {
@@ -75,6 +98,7 @@ class DatasetShow extends Component
         $this->searchTerm = trim($this->searchTerm);
         unset($this->paginatedImages);
     }
+
     private function fetchImages()
     {
         if ($this->searchTerm) {
@@ -84,46 +108,51 @@ class DatasetShow extends Component
             return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
         }
     }
+
     public function deleteDataset(DatasetActions $datasetService): void
     {
-        $result = $datasetService->deleteDataset($this->uniqueName);
+        $payload = ['dataset_unique_name' => $this->uniqueName,
+                    'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id
+            ];
+        $result = app(ActionRequestService::class)->createRequest('delete', $payload);
         if($result->isSuccessful()){
-            redirect()->route('profile');
+            if($result->data['isAdmin']) {
+                $this->redirectRoute('dataset.index');
+            } else {
+                $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
+            }
+        } else {
+            $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
         }
     }
 
     public function deleteImages(DatasetActions $datasetService)
     {
-        $result = $datasetService->deleteImages($this->uniqueName, $this->selectedImages);
+        $payload = ['dataset_unique_name' => $this->uniqueName,
+            'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id,
+            'image_ids' => $this->selectedImages
+        ];
+        $result = app(ActionRequestService::class)->createRequest('reduce', $payload);
         if($result->isSuccessful()){
-            $this->mount();
-            unset($this->paginatedImages);
-            $this->dispatch('flash-msg',
-                type: 'success',
-                message: 'Images deleted successfully',
-            );
-        }
-        else {
-            $this->dispatch('flash-msg',
-                type: 'error',
-                message: $result->message,
-            );
+            if($result->data['isAdmin']) {
+                unset($this->paginatedImages);
+            } else {
+                $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
+            }
+        } else {
+            $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
         }
     }
 
     public function cacheQuery($id)
     {
-        Util::logStart("dataset show CACHE QUERY");
         $query = Image::where('dataset_id', $id)->with('annotations.class');
         $payload['query'] = \EloquentSerialize::serialize($query);
         $payload['datasets'] = [$id];
 
         $token = Str::random(32);
         Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
-        Util::logEnd("dataset show CACHE QUERY");
-        Util::logStart("dataset show DISPATCH");
         $this->dispatch('store-download-token', token: $token);
-        Util::logEnd("dataset show DISPATCH");
     }
 
 }
