@@ -17,7 +17,9 @@ class ExportService
         try {
             $datasetFolder = uniqid('custom_dataset_build_');
             $mapper = ExportComponentFactory::createMapper($format);
-
+            if($mapper instanceof Response) {
+                throw new \Exception('Invalid export format');
+            }
             //1. Create and map the dataset folder
             $mapper->handle($images, $datasetFolder, $annotationTechnique);
 

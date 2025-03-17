@@ -34,7 +34,7 @@ abstract class BaseMapper
             // Create symbolic link using PHP's native symlink function
             if (File::exists($source)) {
                 if (File::link($source, $destination)) {
-                    throw new Exception("Failed to link image: $source");
+                    throw new Exception("Failed to link image... \nFrom: $source \nTo: $destination");
                 }
             } else {
                 throw new Exception("Image not found: $source");

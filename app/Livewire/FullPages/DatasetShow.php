@@ -45,8 +45,10 @@ class DatasetShow extends Component
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
     {
+        Util::logStart("paginatedImages");
         $images = $this->fetchImages();
         $preparedImages = $this->prepareImagesForSvgRendering($images);
+        Util::logEnd("paginatedImages");
         return $preparedImages;
     }
 

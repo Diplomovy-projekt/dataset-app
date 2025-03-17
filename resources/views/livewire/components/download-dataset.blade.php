@@ -121,38 +121,81 @@
 
             <x-misc.header title="Settings"></x-misc.header>
 
-            <div class="bg-slate-800 rounded-lg border border-slate-700 p-3">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <!-- Min Annotations Slider -->
+            <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <!-- Min Annotations Control -->
                     <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-sm text-gray-300">Min annotations: <span class="text-blue-400 font-medium">{{$minAnnotations}}</span></label>
-                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalClassesData, 'count')) }}-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm text-gray-300">Min annotations</label>
+                            <span class="text-xs text-slate-500">Range: 1-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
                         </div>
-                        <input
-                            type="range"
-                            min="{{ min(array_column($this->originalClassesData, 'count')) }}"
-                            max="{{ max(array_column($this->originalClassesData, 'count')) }}"
-                            wire:model.live="minAnnotations"
-                            class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer"
-                        />
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="relative flex-1">
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="{{ max(array_column($this->originalClassesData, 'count')) }}"
+                                    wire:model.live="minAnnotations"
+                                    class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer"
+                                />
+                                <div class="absolute w-full flex justify-between text-xs text-slate-500 px-1 mt-1">
+                                    <span>1</span>
+                                    <span>{{ max(array_column($this->originalClassesData, 'count')) }}</span>
+                                </div>
+                            </div>
+                            <div class="w-16">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="{{ max(array_column($this->originalClassesData, 'count')) }}"
+                                    wire:model.live="minAnnotations"
+                                    class="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1 text-sm text-blue-400 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Max Annotations Slider -->
+                    <!-- Max Annotations Control -->
                     <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-sm text-gray-300">Max annotations: <span class="text-green-400 font-medium">{{$maxAnnotations}}</span></label>
-                            <span class="text-xs text-slate-500">{{ min(array_column($this->originalClassesData, 'count')) }}-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm text-gray-300">Max annotations</label>
+                            <span class="text-xs text-slate-500">Range: 1-{{ max(array_column($this->originalClassesData, 'count')) }}</span>
                         </div>
-                        <input
-                            type="range"
-                            min="{{ min(array_column($this->originalClassesData, 'count')) }}"
-                            max="{{ max(array_column($this->originalClassesData, 'count')) }}"
-                            wire:model.live="maxAnnotations"
-                            class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green-500 [&::-moz-range-thumb]:cursor-pointer"
-                        />
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="relative flex-1">
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="{{ max(array_column($this->originalClassesData, 'count')) }}"
+                                    wire:model.live="maxAnnotations"
+                                    class="w-full h-1 appearance-none bg-slate-700 rounded focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green-500 [&::-moz-range-thumb]:cursor-pointer"
+                                />
+                                <div class="absolute w-full flex justify-between text-xs text-slate-500 px-1 mt-1">
+                                    <span>1</span>
+                                    <span>{{ max(array_column($this->originalClassesData, 'count')) }}</span>
+                                </div>
+                            </div>
+                            <div class="w-16">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="{{ max(array_column($this->originalClassesData, 'count')) }}"
+                                    wire:model.live="maxAnnotations"
+                                    class="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1 text-sm text-green-400 font-medium focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Simple validation message using standard Livewire -->
+                @if($minAnnotations > $maxAnnotations)
+                    <div class="mt-4">
+                        <div class="text-red-400 text-xs">
+                            Min annotations cannot be greater than max annotations.
+                        </div>
+                    </div>
+                @endif
             </div>
 
 

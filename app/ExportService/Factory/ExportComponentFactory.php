@@ -13,7 +13,7 @@ class ExportComponentFactory
 
     public static function createMapper(string $format): object
     {
-        return self::instantiateClass($format, 'To', 'mapper');
+        return self::instantiateClass('To' . ucfirst(strtolower($format)), '', 'mapper');
     }
 
     public static function createConfig(string $format): object

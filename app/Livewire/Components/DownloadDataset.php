@@ -77,7 +77,7 @@ class DownloadDataset extends Component
     public function download()
     {
         $this->validate();
-        if ($this->locked) {
+        if ($this->locked || ($this->minAnnotations > $this->maxAnnotations)) {
             return;
         }
         $this->failedDownload = null;
