@@ -114,7 +114,6 @@
                         'fileChunk',
                         chunkFile,
                         (resolve) => {
-                            $wire.$set('lockUpload', false, true);
                         },
                         (error) => {
                             $wire.$set('lockUpload', false);
