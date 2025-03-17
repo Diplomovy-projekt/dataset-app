@@ -8,6 +8,7 @@ use App\ImportService\ImportService;
 use App\Models\Dataset;
 use App\ActionRequestService\ActionRequestService;
 use App\Traits\DatasetImportHelper;
+use App\Traits\LivewireActions;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,7 +16,7 @@ use Livewire\WithFileUploads;
 
 class ExtendDataset extends Component
 {
-    use WithFileUploads, DatasetImportHelper;
+    use WithFileUploads, DatasetImportHelper, LivewireActions;
 
     public $errors;
     public $lockUpload = false;
@@ -90,15 +91,7 @@ class ExtendDataset extends Component
                 'child_unique_name' => $payload['unique_name']
             ];
             $result = app(ActionRequestService::class)->createRequest('extend', $actionPayload);
-            if($result->isSuccessful()){
-                if($result->data['isAdmin']) {
-                    $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
-                } else {
-                    $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
-                }
-            } else {
-                $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
-            }
+            $this->handleResponse($result);
         } else {
             $this->errors['data'] = $this->normalizeErrors($result->data);
             $this->errors['message'] = $result->message;

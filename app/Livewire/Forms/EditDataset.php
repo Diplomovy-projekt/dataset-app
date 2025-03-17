@@ -8,7 +8,11 @@ use App\Models\ActionRequest;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
+use App\Traits\LivewireActions;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -17,6 +21,7 @@ use Livewire\Component;
 /*#[Lazy(isolate: false)]*/
 class EditDataset extends Component
 {
+    use LivewireActions;
     public $editingDataset;
     public $metadataTypes;
     public $categories;
@@ -55,31 +60,10 @@ class EditDataset extends Component
     {
         Gate::authorize('update-dataset', $this->editingDataset->unique_name);
         $this->displayName = trim($this->displayName);
-        $this->validate();
-        try {
-            $payload = $this->buildPayload();
+        $payload = $this->buildPayload();
 
-            if (!$this->hasChanges($payload)) {
-                $this->dispatch('flash-msg', type: 'error', message: 'No changes detected.');
-                return;
-            }
-
-            $result = $actionRequestService->createRequest('edit', $payload);
-            if($result->isSuccessful()){
-                if($result->data['isAdmin']) {
-                    $this->dispatch('refresh');
-                } else {
-                    $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
-                }
-            } else {
-                $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
-            }
-        } catch (\Exception $e) {
-            $this->dispatch('flash-msg',
-                type: 'error',
-                message: 'Failed to update dataset. Please try again.'
-            );
-        }
+        $result = $actionRequestService->createRequest('edit', $payload);
+        $this->handleResponse($result);
     }
 
     private function populateFormFields()

@@ -3,7 +3,7 @@
     'items'
 ])
 <x-tables.wrapper :table="$table">
-    @foreach($this->{$items} as $request)
+    @foreach($this->{$items} as $invite)
         <x-tables.table-row id="admin-user-management-expired-{{ $invite['id'] }}">
             {{-- Invited email --}}
             <x-tables.table-cell>

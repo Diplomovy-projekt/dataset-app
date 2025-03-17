@@ -25,13 +25,22 @@
         'gray' => 'bg-gray-500/10 text-gray-400 hover:bg-gray-500/20 disabled:bg-gray-500/10'
     ];
 
-    $primaryColors = [
+    /*$primaryColors = [
         'blue' => 'bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-500/70',
         'red' => 'bg-red-500 text-white hover:bg-red-600 disabled:bg-red-500/70',
         'green' => 'bg-green-500 text-white hover:bg-green-600 disabled:bg-green-500/70',
         'yellow' => 'bg-amber-600 text-white hover:bg-amber-500 disabled:bg-amber-700/70',
         'purple' => 'bg-purple-500 text-white hover:bg-purple-600 disabled:bg-purple-500/70',
         'gray' => 'bg-gray-500 text-white hover:bg-gray-600 disabled:bg-gray-500/70'
+    ];*/
+
+    $primaryColors = [
+        'blue' => 'bg-blue-600 text-blue-100 hover:bg-blue-500 disabled:bg-blue-700/70 border border-blue-400/30',
+        'red' => 'bg-red-700 text-red-100 hover:bg-red-600 disabled:bg-red-800/70 border border-red-500/30',
+        'green' => 'bg-emerald-700 text-emerald-100 hover:bg-emerald-600 disabled:bg-emerald-800/70 border border-emerald-500/30',
+        'yellow' => 'bg-amber-700 text-amber-100 hover:bg-amber-600 disabled:bg-amber-800/70 border border-amber-500/30',
+        'purple' => 'bg-purple-700 text-purple-100 hover:bg-purple-600 disabled:bg-purple-800/70 border border-purple-500/30',
+        'gray' => 'bg-slate-700 text-slate-100 hover:bg-slate-600 disabled:bg-slate-800/70 border border-slate-500/30'
     ];
 
     $colorClasses = $variant === 'primary'

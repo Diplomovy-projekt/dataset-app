@@ -29,9 +29,24 @@ class NewDatasetHandler extends BaseHandler
         $this->datasetActions->moveDatasetTo($payload['dataset_unique_name'], 'public');
     }
 
+    public function reject(array $payload): void
+    {
+        $this->datasetActions->deleteDataset($payload['dataset_unique_name']);
+    }
+
     public function reviewChanges(Model $request): mixed
     {
         $uniqueName = $request->dataset()->first()->unique_name;
-        return Redirect::route('dataset.review', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+        return Redirect::route('dataset.review.new', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
     }
+
+    public function adminResponse(Model $request): mixed
+    {
+        return ['route' => 'dataset.show', 'params' => ['uniqueName' => $request->dataset->unique_name]];
+    }
+    public function errorResponse(string $errorMessage): mixed
+    {
+        return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
+    }
+
 }

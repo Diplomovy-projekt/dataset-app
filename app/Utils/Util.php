@@ -146,6 +146,4 @@ class Util
             'max' => (int)$stats->max_width . 'x' . (int)$stats->max_height,
         ];
     }
-
-
 }

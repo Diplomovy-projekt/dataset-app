@@ -11,11 +11,13 @@ use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Models\Image;
 use App\Models\Scopes\DatasetVisibilityScope;
+use App\Traits\LivewireActions;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -25,7 +27,7 @@ use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
-    use WithPagination, ImageRendering;
+    use WithPagination, ImageRendering, LivewireActions;
     #[Locked]
     public $uniqueName;
     public $dataset;
@@ -38,7 +40,7 @@ class DatasetShow extends Component
     public array $selectedImages = [];
     public int $perPage = 25;
     #[Locked]
-    public int $requestId;
+    public array $request;
 
     #[Computed(persist: true, seconds: 900)]
     public function paginatedImages()
@@ -51,11 +53,15 @@ class DatasetShow extends Component
     public function mount($uniqueName, $requestId = null)
     {
         $query = Dataset::query();
-         if (!isset($this->requestId)) {
+        $this->request = [
+            'id' => $requestId,
+            'route' => Route::currentRouteName()
+        ];
+         if (!isset($requestId)) {
             $query->approved();
         }
         else{
-            $request = ActionRequest::where('id', $this->requestId)->where('status', 'pending')->first();
+            $request = ActionRequest::where('id', $requestId)->where('status', 'pending')->first();
             if(!$request){
                 abort(404);
             }
@@ -76,6 +82,7 @@ class DatasetShow extends Component
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
                 ->first();
             $class->image = [
+                'dataset' => $dataset->unique_name,
                 'filename' => pathinfo($firstFile, PATHINFO_BASENAME),
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
             ];
@@ -115,15 +122,7 @@ class DatasetShow extends Component
                     'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id
             ];
         $result = app(ActionRequestService::class)->createRequest('delete', $payload);
-        if($result->isSuccessful()){
-            if($result->data['isAdmin']) {
-                $this->redirectRoute('dataset.index');
-            } else {
-                $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
-            }
-        } else {
-            $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
-        }
+        $this->handleResponse($result);
     }
 
     public function deleteImages(DatasetActions $datasetService)
@@ -133,15 +132,7 @@ class DatasetShow extends Component
             'image_ids' => $this->selectedImages
         ];
         $result = app(ActionRequestService::class)->createRequest('reduce', $payload);
-        if($result->isSuccessful()){
-            if($result->data['isAdmin']) {
-                unset($this->paginatedImages);
-            } else {
-                $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
-            }
-        } else {
-            $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
-        }
+        $this->handleResponse($result);
     }
 
     public function cacheQuery($id)

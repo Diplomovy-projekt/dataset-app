@@ -7,6 +7,7 @@ use App\Models\Dataset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -16,9 +17,9 @@ class EditDatasetHandler extends BaseHandler
     {
         return [
             'dataset_unique_name' => 'required|exists:datasets,unique_name',
-            'display_name' => 'sometimes|string|max:255',
+            'display_name' => 'required|string|max:255',
             'description' => 'sometimes|string|nullable',
-            'categories' => 'sometimes|array|nullable',
+            'categories' => 'required|array|nullable',
             'categories.*' => 'exists:categories,id',
             'metadata' => 'sometimes|array|nullable',
             'metadata.*' => 'exists:metadata_values,id',
@@ -53,5 +54,18 @@ class EditDatasetHandler extends BaseHandler
     public function reviewChanges(Model $request): mixed
     {
         return Redirect::route('dataset.review.edit', ['requestId' => $request->id]);
+    }
+    public function adminResponse(Model $request): mixed
+    {
+        $currentRoute = URL::livewireCurrent(true);
+        $adminDatasetRoute = route('admin.datasets');
+        if($currentRoute === $adminDatasetRoute) {
+            return ['action' => 'refreshComputed', 'type' => 'success', 'message' => 'Dataset info updated successfully'];
+        }
+        return ['action' => 'refresh'];
+    }
+    public function errorResponse(string $errorMessage): mixed
+    {
+        return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }
 }

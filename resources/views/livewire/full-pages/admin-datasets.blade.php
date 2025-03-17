@@ -1,9 +1,9 @@
 <div x-data="datasetManagement(@this)" class="p-6">
 
     {{-- Livewire component modals --}}
-    <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
     <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
+    <livewire:forms.upload-dataset :key="'admin-datasets-upload-new-dataset'"/>
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
     <livewire:components.resolve-request :key="'resolve-request-component'" />
 

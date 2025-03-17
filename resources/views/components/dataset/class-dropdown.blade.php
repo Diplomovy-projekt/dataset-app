@@ -62,7 +62,7 @@
                     <div class="flex items-center gap-1">
                         <!-- Class Image -->
                         <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
-                            <x-images.img dataset="{{ $this->dataset['unique_name'] }}"
+                            <x-images.img dataset="{{ $classItem['image']['dataset'] }}"
                                           folder="{{ $classItem['image']['folder'] }}"
                                           filename="{{ $classItem['image']['filename'] }}"
                                           id="{{ $classItem['image']['filename'] }}"
@@ -115,7 +115,7 @@
         activeSearch: '',
 
         init() {
-            this.classes = wire.get('dataset.classes') || [];
+            this.classes = wire.get('toggleClasses') || [];
             if (typeof this.classes === 'object') {
                 this.classes = Object.values(this.classes);
             }

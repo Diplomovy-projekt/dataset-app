@@ -58,14 +58,17 @@ class AdminDashboard extends Component
     public function saveType($name, $id = null, $description = ''): void
     {
         try {
-            MetadataType::updateOrCreate(
-                ['id' => $id],
-                ['name' => $name, 'description' => $description]
-            );
+            $type = MetadataType::find($id);
 
-            $this->setMetadata();
+            if (!$type || $type->name !== $name || $type->description !== $description) {
+                MetadataType::updateOrCreate(
+                    ['id' => $id],
+                    ['name' => $name, 'description' => $description]
+                );
 
-            $this->dispatch('flash-msg', type: 'success', message: 'Type saved successfully');
+                $this->setMetadata();
+                $this->dispatch('flash-msg', type: 'success', message: 'Type saved successfully');
+            }
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to save type');
         }
@@ -74,18 +77,24 @@ class AdminDashboard extends Component
     public function saveValue($typeId, $value, $valueId = null, $description = ''): void
     {
         try {
-            MetadataValue::updateOrCreate(
-                ['id' => $valueId],
-                ['metadata_type_id' => $typeId, 'value' => $value, 'description' => $description]
-            );
+            $metadataValue = MetadataValue::find($valueId);
 
-            $this->setMetadata();
+            if (!$metadataValue || $metadataValue->metadata_type_id !== $typeId ||
+                $metadataValue->value !== $value || $metadataValue->description !== $description) {
 
-            $this->dispatch('flash-msg', type: 'success', message: 'Value saved successfully');
+                MetadataValue::updateOrCreate(
+                    ['id' => $valueId],
+                    ['metadata_type_id' => $typeId, 'value' => $value, 'description' => $description]
+                );
+
+                $this->setMetadata();
+                $this->dispatch('flash-msg', type: 'success', message: 'Value saved successfully');
+            }
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to save value');
         }
     }
+
 
     public function deleteType($id): void
     {
@@ -113,18 +122,22 @@ class AdminDashboard extends Component
     public function saveCategory($name, $id = null): void
     {
         try {
-            Category::updateOrCreate(
-                ['id' => $id],
-                ['name' => $name]
-            );
+            $category = Category::find($id);
 
-            $this->categories = Category::get()->toArray();
+            if (!$category || $category->name !== $name) {
+                Category::updateOrCreate(
+                    ['id' => $id],
+                    ['name' => $name]
+                );
 
-            $this->dispatch('flash-msg', type: 'success', message: 'Category saved successfully');
+                $this->categories = Category::get()->toArray();
+                $this->dispatch('flash-msg', type: 'success', message: 'Category saved successfully');
+            }
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to save category');
         }
     }
+
 
     public function deleteCategory($id): void
     {

@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Models\Image;
 use App\Models\Scopes\DatasetVisibilityScope;
 use App\Models\User;
+use App\Traits\LivewireActions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 class AdminDatasets extends Component
 {
-    use WithPagination;
+    use WithPagination, LivewireActions;
     private array $tableIds = ['dataset-overview', 'pending-requests', 'resolved-requests'];
     public array $tables = [];
 
@@ -30,6 +31,7 @@ class AdminDatasets extends Component
     public function paginatedDatasetOverview()
     {
         $d = Dataset::query()
+            ->approved()
             ->select('datasets.*')
             ->with(['categories:id,name', 'user:id,email,name'])
             ->leftJoin('users', 'datasets.user_id', '=', 'users.id')
@@ -111,15 +113,7 @@ class AdminDatasets extends Component
                     'dataset_id' => Dataset::where('unique_name', $uniqueName)->first()->id
         ];
         $result = app(ActionRequestService::class)->createRequest('delete', $payload);
-        if($result->isSuccessful()){
-            if($result->data['isAdmin']) {
-                $this->redirectRoute('dataset.index');
-            } else {
-                $this->dispatch('flash-msg',type: 'success',message: 'Request submitted successfully');
-            }
-        } else {
-            $this->dispatch('flash-msg',type: 'error',message: 'Failed to submit request');
-        }
+        $this->handleResponse($result);
     }
 
     public function changeOwner($id, $newOwnerId)

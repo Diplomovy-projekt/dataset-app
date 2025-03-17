@@ -1,31 +1,8 @@
 <div
      x-data="datasetShow(@this)"
      class="container mx-auto pt-3">
-    @if(isset($requestId))
-        <div
-            class="relative w-full z-10 bg-yellow-500/10 text-slate-200 rounded-lg shadow-xl border border-amber-500 mb-3 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 transform translate-y-2"
-            x-transition:enter-end="opacity-100 transform translate-y-0">
-            <div
-                 class="flex items-center justify-between p-4">
-                <h3 class="font-bold text-lg flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    In Review Mode!
-                </h3>
-                <x-misc.button
-                    color="yellow"
-                    variant="primary"
-                    size="md"
-                    @click="$dispatch('init-resolve-request',{requestId: '{{ $requestId }}'});
-                         open = 'resolve-request'">
-                    Resolve
-                </x-misc.button>
-            </div>
-        </div>
-    @endif
+
+    <x-dataset.wrapper-highlight-card :name="$this->request['route']"/>
 
     <livewire:forms.edit-dataset :key="'dataset-show-edit-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:forms.extend-dataset :key="'dataset-show-extend-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
@@ -38,7 +15,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar searchTitle="Search Images..." searchModel="searchTerm" searchMethod="search" />
             <div class="flex">
-                <x-class-dropdown />
+                <x-dataset.class-dropdown />
                 @if(!isset($this->requestId))
                     <x-dropdown-menu direction="left" class="w-50">
                         @auth

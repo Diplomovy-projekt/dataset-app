@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 class ActionRequestService
 {
     private $requestTypes = ['new', 'extend', 'edit', 'reduce', 'delete'];
+
     /**
      * Create an action request for a dataset
      *
@@ -23,11 +24,11 @@ class ActionRequestService
      * @throws \InvalidArgumentException
      * @throws ValidationException
      */
-    public function createRequest(string $type, array $payload = []): Response
+    public function createRequest(string $type, array $payload = []): mixed
     {
         try {
             if (!in_array($type, $this->requestTypes)) {
-                throw new \InvalidArgumentException("Invalid action request type: {$type}");
+                throw new \Exception("Invalid action request type: {$type}");
             }
 
             // Validate payload based on type
@@ -36,21 +37,29 @@ class ActionRequestService
 
             $user = Auth::user();
 
+            $result = $this->sameRequestExists($type, $payload);
+            if ($result) {
+                throw new \Exception("A similar request already exists");
+            }
             $request = ActionRequest::create([
                 'user_id' => $user->id,
                 'dataset_id' => $payload['dataset_id'],
                 'type' => $type,
                 'payload' => json_encode($payload),
-                'reviewed_by' => $user->isAdmin() ? $user->id : null
             ]);
 
+            // TODO change back to auto-approve
             if (!$user->isAdmin()) {
                 $this->resolveRequest($request, 'approved', 'Auto-approved by system');
             }
 
-            return Response::success(data: ['isAdmin' => $user->isAdmin()]);
-        } catch (\Throwable $e) {
-            return Response::error($e->getMessage());
+            if ($user->isAdmin()) {
+                return $handler->adminResponse($request);
+            } else {
+                return $handler->userResponse($request);
+            }
+        } catch (\Exception $e) {
+            return $handler->errorResponse($e->getMessage());
         }
     }
 
@@ -62,12 +71,12 @@ class ActionRequestService
      * @param string|null $comment
      * @return ActionRequest
      */
-    public function resolveRequest(ActionRequest $request, string $status, ?string $comment = null): Response
+    public function resolveRequest(ActionRequest $request, string $status, ?string $comment = null): mixed
     {
         $user = Auth::user();
 
         try {
-            if(!in_array($status, ['approve', 'reject'])) {
+            if (!in_array($status, ['approve', 'reject'])) {
                 throw new \InvalidArgumentException("Invalid status: {$status}");
             }
             $handler = $this->getHandler($request);
@@ -80,9 +89,9 @@ class ActionRequestService
             $request->comment = $comment;
             $request->save();
 
-            return Response::success();
+            return $handler->resolveResponse($request);
         } catch (\Exception $e) {
-            return Response::error($e->getMessage());
+            return $handler->errorResponse($e->getMessage());
         }
     }
 
@@ -92,14 +101,18 @@ class ActionRequestService
         return $handler->reviewChanges($request);
     }
 
-    /**
-     * Get the handler for the given action request.
-     *
-     * @param ActionRequest $request
-     * @return ActionRequestHandlerInterface
-     */
+
     private function getHandler(ActionRequest $request): ActionRequestHandlerInterface
     {
         return ActionRequestFactory::createHandler($request->type);
+    }
+
+    private function sameRequestExists(string $type, array $payload): bool
+    {
+        // Find request with same type and check each payload
+        return ActionRequest::where('type', $type)
+            ->where('status', 'pending')
+            ->where('payload', json_encode($payload))
+            ->exists();
     }
 }

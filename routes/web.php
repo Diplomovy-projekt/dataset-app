@@ -49,18 +49,28 @@ Route::post('/api/annotations', [AnnotationRendererController::class, 'getAnnota
 ////////////////////////////////////////////////////////////////////////////////
 Route::get('/datasets', DatasetIndex::class)->name('dataset.index');
 Route::get('/dataset/{uniqueName}', DatasetShow::class)->name('dataset.show');
+Route::get('/builder', DatasetBuilder::class)->name('builder');
 // Review mode for admins
-Route::get('/dataset/{uniqueName}/review/{requestId}', DatasetShow::class)
+Route::get('/dataset/{uniqueName}/review-new/{requestId}', DatasetShow::class)
     ->middleware('admin')
-    ->name('dataset.review');
+    ->name('dataset.review.new');
+
+Route::get('/dataset/{uniqueName}/review-extend/{requestId}', DatasetShow::class)
+    ->middleware('admin')
+    ->name('dataset.review.extend');
+
 Route::get('/review-edit/{requestId}', ReviewEditDataset::class)
     ->middleware('admin')
     ->name('dataset.review.edit');
+
 Route::get('/review-reduce/{requestId}', ReviewReduceDataset::class)
     ->middleware('admin')
     ->name('dataset.review.reduce');
 
-Route::get('/builder', DatasetBuilder::class)->name('builder');
+Route::get('/dataset/{uniqueName}/review-delete/{requestId}', DatasetShow::class)
+    ->middleware('admin')
+    ->name('dataset.review.delete');
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                     PROFILE ROUTES

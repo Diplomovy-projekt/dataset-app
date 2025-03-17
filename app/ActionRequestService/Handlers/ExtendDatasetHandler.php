@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class ExtendDatasetHandler extends BaseHandler
 {
@@ -116,10 +117,29 @@ class ExtendDatasetHandler extends BaseHandler
         }
     }
 
+    public function reject(array $payload): void
+    {
+        $this->datasetActions->deleteDataset($payload['child_unique_name']);
+    }
+
     public function reviewChanges(Model $request): mixed
     {
         $payload = json_decode($request->payload, true);
         $uniqueName = $payload['child_unique_name'];
-        return Redirect::route('dataset.review', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+        return Redirect::route('dataset.review.extend', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+    }
+
+    public function adminResponse(Model $request): mixed
+    {
+        $currentRoute = URL::livewireCurrent(true);
+        $adminDatasetRoute = route('admin.datasets');
+        if($currentRoute === $adminDatasetRoute) {
+            return ['type' => 'success', 'message' => 'Dataset extended successfully'];
+        }
+        return ['route' => 'dataset.show', 'params' => ['uniqueName' => $request->dataset->unique_name]];
+    }
+    public function errorResponse(string $errorMessage): mixed
+    {
+        return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }
 }

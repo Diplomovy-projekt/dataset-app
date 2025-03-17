@@ -33,4 +33,13 @@ class ReduceDatasetHandler extends BaseHandler
     {
         return Redirect::route('dataset.review.reduce', ['requestId' => $request->id]);
     }
+
+    public function adminResponse(Model $request): mixed
+    {
+        return ['action' => 'refreshComputed', 'type' => 'success', 'message' => 'Images removed successfully'];
+    }
+    public function errorResponse(string $errorMessage): mixed
+    {
+        return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
+    }
 }
