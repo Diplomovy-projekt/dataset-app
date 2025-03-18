@@ -8,7 +8,7 @@ use App\Configs\AppConfig;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
-class FromCoco extends BaseMapper
+class FromCoco extends BaseFromMapper
 {
 
     function parse(string $folderName, $annotationTechnique): Response

@@ -1,6 +1,6 @@
-<div x-data="classSelector(@this)" class="relative">
+<div x-data="classSelector(@this)" class="z-30 relative">
     <!-- Dropdown Button -->
-    <button @click="open = !open" class="bg-slate-900/50 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 hover:bg-slate-800/50 transition-colors">
+    <button @click="open = !open" class="z-30 bg-slate-900/50 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 hover:bg-slate-800/50 transition-colors">
         <span>Toggle classes</span>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -8,7 +8,7 @@
     </button>
 
     <!-- Dropdown Content -->
-    <div x-cloak x-show="open" @click.away="open = false" class="absolute sm:right-0 sm:left-auto mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-20 w-auto min-w-max">
+    <div x-cloak x-show="open" @click.away="open = false" class="z-30 absolute sm:right-0 sm:left-auto mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-auto min-w-max">
         <div class="p-2 sm:flex gap-3 border-slate-700 items-center align-center">
             <!-- Search Bar -->
             <div class="relative flex-1">

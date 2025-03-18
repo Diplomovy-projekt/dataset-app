@@ -36,6 +36,7 @@
                     </div>
                 </div>
             </footer>
+
             <x-notif></x-notif>
             <x-images.full-screen-image/>
         </div>

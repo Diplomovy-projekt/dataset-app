@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 class DatasetImportException extends \Exception
 {
-    protected $data;
+    protected array $data;
 
     /**
      * Constructor to initialize exception with a message, data, code, and optional previous exception.
@@ -14,7 +14,7 @@ class DatasetImportException extends \Exception
      * @param int $code Exception code
      * @param \Exception|null $previous Previous exception for chaining
      */
-    public function __construct(string $message = "", $data = null, int $code = 0, \Exception $previous = null)
+    public function __construct(string $message = "", $data = [], int $code = 0, \Exception $previous = null)
     {
         $this->data = $data;
         parent::__construct($message, $code, $previous);

@@ -12,9 +12,9 @@ class AppConfig
         'yolo' => [
             'name' => 'YOLO',
             'extension' => 'txt',],
-        'pascalvoc' => [
-            'name' => 'Pascal Voc',
-            'extension' => 'xml',],
+        'labelme' => [
+            'name' => 'Labelme',
+            'extension' => 'json',],
         'coco' => [
             'name' => 'COCO',
             'extension' => 'json',],

@@ -2,12 +2,13 @@
 
 namespace App\ImportService\Mappers;
 
+use App\ImportService\Interfaces\FromMapperInterface;
 use App\Utils\FileUtil;
 use App\Utils\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-abstract class BaseMapper
+abstract class BaseFromMapper implements FromMapperInterface
 {
 
     /**

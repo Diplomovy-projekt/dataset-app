@@ -16,15 +16,14 @@ trait DatasetImportHelper
             $flattenedErrors = [];
 
             // Iterate through each file's errors
-            foreach ($errors as $filename => $errorArray) {
-                // Check if the value is an array and flatten it
-                if (is_array($errorArray)) {
-                    foreach ($errorArray as $error) {
-                        $flattenedErrors[] = ['filename' => $filename, 'error' => $error];
-                    }
+            foreach ($errors as $filename => $errorData) {
+                // Check if the value is an array
+                if (is_array($errorData)) {
+                    // Recursive function to flatten nested arrays
+                    $this->flattenErrorArray($flattenedErrors, $errorData, $filename);
                 } else {
                     // In case there's a single error for the file, just add it
-                    $flattenedErrors[] = ['filename' => $filename, 'error' => $errorArray];
+                    $flattenedErrors[] = ['filename' => $filename, 'error' => $errorData];
                 }
             }
 
@@ -32,6 +31,23 @@ trait DatasetImportHelper
         }
 
         return [['error' => $errors]]; // Handle case when it's not an array
+    }
+
+    private function flattenErrorArray(&$result, $errors, $filename, $prefix = '')
+    {
+        foreach ($errors as $key => $value) {
+            if (is_array($value)) {
+                // For nested arrays, recurse with updated prefix
+                $newPrefix = is_numeric($key) ? $prefix : "$prefix$key: ";
+                $this->flattenErrorArray($result, $value, $filename, $newPrefix);
+            } else {
+                // Add leaf error with full path prefix
+                $result[] = [
+                    'filename' => $filename,
+                    'error' => $prefix . $value
+                ];
+            }
+        }
     }
 
     public function chunkUpload() {

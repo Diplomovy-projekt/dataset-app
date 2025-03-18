@@ -36,57 +36,44 @@ class ImportService
     public function handleImport(array $requestData): Response
     {
 
-        $this->importPreprocessor = new ImportPreprocess($requestData['format']);
+        try {
+            $this->importPreprocessor = new ImportPreprocess($requestData['format']);
 
-        $result = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
+            $mappedData = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
 
-        if (!$result->isSuccessful()) {
-            return Response::error($result->message, $result->data);
+            $this->saveDataset($mappedData->data, $requestData);
+
+            return Response::success();
+        } catch (DatasetImportException $e) {
+            return Response::error($e->getMessage(), $e->getData());
+        } catch (Exception $e) {
+            return Response::error("An error occurred while importing the dataset ".$e->getMessage());
         }
-
-        $result = $this->saveDataset($result->data, $requestData);
-
-        if (!$result->isSuccessful()) {
-            return Response::error($result->message);
-        }
-
-        return Response::success("Dataset imported successfully", data: $result->data);
     }
 
     private function saveDataset($mappedData, $requestData): Response
     {
         DB::beginTransaction();
 
+        $datasetFolder = $requestData['unique_name'];
         try {
-            $datasetFolder = $requestData['unique_name'];
             // 1. Move images to full-image folder
-            $result = $this->moveImages(
+            $this->moveImages(
                 imageFileNames: array_column($mappedData['images'], 'filename'),
                 from: AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
                 to: AppConfig::DATASETS_PATH['private'] . $datasetFolder. '/' . AppConfig::FULL_IMG_FOLDER
             );
-            if (!$result->isSuccessful()) {
-                throw new DatasetImportException($result->message);
-            }
 
             // 2. Add unique suffixes to image filenames
-            $result = $this->datasetActions->addUniqueSuffixes($datasetFolder, $mappedData);
-            if(!$result->isSuccessful()){
-                throw new DatasetImportException($result->message);
-            }
-            $imageFilenames = array_column($mappedData['images'], 'filename');
+            $this->datasetActions->addUniqueSuffixes($datasetFolder, $mappedData);
+
 
             // 4. Save to DB
             $savedToDb = $this->saveToDatabase($mappedData, $requestData);
-            if (!$savedToDb->isSuccessful()) {
-                throw new DatasetImportException($savedToDb->message);
-            }
 
             // 3. Create thumbnails
-            $thumbnails = $this->createThumbnails($datasetFolder, $imageFilenames);
-            if (count($thumbnails) != count($imageFilenames)) {
-                throw new DatasetImportException("Failed to create thumbnails for some images");
-            }
+            $imageFilenames = array_column($mappedData['images'], 'filename');
+            $this->createThumbnails($datasetFolder, $imageFilenames);
 
             // 5. Create class crops
             $createdClassCrops = $this->datasetActions->createSamplesForClasses($datasetFolder,
@@ -98,25 +85,28 @@ class ImportService
             }
 
             // 6. Assign colors to classes
-            $this->datasetActions->assignColorsToClasses(datasetFolder: $requestData['unique_name']);
+            $this->datasetActions->assignColorsToClasses(datasetFolder: $datasetFolder);
 
             DB::commit();
-            return Response::success(data: $savedToDb->data['dataset_id']);
+            return Response::success();
         } catch (DatasetImportException $e) {
-            if(Storage::exists(AppConfig::DATASETS_PATH['private'] . $requestData['unique_name'])) {
-                Storage::deleteDirectory(AppConfig::DATASETS_PATH['private'] . $requestData['unique_name']);
+            if(Storage::exists(AppConfig::DATASETS_PATH['private'] . $datasetFolder)) {
+                Storage::deleteDirectory(AppConfig::DATASETS_PATH['private'] . $datasetFolder);
             }
             DB::rollBack();
             return Response::error($e->getMessage(), $e->getData());
         }
     }
 
+    /**
+     * @throws DatasetImportException
+     */
     public function saveToDatabase($mappedData, $requestData): Response
     {
+        $classes = $mappedData['classes'];
+        $imageData = $mappedData['images'];
+        // 1. Create Dataset
         try {
-            $classes = $mappedData['classes'];
-            $imageData = $mappedData['images'];
-            // 1. Create Dataset
             $dataset = Dataset::create([
                 'user_id' => auth()->id() ?? "1",
                 'display_name' => $requestData['display_name'],
@@ -186,9 +176,10 @@ class ImportService
                 'newImages' => array_column($mappedData['images'], 'filename'),
                 'dataset_id' => $dataset->id,
             ]);
-        } catch (\Exception $e) {
-            return Response::error("An error occurred while saving to the database ".$e->getMessage());
+        } catch (Exception $e) {
+            throw new DatasetImportException($e->getMessage());
         }
+
     }
 
 }

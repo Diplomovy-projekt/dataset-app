@@ -135,29 +135,29 @@ class DatasetActions
         ");
     }
 
-    public function addUniqueSuffixes($datasetFolder, &$mappedData): Response
+    /**
+     * @throws DatasetImportException
+     */
+    public function addUniqueSuffixes($datasetFolder, &$mappedData): void
     {
         $images = &$mappedData['images'];
         $datasetPath = AppConfig::DATASETS_PATH['private'] . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER;
 
-        try {
-            foreach ($images as &$image) {
-                $suffix = uniqid('_da_');
-                $newName = pathinfo($image['filename'], PATHINFO_FILENAME) . $suffix . '.' . pathinfo($image['filename'], PATHINFO_EXTENSION);
+        foreach ($images as &$image) {
+            $suffix = uniqid('_da_');
+            $newName = pathinfo($image['filename'], PATHINFO_FILENAME) . $suffix . '.' . pathinfo($image['filename'], PATHINFO_EXTENSION);
 
-                $oldPath = $datasetPath . '/' . $image['filename'];
-                $newPath = $datasetPath . '/' . $newName;
+            $oldPath = $datasetPath . '/' . $image['filename'];
+            $newPath = $datasetPath . '/' . $newName;
 
-                if (Storage::move($oldPath, $newPath)) {
-                    $image['filename'] = $newName;
-                }
+            if (!Storage::move($oldPath, $newPath)) {
+                throw new DatasetImportException("Failed to move file: {$oldPath} to {$newPath}");
             }
 
-            return Response::success();
-        } catch (\Exception $e) {
-            return Response::error("Failed to add unique suffixes to images", $e->getMessage());
+            $image['filename'] = $newName;
         }
     }
+
 
     public static function moveDatasetTo(string $uniqueName, string $targetVisibility): Response
     {

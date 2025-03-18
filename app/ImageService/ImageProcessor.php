@@ -3,6 +3,7 @@
 namespace App\ImageService;
 
 use App\Configs\AppConfig;
+use App\Exceptions\DatasetImportException;
 use App\Utils\FileUtil;
 use App\Utils\Response;
 use App\Utils\Util;
@@ -17,16 +18,17 @@ trait ImageProcessor
     /**
      * Creates thumbnails for each image
      * @param string $datasetFolderPath
-     * @return Response
+     * @throws DatasetImportException
      */
-    public function createThumbnails(string $datasetFolder, $images): array
+    public function createThumbnails(string $datasetFolder, $images): void
     {
         if(!is_array($images)){
             $images = [$images];
         }
         if(empty($images)){
-            return [];
+            throw new DatasetImportException("No images found");
         }
+
         $datasetPath = Util::getDatasetPath($datasetFolder);
         $source = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER);
         $destination = Storage::path($datasetPath . AppConfig::IMG_THUMB_FOLDER);
@@ -37,7 +39,9 @@ trait ImageProcessor
                 $createdThumbnails[] = $image;
             }
         }
-        return $createdThumbnails;
+        if(count($createdThumbnails) != count($images)){
+            throw new DatasetImportException("Failed to create thumbnails for some images");
+        }
     }
 
     public function createClassCrops(string $datasetFolder, Collection $images): array
@@ -70,8 +74,10 @@ trait ImageProcessor
         return $classCounts;
     }
 
-
-    public function moveImages($imageFileNames, $from, $to): Response
+    /**
+     * @throws DatasetImportException
+     */
+    public function moveImages($imageFileNames, $from, $to): void
     {
         foreach ($imageFileNames as $file) {
             $extension = pathinfo($file, PATHINFO_EXTENSION);
@@ -80,17 +86,12 @@ trait ImageProcessor
                 $source = rtrim($from, '/') . '/' . $file;
                 $dest = rtrim($to, '/') . '/' . $file;
 
-                try {
-                    File::ensureDirectoryExists($dest);
-                    if(!Storage::move($source, $dest)){
-                        throw new \Exception("Failed to move image $file to $to");
-                    }
-                } catch (\Exception $e) {
-                    Response::error(message:$e->getMessage());
+                File::ensureDirectoryExists($to);
+
+                if (!Storage::move($source, $dest)) {
+                    throw new DatasetImportException("Failed to move image $file to $to");
                 }
             }
         }
-
-        return Response::success(data: ['datasetFolder' => $to]);
     }
 }

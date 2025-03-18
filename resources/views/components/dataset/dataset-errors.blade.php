@@ -41,7 +41,7 @@
                  x-transition:leave-start="opacity-100 transform translate-y-0"
                  x-transition:leave-end="opacity-0 transform -translate-y-2"
                  class="px-4 py-3">
-                <ul class="space-y-2">
+                <ul class="space-y-2 max-h-[50vh] overflow-auto">
                     @foreach($errorData as $error)
                         <li class="text-slate-300 text-sm">
                             <div class="font-semibold overflow-auto max-h-12">

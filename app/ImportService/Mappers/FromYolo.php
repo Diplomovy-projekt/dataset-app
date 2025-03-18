@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
-class FromYolo extends BaseMapper
+class FromYolo extends BaseFromMapper
 {
     public function parse(string $folderName, $annotationTechnique): Response
     {
@@ -56,7 +56,6 @@ class FromYolo extends BaseMapper
             // Get image dimensions
             $absolutePath = Storage::path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
-
 
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [

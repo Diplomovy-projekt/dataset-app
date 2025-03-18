@@ -85,7 +85,8 @@ class UploadDataset extends Component
         $result = $importService->handleImport($payload);
 
         if($result->isSuccessful()){
-            $actionPayload = ['dataset_id' => $result->data, 'dataset_unique_name' => $payload['unique_name']];
+            $datasetId = Dataset::where('unique_name', $payload['unique_name'])->first()->id;
+            $actionPayload = ['dataset_id' => $datasetId, 'dataset_unique_name' => $payload['unique_name']];
             $result = app(ActionRequestService::class)->createRequest('new', $actionPayload);
             $this->handleResponse($result);
         } else {
