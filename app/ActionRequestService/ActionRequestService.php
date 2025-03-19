@@ -21,8 +21,7 @@ class ActionRequestService
      * @param string $type One of: 'new', 'extend', 'edit_info', 'delete'
      * @param array $payload Additional data for the request
      * @return ActionRequest
-     * @throws \InvalidArgumentException
-     * @throws ValidationException
+     * @throws \Exception
      */
     public function createRequest(string $type, array $payload = []): mixed
     {
@@ -49,8 +48,8 @@ class ActionRequestService
             ]);
 
             // TODO change back to auto-approve
-            if (!$user->isAdmin()) {
-                $this->resolveRequest($request, 'approved', 'Auto-approved by system');
+            if ($user->isAdmin()) {
+                $this->resolveRequest($request, 'approve', 'Auto-approved by system');
             }
 
             if ($user->isAdmin()) {

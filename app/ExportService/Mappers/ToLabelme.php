@@ -18,7 +18,7 @@ class ToLabelme extends BaseToMapper
                 'version' => "5.5.0",
                 'flags' => [],
                 'shapes' => [],
-                'imagePath' => $image['filename'],
+                'imagePath' => '../' . $this->getImageFolder() . '/' . $image['filename'],
                 'imageData' => null,
                 'imageHeight' => $image['height'],
                 'imageWidth' => $image['width'],

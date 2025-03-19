@@ -64,7 +64,7 @@
                             </svg>
                             <span class="text-xs font-medium text-gray-400">Distribution Stats</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-1">
+                        <div class="sm:grid sm:grid-cols-2 sm:gap-x-2 sm:gap-y-1 mt-1">
                             <div>
                                 <span class="text-xs text-gray-500">Mean:</span>
                                 <span class="text-sm font-semibold text-white ml-1">{{ $stats['avgCount'] }}</span>
@@ -183,6 +183,25 @@
                                     wire:model.live="maxAnnotations"
                                     class="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1 text-sm text-green-400 font-medium focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
                                 />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="randomizeAnnotations"
+                            wire:model="randomizeAnnotations"
+                            class="w-4 h-4 rounded bg-slate-700 border-slate-600 text-purple-500 focus:ring-purple-500 focus:ring-opacity-25 focus:ring-offset-0"
+                        />
+                        <label for="randomizeAnnotations" class="ml-2 text-sm text-gray-300">Randomize annotations</label>
+                        <div class="ml-2 group relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-500 cursor-help">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                            <div class="absolute left-full ml-2 w-64 p-2 bg-slate-800 border border-slate-700 rounded text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                When enabled, annotations will be randomly selected if fewer than the total available are fetched. When disabled, annotations will be fetched in sequential order from the database.
                             </div>
                         </div>
                     </div>

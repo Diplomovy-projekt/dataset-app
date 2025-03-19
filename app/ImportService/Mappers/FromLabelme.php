@@ -48,13 +48,13 @@ class FromLabelme extends BaseFromMapper
 
             // Get image size
             $imageDir = dirname($annotationFile, 2) . '/' . LabelmeConfig::IMAGE_FOLDER;
-            $imagePath = $imageDir . '/' . $data['imagePath'];
+            $imagePath = $imageDir . '/' . basename($data['imagePath']);
             $absolutePath = Storage::path($imagePath);
             $imgSize = filesize($absolutePath);
 
             // Build data
             $imageData[$index] = [
-                'filename' => $data['imagePath'],
+                'filename' => basename($data['imagePath']),
                 'width' => $imageWidth,
                 'height' => $imageHeight,
                 'size' => $imgSize,

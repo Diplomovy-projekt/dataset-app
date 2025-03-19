@@ -28,6 +28,7 @@ class DownloadDataset extends Component
     public array $stats = [];
     public int $minAnnotations;
     public int $maxAnnotations;
+    public bool $randomizeAnnotations = false;
     #[Locked]
     public bool $locked = false;
     protected $rules = [
@@ -97,7 +98,7 @@ class DownloadDataset extends Component
     private function getFilteredImages(string $query): array
     {
         $images = \EloquentSerialize::unserialize($query)->get()->toArray();
-        return $this->filterAnnotationsByThreshold($images, $this->classesData, false);
+        return $this->filterAnnotationsByThreshold($images, $this->classesData);
     }
     private function exportDataset(array $images, string $annotationTechnique): bool
     {
@@ -241,8 +242,7 @@ class DownloadDataset extends Component
      */
     function filterAnnotationsByThreshold(
         array $images,
-        array $classesData,
-        bool $randomizeAnnotations = true
+        array $classesData
     ): array
     {
         $targetCounts = [];
@@ -255,22 +255,22 @@ class DownloadDataset extends Component
         }
 
         // Group annotations by class for randomized selection
-        if ($randomizeAnnotations) {
+        if ($this->randomizeAnnotations) {
             shuffle($images);
             $annotationsByClass = [];
 
             // Initialize the classes
-            foreach (array_keys($targetCounts) as $classId) {
-                $annotationsByClass[$classId] = [];
+            foreach (array_keys($targetCounts) as $className) {
+                $annotationsByClass[$className] = [];
             }
 
             // Collect all annotations by class
             foreach ($images as $imageIndex => $image) {
                 foreach ($image['annotations'] as $annotationIndex => $annotation) {
-                    $classId = $annotation['class']['id'];
+                    $className = $annotation['class']['name'];
 
-                    if (isset($targetCounts[$classId])) {
-                        $annotationsByClass[$classId][] = [
+                    if (isset($targetCounts[$className])) {
+                        $annotationsByClass[$className][] = [
                             'image_index' => $imageIndex,
                             'annotation' => $annotation
                         ];
@@ -279,9 +279,9 @@ class DownloadDataset extends Component
             }
 
             // Randomize annotations within each class and take only what we need
-            foreach ($annotationsByClass as $classId => &$annotations) {
+            foreach ($annotationsByClass as $className => &$annotations) {
                 shuffle($annotations);
-                $annotations = array_slice($annotations, 0, $targetCounts[$classId]);
+                $annotations = array_slice($annotations, 0, $targetCounts[$className]);
             }
             unset($annotations);
 
