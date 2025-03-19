@@ -122,6 +122,14 @@ class Util
 
     public static function getImageSizeStats(array $ids, bool $isImageId = false): array
     {
+        if(empty($ids)) {
+            return [
+                'median' => '0x0',
+                'min' => '0x0',
+                'max' => '0x0',
+            ];
+        }
+
         $query = DB::table('images')
             ->select('width', 'height');
 

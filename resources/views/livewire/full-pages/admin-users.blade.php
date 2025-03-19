@@ -6,7 +6,7 @@
     <div class="bg-slate-800 rounded-xl overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-500 p-2 rounded-lg">
                         <x-icon name="o-users" class="w-5 h-5 text-gray-200" />
@@ -15,7 +15,7 @@
                 </div>
                 <livewire:forms.invite-user :modalId="'invite-user'"/>
                 <button @click.prevent="open = 'invite-user'"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-fit">
                     <div class="flex items-center gap-2">
                         <x-icon name="o-plus" class="w-4 h-4" />
                         <span>Invite User</span>

@@ -7,7 +7,7 @@
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
                  @click="checked = !checked">
                 <div x-data="{ isChecked: false }"
-                     class="p-4 flex gap-4">
+                     class="p-4 flex flex-col sm:flex-row gap-4">
                     <!-- Left section -->
                     <div class="flex gap-4">
                         <div class="" @click.stop>
@@ -27,7 +27,7 @@
                         <!-- Top row with title, tag, and buttons -->
                         <div class="flex flex-col md:flex-row justify-between gap-4 mb-2">
                             <div class="flex flex-col md:flex-row md:items-center gap-3 flex-1 min-w-0">
-                                <div class="min-w-0">
+                                <div class="min-w-0 mt-2 sm:mt-0">
                                     <h3 class="text-lg font-semibold text-white truncate">{{ $dataset['display_name'] }}</h3>
                                 </div>
                                 <span class="w-fit px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">

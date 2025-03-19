@@ -1,13 +1,13 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
     <!-- Hero Section with gradient background -->
-    <div class="rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 shadow-xl py-16">
-        <div class="max-w-4xl mx-auto px-6">
+    <div class="rounded-2xl border border-slate-700 py-16">
+        <div class="max-w-4xl mx-auto sm:px-6">
             <!-- Header -->
             <div class="text-center mb-12">
                 <h2 class="text-4xl sm:text-5xl font-bold text-gray-200 mb-6 tracking-tight leading-tight">
                     Tailor Your Perfect Dataset
                 </h2>
-                <div class=" rounded-xl p-8 backdrop-blur-sm mb-8">
+                <div class=" rounded-xl p-3 sm:p-8 backdrop-blur-sm mb-8">
                     <p class="text-lg sm:text-xl text-gray-200 leading-relaxed">
                         Create a dataset that aligns perfectly with your project's unique needs. Our interactive builder empowers you to
                         <span class="text-blue-400 font-semibold">customize</span>
@@ -50,7 +50,7 @@
     <div id="builder" class="mt-12 space-y-4">
         @foreach($stageData as $stageNumber => $stage)
 
-            <div class="rounded-xl bg-slate-800/50 " wire:key="livewire-builder-{{$stageNumber}}">
+            <div class="rounded-xl  " wire:key="livewire-builder-{{$stageNumber}}">
                 <x-builder.main-accordion
                     stageIndex="{{ $stageNumber }}"
                     :currentStage="$currentStage"

@@ -1,5 +1,16 @@
-<footer
-    class="bottom-0 left-0 z-20 w-full p-4 border-t shadow md:flex md:items-center md:justify-between md:p-6 bg-slate-900 border-gray-600">
-    <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© Dataset app. All Rights Reserved.
-    </span>
+<footer class="border-t border-gray-600 text-white py-4">
+    <div class="container mx-auto">
+        <div class="flex justify-between items-center">
+            <div>
+                <p>&copy; 2025 Dataset Builder</p>
+            </div>
+            <div>
+                <a href="{{ route('terms') }}" class="text-white hover:text-gray-200">Terms of Service</a>
+                <span class="mx-2">|</span>
+                <a href="{{ route('contact') }}" class="text-white hover:text-gray-200">Contact us</a>
+                <span class="mx-2">|</span>
+                <a href="{{ route('zip.format.info') }}" class="text-white hover:text-gray-200">Dataset Format Guide</a>
+            </div>
+        </div>
+    </div>
 </footer>

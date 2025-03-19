@@ -17,27 +17,14 @@
             </nav>
 
             <!-- Main content that grows to fill the available space -->
-            <main class="relative inset-0 flex-1 overflow-visible p-6">
+            <main class="relative inset-0 flex-1 overflow-visible">
                 <div class="container mx-auto">
                     {{$slot}}
                 </div>
             </main>
 
-            <!-- Footer or bottom element -->
-            <footer class=" border-t border-gray-600 text-white py-4">
-                <div class="container mx-auto">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p>&copy; 2025 Dataset Builder.</p>
-                        </div>
-                        <div>
-                            <a href="#" class="text-white hover:text-gray-200">Privacy Policy</a>
-                            <span class="mx-2">|</span>
-                            <a href="#" class="text-white hover:text-gray-200">Terms of Service</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <!-- Footer -->
+            @include('layouts.includes.footer')
 
             <x-notif></x-notif>
             <x-images.full-screen-image/>

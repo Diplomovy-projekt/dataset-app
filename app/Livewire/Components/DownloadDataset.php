@@ -12,16 +12,20 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DownloadDataset extends Component
 {
     public string $exportDataset = '';
+    #[Locked]
     public string $filePath;
     public mixed $progress;
+    #[Locked]
     public  $failedDownload = null;
     public string $exportFormat = '';
+    #[Locked]
     public string $token = '';
     public array|Collection $classesData = [];
     public array|Collection $originalClassesData = [];
@@ -47,7 +51,14 @@ class DownloadDataset extends Component
     {
         $this->token = $token;
         $this->setClassesData($this->getFromCache());
-        $this->calculateStats($this->classesData);
+        if($this->classesData) {
+            $this->calculateStats($this->classesData);
+        } else {
+            $this->failedDownload = [
+                'message' => 'No Images and Classes found in the dataset',
+                'data' => null
+            ];
+        }
     }
 
     public function render()
@@ -171,6 +182,9 @@ class DownloadDataset extends Component
         $excludedImages = $payload['selectedImages'] ?? [];
         $datasets = $payload['datasets'];
 
+        if(empty($classIds)) {
+            return;
+        }
         $this->originalClassesData = AnnotationClass::whereIn('id', $classIds)
             ->withCount([
                 'annotations as annotation_count' => function ($query) use ($datasets, $excludedImages) {
@@ -333,6 +347,7 @@ class DownloadDataset extends Component
 
     private function calculateStats(array $classesData): void
     {
+
         $this->stats = [
             'totalCount' => $this->calculateTotalCount(),
             'classCount' => count($classesData),
@@ -354,9 +369,6 @@ class DownloadDataset extends Component
     private function findMaxClass(): array
     {
         $counts = array_column($this->classesData, 'count');
-        $idk0 = max($counts);
-        $idk = array_search(max($counts), $counts);
-        $idk2 = $this->classesData[array_search(max($counts), $counts)];
         return $this->classesData[array_search(max($counts), $counts)];
     }
 

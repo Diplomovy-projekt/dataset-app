@@ -3,7 +3,7 @@
     <x-misc.header title="System Statistics"/>
 
     <!-- Stats Grid -->
-    <div class="flex justify-between gap-3">
+    <div class="flex flex-col sm:flex-row justify-between gap-3">
         @foreach([
             ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount],
             ['icon' => 'o-squares-2x2', 'color' => 'purple', 'title' => 'Total Datasets', 'value' => $this->datasetCount],
@@ -30,7 +30,7 @@
         <x-misc.header title="Categories Management"/>
 
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div class="flex items-center gap-3">
                     <div class="bg-green-500 p-2 rounded-lg">
                         <x-icon name="o-tag" class="w-5 h-5 text-gray-200" />
@@ -38,7 +38,7 @@
                     <h2 class="text-xl font-bold text-gray-200">Categories</h2>
                 </div>
                 <button @click="open = open === 'new-category' ? '' : 'new-category'"
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-fit">
                     <div class="flex items-center gap-2">
                         <x-icon name="o-plus" class="w-4 h-4" />
                         <span>New Category</span>
@@ -54,29 +54,30 @@
                 x-show="open == 'new-category'"
                 x-transition
                 class="bg-slate-800 rounded-xl p-4 border border-green-500/50">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <input
                         type="text"
                         x-model="categoryName"
                         @keydown.enter="open = ''; saveCategory(categoryName, null)"
                         @keydown.escape="open = ''"
                         placeholder="Enter category name..."
-                        class="flex-1 bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:bg-slate-800"
+                        class="flex-1 min-w-0 bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:bg-slate-800"
                     >
 
-                    <button
-                        @click="open = ''; saveCategory(categoryName, null)"
-                        class="p-2 text-gray-400 hover:text-gray-200">
-                        <x-icon name="o-check" class="w-5 h-5" />
-                    </button>
-                    <button
-                        @click="open = ''"
-                        class="p-2 text-gray-400 hover:text-gray-200">
-                        <x-icon name="o-x-mark" class="w-5 h-5" />
-                    </button>
+                    <div class="flex shrink-0">
+                        <button
+                            @click="open = ''; saveCategory(categoryName, null)"
+                            class="p-2 text-gray-400 hover:text-gray-200">
+                            <x-icon name="o-check" class="w-5 h-5" />
+                        </button>
+                        <button
+                            @click="open = ''"
+                            class="p-2 text-gray-400 hover:text-gray-200">
+                            <x-icon name="o-x-mark" class="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
-
             <!-- Existing Categories -->
             <div class="bg-slate-800 rounded-xl overflow-hidden">
                 <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3 p-4">
@@ -149,7 +150,7 @@
         <x-misc.header title="Metadata Management"/>
 
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-500 p-2 rounded-lg">
                         <x-icon name="o-squares-2x2" class="w-5 h-5 text-gray-200" />
@@ -157,7 +158,7 @@
                     <h2 class="text-xl font-bold text-gray-200">Metadata</h2>
                 </div>
                 <button @click="open = open === 'new-type' ? '' : 'new-type'"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-fit">
                     <div class="flex items-center gap-2">
                         <x-icon name="o-plus" class="w-4 h-4" />
                         <span>New Metadata</span>
@@ -169,30 +170,24 @@
         <!-- Metadata Types List -->
         <div class="space-y-3">
             <!-- New Type Input (Initially Hidden) -->
-            <div
-                x-show="open == 'new-type'"
-                x-transition
-                class="bg-slate-800 rounded-xl p-4 border border-blue-500/50">
-                <div class="flex items-center gap-3">
+            <div x-show="open == 'new-type'" x-transition class="bg-slate-800 rounded-xl p-4 border border-blue-500/50">
+                <div class="flex flex-wrap items-center gap-3">
                     <input
                         type="text"
                         x-model="typeName"
                         @keydown.enter="open = ''; saveType(typeName, null)"
                         @keydown.escape="open = ''"
                         placeholder="Enter type name..."
-                        class="flex-1 bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-slate-800"
+                        class="flex-1 min-w-0 bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-slate-800"
                     >
-
-                    <button
-                        @click="open = ''; saveType(typeName, null)"
-                        class="p-2 text-gray-400 hover:text-gray-200">
-                        <x-icon name="o-check" class="w-5 h-5" />
-                    </button>
-                    <button
-                        @click="open = ''"
-                        class="p-2 text-gray-400 hover:text-gray-200">
-                        <x-icon name="o-x-mark" class="w-5 h-5" />
-                    </button>
+                    <div class="flex shrink-0">
+                        <button @click="open = ''; saveType(typeName, null)" class="p-2 text-gray-400 hover:text-gray-200">
+                            <x-icon name="o-check" class="w-5 h-5" />
+                        </button>
+                        <button @click="open = ''" class="p-2 text-gray-400 hover:text-gray-200">
+                            <x-icon name="o-x-mark" class="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -210,7 +205,7 @@
                     <!-- Type Header (Collapsed State) -->
                     <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-slate-700/50 transition-colors">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                            <div class="bg-purple-500/10 p-2 rounded-lg cursor-pointer" @click="expanded = !expanded">
+                            <div class="bg-purple-500/10 p-2 rounded-lg cursor-pointer w-fit" @click="expanded = !expanded">
                                 <x-icon
                                     name="o-chevron-right"
                                     class="w-5 h-5 text-purple-400 transition-transform"

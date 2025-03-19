@@ -20,7 +20,7 @@
             </button>
 
             <!-- Navbar items -->
-            <div x-show="navLinks || isDesktop" x-data="{ isDesktop: window.innerWidth >= 768 }"
+            <div x-cloak x-show="navLinks || isDesktop" x-data="{ isDesktop: window.innerWidth >= 768 }"
                  x-init="window.matchMedia('(min-width: 768px)').addEventListener('change', e => isDesktop = e.matches)"
                  @click.away="navLinks = false"
                  :class="{'block': navLinks, 'hidden md:flex': !navLinks}"
@@ -34,7 +34,7 @@
                         <li class="w-full"><a wire:navigate href="{{route('login')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">LOGIN</a></li>
                     @endguest
                     @auth
-                        <div x-data="{ userSubMenu: false }" class="relative">
+                        <div x-cloak x-data="{ userSubMenu: false }" class="relative">
                             <!-- Profile Button -->
                             <button @click="userSubMenu = !userSubMenu" @click.away="userSubMenu = false"
                                     class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-slate-700 text-gray-200">
