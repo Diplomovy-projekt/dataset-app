@@ -48,7 +48,7 @@ class ActionRequestService
             ]);
 
             // TODO change back to auto-approve
-            if ($user->isAdmin()) {
+            if (!$user->isAdmin()) {
                 $this->resolveRequest($request, 'approve', 'Auto-approved by system');
             }
 

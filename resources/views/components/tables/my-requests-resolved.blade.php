@@ -33,7 +33,7 @@
                 <x-misc.tag text="{{ ucfirst($request['type']) }} Dataset" color="{{ $color }}" />
             </x-tables.table-cell>
             {{-- Status --}}
-            <x-tables.table-cell>
+            <x-tables.table-cell class="w-1/6">
                 @php
                     $color = match($request['status'] ?? '') {
                         'approved' => 'green',

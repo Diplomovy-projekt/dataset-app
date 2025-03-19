@@ -102,7 +102,7 @@ class DatasetShow extends Component
         unset($this->paginatedImages);
     }
 
-    public function search()
+    public function updatedSearchTerm()
     {
         $this->searchTerm = trim($this->searchTerm);
         unset($this->paginatedImages);

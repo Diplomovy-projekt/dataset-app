@@ -15,15 +15,20 @@ class DatasetIndex extends Component
     public $datasets;
     public $searchTerm;
 
+    public function mount()
+    {
+        $ids = Dataset::approved()->pluck('id');
+        $this->loadDatasets($ids);
+    }
+
     public function render()
     {
-        $this->loadDatasets();
         return view('livewire.full-pages.dataset-index');
     }
 
-    public function loadDatasets()
+    public function loadDatasets($ids)
     {
-        $datasets = Dataset::approved()->with([
+        $datasets = Dataset::approved()->whereIn('id', $ids)->with([
             'images' => function ($query) {
                 $query->limit(1)->with(['annotations.class']);
             },
@@ -39,5 +44,11 @@ class DatasetIndex extends Component
             $dataset->stats = $dataset->getStats();
         }
         $this->datasets = $datasets->toArray();
+    }
+
+    public function updatedSearchTerm()
+    {
+        $ids = Dataset::approved()->where('display_name', 'like', '%' . $this->searchTerm . '%')->pluck('id');
+        $this->loadDatasets($ids);
     }
 }
