@@ -144,6 +144,11 @@ class DownloadDataset extends Component
 
             fclose($handle);
             session()->forget("download_progress_{$this->exportDataset}");
+            register_shutdown_function(function () {
+                if (file_exists($this->filePath)) {
+                    unlink($this->filePath);
+                }
+            });
             $this->locked = false;
             $this->failedDownload = null;
         }, 200, [

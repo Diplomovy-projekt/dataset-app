@@ -29,9 +29,9 @@ class ExportService
 
             //3. Delete the dataset folder and create job to delete zip
             Storage::deleteDirectory($datasetFolderToDownloadPath);
-            DeleteTempFile::dispatch($datasetFolderToDownloadPath . '.zip')
+           /* DeleteTempFile::dispatch($datasetFolderToDownloadPath . '.zip')
                 ->delay(now()->add(AppConfig::EXPIRATION['TMP_FILE']['value'], AppConfig::EXPIRATION['TMP_FILE']['unit']))
-                ->onQueue('temp-files');
+                ->onQueue('temp-files');*/
 
             return Response::success(data: ['datasetFolder' => $datasetFolderToDownload.'.zip']);
         }catch (\Exception $e) {

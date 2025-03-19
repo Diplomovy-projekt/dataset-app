@@ -47,6 +47,7 @@ class InviteUser extends Component
             $this->dispatch('flash-msg', type: 'success', message: 'Invitation email sent successfully.');
             $this->reset();
         } catch (\Exception $e) {
+            Invitation::destroy($invitation->id);
             $this->dispatch('flash-msg',
                 type: 'error',
                 message: 'Failed to send invitation email.' . $e->getMessage()

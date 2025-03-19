@@ -64,12 +64,6 @@ class ToCoco extends BaseToMapper
         }
     }
 
-    public function getImageDestinationDir($datasetFolder): string
-    {
-        $path = AppConfig::DATASETS_PATH['public'] . $datasetFolder . '/' . CocoConfig::IMAGE_FOLDER . '/' . $image['filename'];
-        return Storage::path($path);
-    }
-
     public function getAnnotationDestinationPath($datasetFolder, $image = null): string
     {
         return AppConfig::DATASETS_PATH['public'] .

@@ -44,7 +44,7 @@ abstract class BaseToMapper implements ToMapperInterface
             // Create symbolic link
             if (File::exists($source)) {
                 $destination = $destinationDir . '/' . $image['filename'];
-                if (File::link($source, $destination)) {
+                if (!File::link($source, $destination)) {
                     throw new Exception("Failed to link image... \nFrom: $source \nTo: $destination");
                 }
             } else {
