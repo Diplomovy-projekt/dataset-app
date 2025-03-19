@@ -3,7 +3,7 @@
 namespace App\ImageService;
 
 use App\Configs\AppConfig;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\Utils\FileUtil;
 use App\Utils\Response;
 use App\Utils\Util;
@@ -18,7 +18,7 @@ trait ImageProcessor
     /**
      * Creates thumbnails for each image
      * @param string $datasetFolderPath
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function createThumbnails(string $datasetFolder, $images): void
     {
@@ -26,7 +26,7 @@ trait ImageProcessor
             $images = [$images];
         }
         if(empty($images)){
-            throw new DatasetImportException("No images found");
+            throw new DataException("No images found");
         }
 
         $datasetPath = Util::getDatasetPath($datasetFolder);
@@ -40,7 +40,7 @@ trait ImageProcessor
             }
         }
         if(count($createdThumbnails) != count($images)){
-            throw new DatasetImportException("Failed to create thumbnails for some images");
+            throw new DataException("Failed to create thumbnails for some images");
         }
     }
 
@@ -75,7 +75,7 @@ trait ImageProcessor
     }
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function moveImages($imageFileNames, $from, $to): void
     {
@@ -89,7 +89,7 @@ trait ImageProcessor
                 File::ensureDirectoryExists($to);
 
                 if (!Storage::move($source, $dest)) {
-                    throw new DatasetImportException("Failed to move image $file to $to");
+                    throw new DataException("Failed to move image $file to $to");
                 }
             }
         }

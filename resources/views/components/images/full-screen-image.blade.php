@@ -61,19 +61,17 @@
 
             <div
                 class="relative max-w-[90vw] max-h-[90vh] overflow-hidden"
-                @wheel.prevent="handleWheel($event)"
+                x-init="initWheelListener()"
             >
                 <div
                     x-show="imageSrc"
                     class="transform-origin-center cursor-move"
                     :style="`transform: translate(${panX}px, ${panY}px) scale(${zoom}); transition: transform ${isZooming ? '0s' : '0.3s'};`"
+                    x-init="initTouchListeners($el)"
                     @mousedown="startPan($event)"
                     @mousemove="pan($event)"
                     @mouseup="endPan()"
                     @mouseleave="endPan()"
-                    @touchstart="startPan($event)"
-                    @touchmove="pan($event)"
-                    @touchend="endPan()"
                     @dblclick="toggleZoom($event)"
                 >
                     <img
@@ -115,6 +113,60 @@
             imageHeight: 0,
             containerWidth: 0,
             containerHeight: 0,
+            wheelListener: null,
+            touchStartListener: null,
+            touchMoveListener: null,
+            touchEndListener: null,
+
+            // Initialize the wheel event listener with passive: false safely
+            initWheelListener() {
+                const container = this.$el;
+
+                // Remove existing listener if any
+                if (this.wheelListener) {
+                    container.removeEventListener('wheel', this.wheelListener);
+                }
+
+                // Create the wheel event handler
+                this.wheelListener = (event) => {
+                    event.preventDefault();
+                    this.handleWheel(event);
+                };
+
+                // Add the event listener with { passive: false }
+                container.addEventListener('wheel', this.wheelListener, { passive: false });
+            },
+
+            // Initialize touch event listeners with appropriate passive settings
+            initTouchListeners(element) {
+                // Remove existing listeners if any
+                if (this.touchStartListener) {
+                    element.removeEventListener('touchstart', this.touchStartListener);
+                    element.removeEventListener('touchmove', this.touchMoveListener);
+                    element.removeEventListener('touchend', this.touchEndListener);
+                }
+
+                // Create touch event handlers
+                this.touchStartListener = (event) => {
+                    this.startPan(event);
+                };
+
+                this.touchMoveListener = (event) => {
+                    if (this.isPanning) {
+                        event.preventDefault();
+                        this.pan(event);
+                    }
+                };
+
+                this.touchEndListener = () => {
+                    this.endPan();
+                };
+
+                // Add event listeners with appropriate passive settings
+                element.addEventListener('touchstart', this.touchStartListener, { passive: true });
+                element.addEventListener('touchmove', this.touchMoveListener, { passive: false });
+                element.addEventListener('touchend', this.touchEndListener, { passive: true });
+            },
 
             close() {
                 this.imageSrc = '';
@@ -284,8 +336,6 @@
                 if (event.type === 'touchmove') {
                     currentX = event.touches[0].clientX;
                     currentY = event.touches[0].clientY;
-                    // Prevent scrolling on mobile
-                    event.preventDefault();
                 } else {
                     currentX = event.clientX;
                     currentY = event.clientY;

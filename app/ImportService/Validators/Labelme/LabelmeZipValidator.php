@@ -4,7 +4,7 @@ namespace App\ImportService\Validators\Labelme;
 
 use App\Configs\Annotations\LabelmeConfig;
 use App\Configs\Annotations\YoloConfig;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ImportService\Validators\BaseValidator\BaseZipValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +13,7 @@ class LabelmeZipValidator extends BaseZipValidator
 {
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function validateStructure(string $folderName): void
     {
@@ -23,7 +23,7 @@ class LabelmeZipValidator extends BaseZipValidator
         $this->validateAnnotationOrganization($filePath, LabelmeConfig::LABEL_EXTENSION, LabelmeConfig::LABELS_FOLDER);
 
         if (!empty($errors)) {
-            throw new DatasetImportException("Zip structure issues found", $errors);
+            throw new DataException("Zip structure issues found", $errors);
         }
     }
 }

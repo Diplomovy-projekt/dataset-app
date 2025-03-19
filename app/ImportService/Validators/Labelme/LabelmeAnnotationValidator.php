@@ -56,7 +56,7 @@ class LabelmeAnnotationValidator extends BaseAnnotationValidator
         }
 
         // Check required fields
-        $requiredFields = ['version', 'shapes', 'imagePath', 'imageData', 'imageHeight', 'imageWidth'];
+        $requiredFields = ['version', 'shapes', 'imagePath', 'imageHeight', 'imageWidth'];
         foreach ($requiredFields as $field) {
             if (!isset($data[$field])) {
                 $fileErrors[] = "Missing required field: $field";

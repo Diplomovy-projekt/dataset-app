@@ -21,6 +21,9 @@ class ExportComponentFactory
         return self::instantiateClass($format, 'Config', 'config');
     }
 
+    /**
+     * @throws \Exception
+     */
     protected static function instantiateClass(string $format, string $suffix, string $type): object
     {
         $classBaseName = ucfirst(strtolower($format));
@@ -28,7 +31,7 @@ class ExportComponentFactory
         $className = "{$namespace}\\{$classBaseName}{$suffix}";
 
         if (!class_exists($className)) {
-            return Response::error(ucfirst($type) . " {$className} does not exist.");
+            throw new \Exception("Class $className not found");
         }
 
         return new $className();

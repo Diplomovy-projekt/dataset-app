@@ -3,7 +3,7 @@
 namespace App\DatasetActions;
 
 use App\Configs\AppConfig;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ExportService\ExportService;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
@@ -89,7 +89,7 @@ class DatasetActions
 
                 if ($this->allClassesSampled($classCounts, $classesToSample)) break;
             }
-        } catch (DatasetImportException $e) {
+        } catch (DataException $e) {
             return Response::error($e->getMessage(), $e->getData());
         }
 
@@ -136,7 +136,7 @@ class DatasetActions
     }
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function addUniqueSuffixes($datasetFolder, &$mappedData): void
     {
@@ -151,7 +151,7 @@ class DatasetActions
             $newPath = $datasetPath . '/' . $newName;
 
             if (!Storage::move($oldPath, $newPath)) {
-                throw new DatasetImportException("Failed to move file: {$oldPath} to {$newPath}");
+                throw new DataException("Failed to move file: {$oldPath} to {$newPath}");
             }
 
             $image['filename'] = $newName;

@@ -4,7 +4,7 @@ namespace App\ImportService;
 
 use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
@@ -44,7 +44,7 @@ class ImportService
             $this->saveDataset($mappedData->data, $requestData);
 
             return Response::success();
-        } catch (DatasetImportException $e) {
+        } catch (DataException $e) {
             return Response::error($e->getMessage(), $e->getData());
         } catch (Exception $e) {
             return Response::error("An error occurred while importing the dataset ".$e->getMessage());
@@ -81,7 +81,7 @@ class ImportService
                 $imageFilenames
             );
             if (!$createdClassCrops->isSuccessful()) {
-                throw new DatasetImportException($createdClassCrops->message);
+                throw new DataException($createdClassCrops->message);
             }
 
             // 6. Assign colors to classes
@@ -89,7 +89,7 @@ class ImportService
 
             DB::commit();
             return Response::success();
-        } catch (DatasetImportException $e) {
+        } catch (DataException $e) {
             if(Storage::exists(AppConfig::DATASETS_PATH['private'] . $datasetFolder)) {
                 Storage::deleteDirectory(AppConfig::DATASETS_PATH['private'] . $datasetFolder);
             }
@@ -99,7 +99,7 @@ class ImportService
     }
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function saveToDatabase($mappedData, $requestData): Response
     {
@@ -177,7 +177,7 @@ class ImportService
                 'dataset_id' => $dataset->id,
             ]);
         } catch (Exception $e) {
-            throw new DatasetImportException($e->getMessage());
+            throw new DataException($e->getMessage());
         }
 
     }

@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-class DatasetImportException extends \Exception
+class DataException extends \Exception
 {
     protected array $data;
 

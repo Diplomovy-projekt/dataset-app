@@ -5,7 +5,7 @@ namespace App\ImportService\Validators\BaseValidator;
 use App\Configs\Annotations\LabelmeConfig;
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ImportService\Interfaces\ZipValidatorInterface;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +15,7 @@ abstract class BaseZipValidator implements ZipValidatorInterface
     const array IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png'];
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function validateImageOrganization(string $filePath, string $imageFolder): void
     {
@@ -28,12 +28,12 @@ abstract class BaseZipValidator implements ZipValidatorInterface
         });
 
         if ($invalidImages->isNotEmpty()) {
-            throw new DatasetImportException("Invalid image files found", $invalidImages->toArray());
+            throw new DataException("Invalid image files found", $invalidImages->toArray());
         }
     }
 
     /**
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function validateAnnotationOrganization(string $filePath, string $labelExtension, $annotationFolder = null): void
     {
@@ -46,7 +46,7 @@ abstract class BaseZipValidator implements ZipValidatorInterface
         });
 
         if ($invalidLabels->isNotEmpty()) {
-            throw new DatasetImportException("Invalid label files found", $invalidLabels->toArray());
+            throw new DataException("Invalid label files found", $invalidLabels->toArray());
         }
     }
 

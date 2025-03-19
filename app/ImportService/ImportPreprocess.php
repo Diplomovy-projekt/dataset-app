@@ -4,7 +4,7 @@ namespace App\ImportService;
 
 namespace App\ImportService;
 
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ImportService\Factory\ImportComponentFactory;
 use App\Utils\Response;
 
@@ -28,12 +28,12 @@ class ImportPreprocess
      * @param string $folderName
      * @param string $annotationTechnique
      * @return Response
-     * @throws DatasetImportException
+     * @throws DataException
      */
     public function preprocessDataset(string $folderName, string $annotationTechnique): Response
     {
         if ($this->zipValidator instanceof Response || $this->annotationValidator instanceof Response || $this->mapper instanceof Response) {
-            throw new DatasetImportException("Invalid format");
+            throw new DataException("Invalid format");
         }
         // 1. Find structure errors
         $this->zipValidator->validateStructure($folderName);
@@ -41,13 +41,13 @@ class ImportPreprocess
         // 2. Find annotation issues
         $annotationIssues = $this->annotationValidator->validateAnnotationData($folderName, $annotationTechnique);
         if (!$annotationIssues->isSuccessful()) {
-            throw new DatasetImportException($annotationIssues->message, $annotationIssues->data);
+            throw new DataException($annotationIssues->message, $annotationIssues->data);
         }
 
         // 3. Parse the dataset
         $mappedData = $this->mapper->parse($folderName, $annotationTechnique);
         if (!$mappedData->isSuccessful()) {
-            throw new DatasetImportException($mappedData->message, $mappedData->data);
+            throw new DataException($mappedData->message, $mappedData->data);
         }
 
         return Response::success(data: $mappedData->data);

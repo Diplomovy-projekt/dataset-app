@@ -10,9 +10,9 @@
 
 {{-- Image Dimensions Section --}}
 <div {{ $attributes->merge(['class' => $classes]) }}>
-    <div class="flex flex-wrap flex-col gap-x-6 gap-y-2">
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
 
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col flex-wrap sm:flex-row sm:items-center gap-4">
             <div class="flex flex-col items-center">
                 <span class="text-xs text-slate-400">Median</span>
                 <span class="text-sm font-medium text-slate-200">{{ $image_stats['median'] ?? 'N/A' }}</span>
