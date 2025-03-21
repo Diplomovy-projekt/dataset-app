@@ -40,7 +40,7 @@ class DatasetIndex extends Component
                 continue;
             }
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            $dataset->images = $processedImage;
+            $dataset->setRelation('images', $processedImage);
             $dataset->stats = $dataset->getStats();
         }
         $this->datasets = $datasets->toArray();

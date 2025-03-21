@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 ">
     <!-- Hero Section with gradient background -->
     <div class="rounded-2xl border border-slate-700 py-16">
         <div class="max-w-4xl mx-auto sm:px-6">

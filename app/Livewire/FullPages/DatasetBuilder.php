@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -190,7 +191,7 @@ class DatasetBuilder extends Component
             return [
                 'id' => $category->id,
                 'name' => $category->name,
-                'image' => $image->toArray(),
+                'image' => $image,
             ];
         })->toArray();
     }
@@ -245,7 +246,7 @@ class DatasetBuilder extends Component
             ->get()
             ->map(function ($dataset) {
                 $dataset->stats = $dataset->getStats();
-                $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0]->toArray();
+                $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
                 $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
                 return $dataset;
             })
@@ -297,6 +298,7 @@ class DatasetBuilder extends Component
         })->get(['id', 'value'])->toArray();
     }
 
+    #[Renderless]
     public function cacheQuery()
     {
         $payload['query'] = \EloquentSerialize::serialize($this->imagesQuery());

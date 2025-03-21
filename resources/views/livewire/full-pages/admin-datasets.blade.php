@@ -1,4 +1,4 @@
-<div x-data="datasetManagement(@this)" class="p-6">
+<div x-data="datasetManagement(@this)">
 
     {{-- Livewire component modals --}}
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />

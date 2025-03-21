@@ -5,23 +5,21 @@ namespace App\Livewire\FullPages;
 use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
-use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Models\Image;
-use App\Models\Scopes\DatasetVisibilityScope;
 use App\Traits\LivewireActions;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -47,10 +45,11 @@ class DatasetShow extends Component
     {
         Util::logStart("paginatedImages");
         $images = $this->fetchImages();
-        $preparedImages = $this->prepareImagesForSvgRendering($images);
+        $images = $this->prepareImagesForSvgRendering($images);
         Util::logEnd("paginatedImages");
-        return $preparedImages;
+        return $images;
     }
+
 
     public function mount($uniqueName, $requestId = null)
     {
@@ -76,6 +75,12 @@ class DatasetShow extends Component
         $this->initProperties($dataset);
     }
 
+    public function render()
+    {
+        Util::logStart("Livewire render");
+        Util::logEnd("Livewire render");
+        return view('livewire.full-pages.dataset-show');
+    }
     public function initProperties($dataset)
     {
         $dataset->stats = $dataset->getStats();
@@ -110,14 +115,55 @@ class DatasetShow extends Component
 
     private function fetchImages()
     {
+        $query = Image::where('dataset_id', $this->dataset['id'])
+            ->select(['id', 'filename', 'dataset_folder', 'width', 'height']);
+
         if ($this->searchTerm) {
-            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            $query->where('filename', 'like', '%' . $this->searchTerm . '%');
         }
-        else {
-            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
-        }
+
+        // Paginate images first
+        $images = $query->paginate($this->perPage);
+
+        // Extract image IDs to fetch annotations separately
+        $imageIds = $images->pluck('id')->toArray();
+
+        // Fetch annotations as arrays directly
+        $annotations = DB::table('annotation_data')
+            ->selectRaw('id, image_id, x, y, width, height, annotation_class_id, segmentation')
+            ->whereIn('image_id', $imageIds)
+            ->get()
+            ->map(function ($annotation) {
+                $annotation->segmentation = json_decode($annotation->segmentation, true);
+                return (array) $annotation;
+            })
+            ->groupBy('image_id')
+            ->toArray();
+
+        // Fetch annotation classes as arrays
+        $annotationClasses = DB::table('annotation_classes')
+            ->selectRaw('id, name, rgb')
+            ->get()
+            ->mapWithKeys(fn($class) => [$class->id => (array) $class])
+            ->toArray();
+
+        // Attach annotations & classes to images
+        $images->getCollection()->each(function ($image) use ($annotations, $annotationClasses) {
+            $imageAnnotations = $annotations[$image->id] ?? [];
+
+            // Attach annotation class data
+            foreach ($imageAnnotations as &$annotation) {
+                $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
+            }
+
+            // Properly set the relationship
+            $image->setRelation('annotations', collect($imageAnnotations));
+        });
+
+        return $images;
     }
 
+    #[Renderless]
     public function deleteDataset(DatasetActions $datasetService): void
     {
         $payload = ['dataset_unique_name' => $this->uniqueName,
@@ -127,6 +173,7 @@ class DatasetShow extends Component
         $this->handleResponse($result);
     }
 
+    #[Renderless]
     public function deleteImages(DatasetActions $datasetService)
     {
         $payload = ['dataset_unique_name' => $this->uniqueName,
@@ -137,6 +184,7 @@ class DatasetShow extends Component
         $this->handleResponse($result);
     }
 
+    #[Renderless]
     public function cacheQuery($id)
     {
         $query = Image::where('dataset_id', $id)->with('annotations.class');

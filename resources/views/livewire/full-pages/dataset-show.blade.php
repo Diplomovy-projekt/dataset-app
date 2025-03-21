@@ -1,6 +1,4 @@
-<div
-     x-data="datasetShow(@this)"
-     class="container mx-auto pt-3">
+<div x-data="datasetShow(@this)">
 
     <x-dataset.wrapper-highlight-card :name="$this->request['route']"/>
 

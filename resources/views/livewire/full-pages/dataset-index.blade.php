@@ -1,4 +1,4 @@
-<div class="my-10">
+<div >
     <!-- Search Bar -->
     <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
         <div class="flex flex-col sm:flex-row  sm:items-center gap-3 ">

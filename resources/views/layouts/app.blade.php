@@ -5,7 +5,7 @@
     @include('layouts.includes.head')
 </head>
 
-    <body class="text-gray-200 ">
+    <body class="text-gray-200" x-data="">
 
     <!-- Full height container to ensure footer stays at the bottom -->
         <div class="bg-gradient-to-b from-[#243240] to-slate-900 flex flex-col min-h-screen">
@@ -18,7 +18,7 @@
 
             <!-- Main content that grows to fill the available space -->
             <main class="relative inset-0 flex-1 overflow-visible">
-                <div class="container mx-auto">
+                <div class="container mx-auto mt-5 mb-14">
                     {{$slot}}
                 </div>
             </main>

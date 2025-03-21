@@ -1,4 +1,4 @@
-<div x-data="adminDashboard(@this)" class="p-6">
+<div x-data="adminDashboard(@this)">
     <!-- Header Section -->
     <x-misc.header title="System Statistics"/>
 

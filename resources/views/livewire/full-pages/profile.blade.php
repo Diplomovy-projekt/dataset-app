@@ -1,5 +1,4 @@
-<div x-data="{ open: '' }"
-     class="my-10">
+<div x-data="{ open: '' }">
 
     <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
         <div class="flex items-center justify-between">

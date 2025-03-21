@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('rgb', 20)->nullable();
             $table->string('name');
             $table->string('supercategory')->nullable();
-            $table->timestamps();
         });
     }
 

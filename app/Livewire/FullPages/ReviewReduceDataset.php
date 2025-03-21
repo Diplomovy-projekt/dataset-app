@@ -7,6 +7,7 @@ use App\ImageService\ImageRendering;
 use App\Models\ActionRequest;
 use App\Models\Image;
 use App\Utils\Util;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -58,12 +59,46 @@ class ReviewReduceDataset extends Component
         $payload = json_decode($request->payload, true);
         $imageIds = $payload['image_ids'];
         $this->searchTerm = trim($this->searchTerm);
+
+        $query = Image::whereIn('id', $imageIds)
+            ->select(['id', 'filename', 'dataset_folder', 'width', 'height']);
+
         if ($this->searchTerm) {
-            return Image::where('dataset_id', $this->datasetId)->whereIn('id', $imageIds)->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
+            $query->where('filename', 'like', '%' . $this->searchTerm . '%');
         }
-        else {
-            return Image::where('dataset_id', $this->datasetId)->whereIn('id', $imageIds)->with(['annotations.class'])->paginate($this->perPage);
-        }
+
+        $images = $query->paginate($this->perPage);
+
+        $imageIds = $images->pluck('id')->toArray();
+
+        $annotations = DB::table('annotation_data')
+            ->selectRaw('id, image_id, x, y, width, height, annotation_class_id, segmentation')
+            ->whereIn('image_id', $imageIds)
+            ->get()
+            ->map(function ($annotation) {
+                $annotation->segmentation = json_decode($annotation->segmentation, true);
+                return (array) $annotation;
+            })
+            ->groupBy('image_id')
+            ->toArray();
+
+        $annotationClasses = DB::table('annotation_classes')
+            ->selectRaw('id, name, rgb')
+            ->get()
+            ->mapWithKeys(fn($class) => [$class->id => (array) $class])
+            ->toArray();
+
+        $images->getCollection()->each(function ($image) use ($annotations, $annotationClasses) {
+            $imageAnnotations = $annotations[$image->id] ?? [];
+
+            foreach ($imageAnnotations as &$annotation) {
+                $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
+            }
+
+            $image->setRelation('annotations', collect($imageAnnotations));
+        });
+
+        return $images;
     }
 
     private function initStats()

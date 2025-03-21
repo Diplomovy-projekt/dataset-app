@@ -1,4 +1,4 @@
-<div x-data="userManagement(@this)" class="p-6">
+<div x-data="userManagement(@this)">
     <!-- Header Section -->
     <x-misc.header title="User Management"/>
 

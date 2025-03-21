@@ -95,7 +95,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
     Route::get('/admin/users', AdminUsers::class)->name('admin.users');
     Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
-    Route::get('admin/logs', AdminLogs::class)->name('admin.logs');
 });
 
 Route::get('/private-image/{dataset}/{filename}', function ($dataset, $filename) {

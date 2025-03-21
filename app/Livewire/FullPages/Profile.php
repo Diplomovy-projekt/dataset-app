@@ -42,7 +42,7 @@ class Profile extends Component
             }
             $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
             $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            $dataset->images = $processedImage;
+            $dataset->setRelation('images', $processedImage);
             $dataset->stats = $dataset->getStats();
         }
         $this->datasets = $datasets->toArray();
