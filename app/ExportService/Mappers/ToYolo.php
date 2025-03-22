@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class ToYolo extends BaseToMapper
 {
+    protected static string $configClass = YoloConfig::class;
 
     /**
      * @throws \Exception
@@ -54,7 +55,7 @@ class ToYolo extends BaseToMapper
     public function mapPolygon(mixed $annotation, array $imgDims = null): mixed
     {
         $classId = $this->getClassId($annotation['class']['name']);
-        $polygon = json_decode($annotation['segmentation'], true);
+        $polygon = $annotation['segmentation'];
 
         $points = '';
         foreach ($polygon as $point) {
@@ -95,10 +96,5 @@ class ToYolo extends BaseToMapper
         if(!Storage::disk('datasets')->put($datasetFolder . '/data.yaml', Yaml::dump($yamlData, 2, 4))) {
             throw new \Exception("Failed to write data file");
         }
-    }
-
-    public function getImageFolder(): string
-    {
-        return YoloConfig::IMAGE_FOLDER;
     }
 }

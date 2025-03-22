@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ToCoco extends BaseToMapper
 {
+    protected static string $configClass = CocoConfig::class;
+
     public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void
     {
         $cocoJsonPath = $this->getAnnotationDestinationPath($datasetFolder);
@@ -77,7 +79,7 @@ class ToCoco extends BaseToMapper
             return [];
         }
 
-        $segmentation = json_decode($annotation['segmentation'], true);
+        $segmentation = $annotation['segmentation'];
         $polygon = [];
 
         foreach ($segmentation as $point) {
@@ -102,7 +104,7 @@ class ToCoco extends BaseToMapper
     {
         // Prefer area of segmentation if available
         if (!empty($annotation['segmentation'])) {
-            $segmentation = json_decode($annotation['segmentation'], true);
+            $segmentation = $annotation['segmentation'];
             $n = count($segmentation);
             $area = 0;
 

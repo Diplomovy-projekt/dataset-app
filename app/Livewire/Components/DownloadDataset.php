@@ -97,6 +97,9 @@ class DownloadDataset extends Component
         $this->locked = true;
 
         $payload = $this->getFromCache();
+        if(empty($payload)) {
+            return;
+        }
         $images = ImageQuery::forDatasets($payload['datasets'])
             ->excludeImages($payload['selectedImages'] ?? [])
             ->filterByClassIds($payload['classIds'] ?? [])

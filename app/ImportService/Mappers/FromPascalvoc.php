@@ -107,7 +107,7 @@ class FromPascalvoc extends BaseFromMapper
 
                 $annotation += $this->transformBoundingBox($bbox, $imgDims);
             } elseif ($annotationTechnique == AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
-                $polygonPoints = json_decode(json_encode($object->polygon), true); // Convert SimpleXMLElement to array
+                $polygonPoints = json_decode(json_encode($object->polygon), true);
                 $annotation += $this->createBboxFromPolygon($polygonPoints, $imgDims);
                 $annotation['segmentation'] = $this->transformPolygon($polygonPoints, $imgDims);
 

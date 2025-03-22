@@ -2,6 +2,7 @@
 
 namespace App\ExportService\Mappers;
 
+use App\Configs\Annotations\BaseAnnotationConfig;
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
 use App\Exceptions\DataException;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 abstract class BaseToMapper implements ToMapperInterface
 {
+    protected static string $configClass = BaseAnnotationConfig::class;
     protected array $classMap = [];
 
     public function handle(array $images, string $datasetFolder, string $annotationTechnique): void
@@ -82,6 +84,7 @@ abstract class BaseToMapper implements ToMapperInterface
     /**
      * Map the annotation based on the selected technique (POLYGON or BOUNDING_BOX).
      * This method can be overridden in derived classes for specific formats.
+     * @throws Exception
      */
     protected function mapAnnotation($annotationTechnique, $annotation, array $imgDims = null): mixed
     {
@@ -94,16 +97,15 @@ abstract class BaseToMapper implements ToMapperInterface
 
     public function getImageDestinationDir($datasetFolder): string
     {
-        $imageFolder = $this->getImageFolder();
-        $path = AppConfig::DATASETS_PATH['public'] . $datasetFolder . '/' . $imageFolder;
+        $imageFolder = static::$configClass::IMAGE_FOLDER;
+        $path = AppConfig::DATASETS_PATH['public'] . $datasetFolder;
+
+        if ($imageFolder) {
+            $path .= '/' . $imageFolder;
+        }
+
         return Storage::path($path);
     }
 
-    /**
-     * Get the folder where the images are stored.
-     *
-     * @return string The path to the image folder.
-     */
-    abstract public function getImageFolder(): string;
 
 }

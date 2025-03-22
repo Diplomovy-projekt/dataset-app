@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ToLabelme extends BaseToMapper
 {
+    protected static string $configClass = LabelmeConfig::class;
+
     public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void
     {
         foreach ($images as $image) {
@@ -56,7 +58,7 @@ class ToLabelme extends BaseToMapper
 
     public function mapPolygon(mixed $annotation, array $imgDims = null): mixed
     {
-        $polygon = json_decode($annotation['segmentation'], true);
+        $polygon = $annotation['segmentation'];
 
         return array_map(fn($point) => [
             $point['x'] * $imgDims[0],
@@ -81,10 +83,5 @@ class ToLabelme extends BaseToMapper
             [$x, $y],
             [$x + $width, $y + $height]
         ];
-    }
-
-    public function getImageFolder(): string
-    {
-        return LabelmeConfig::IMAGE_FOLDER;
     }
 }
