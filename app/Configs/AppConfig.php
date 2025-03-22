@@ -21,13 +21,13 @@ class AppConfig
             'name' => 'COCO',
             'extension' => 'json',
             ],
-        'paligemma' => [
-            'name' => 'PaliGemma',
-            'extension' => 'json',
-            ],
         'pascalvoc' => [
             'name' => 'PascalVOC',
             'extension' => 'xml',
+            ],
+        'paligemma' => [
+            'name' => 'PaliGemma',
+            'extension' => 'jsonl',
             ],
     ];
 
