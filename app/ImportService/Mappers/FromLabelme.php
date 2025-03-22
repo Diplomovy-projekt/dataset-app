@@ -121,7 +121,7 @@ class FromLabelme extends BaseFromMapper
         ];
     }
 
-    public function transformPolygon(array $polygonPoints, array $imgDims = null): string
+    public function transformPolygon(array $polygonPoints, array $imgDims = null): array
     {
         $normalizedPoints = [];
 
@@ -136,7 +136,7 @@ class FromLabelme extends BaseFromMapper
             $normalizedPoints[] = ['x' => $x, 'y' => $y];
         }
 
-        return json_encode($normalizedPoints);
+        return $normalizedPoints;
     }
 
     private function createBboxFromPolygon(array $points, array $imgDims = null): array

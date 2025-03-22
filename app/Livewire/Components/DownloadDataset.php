@@ -7,6 +7,7 @@ use App\ExportService\ExportService;
 use App\Models\AnnotationClass;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Utils\ImageQuery;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -96,7 +97,12 @@ class DownloadDataset extends Component
         $this->locked = true;
 
         $payload = $this->getFromCache();
-        $images = $this->getFilteredImages($payload['query']);
+        $images = ImageQuery::forDatasets($payload['datasets'])
+            ->excludeImages($payload['selectedImages'] ?? [])
+            ->filterByClassIds($payload['classIds'] ?? [])
+            ->get()
+            ->toArray();
+        $images = $this->filterAnnotationsByThreshold($images, $this->classesData);
         $annotationTechnique = $this->findOutAnnotationTechnique($payload['datasets']);
 
         $response = $this->exportDataset($images, $annotationTechnique);
@@ -105,11 +111,6 @@ class DownloadDataset extends Component
         }
 
         return $this->streamDownload();
-    }
-    private function getFilteredImages(string $query): array
-    {
-        $images = \EloquentSerialize::unserialize($query)->get()->toArray();
-        return $this->filterAnnotationsByThreshold($images, $this->classesData);
     }
     private function exportDataset(array $images, string $annotationTechnique): bool
     {

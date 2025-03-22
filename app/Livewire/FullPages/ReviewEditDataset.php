@@ -30,7 +30,6 @@ class ReviewEditDataset extends Component
 
     private function buildChangeRequest($payload)
     {
-        $payload = json_decode($payload, true);
         $this->requestDataset['display_name'] = $payload['display_name'];
         $this->requestDataset['description'] = $payload['description'];
         $this->requestDataset['categories'] = Category::whereIn('id', $payload['categories'])->select('id', 'name')->get()->toArray();

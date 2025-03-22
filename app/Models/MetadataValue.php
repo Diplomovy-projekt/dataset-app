@@ -11,6 +11,8 @@ class MetadataValue extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'metadata_type_id',
         'value'

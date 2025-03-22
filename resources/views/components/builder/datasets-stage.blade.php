@@ -1,7 +1,7 @@
 <div x-data="datasetsStage(@this)"
      class="container mx-auto py-4">
-    <div class="space-y-3">
-        @forelse($this->datasets as $index => $dataset)
+    <div id="paginatedDatasets" class="space-y-3">
+        @forelse($this->paginatedDatasets as $index => $dataset)
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
@@ -18,7 +18,7 @@
                         </div>
 
                         <div class="flex-shrink-0 w-20 h-20">
-                            <x-images.annotated-image :image="$dataset['image']"></x-images.annotated-image>
+                            <x-images.annotated-image :image="$dataset->images->first()"></x-images.annotated-image>
                         </div>
                     </div>
 
@@ -82,7 +82,7 @@
                                         {{ $category['name'] }}
                                     </div>
                                 @endforeach
-                                @forelse($dataset['metadata_values'] as $metadata)
+                                @forelse($dataset['metadataValues'] as $metadata)
                                     <div wire:key="dataset-metadata-{{ $metadata['id'] }}"
                                         class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
                                         {{ $metadata['value'] }}
@@ -101,7 +101,11 @@
             <p class="text-gray-400">No datasets found</p>
         @endforelse
     </div>
-    {{--<x-images.full-screen-image/>--}}
+    <div class="flex-1 mt-3 overflow-x-auto">
+        <div class="inline-block min-w-full">
+            {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#paginatedDatasets']) }}
+        </div>
+    </div>
 </div>
 
 @script

@@ -6,6 +6,7 @@ use App\Configs\AppConfig;
 use App\ImageService\ImageRendering;
 use App\Models\ActionRequest;
 use App\Models\Image;
+use App\Utils\ImageQuery;
 use App\Utils\Util;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -29,8 +30,7 @@ class ReviewReduceDataset extends Component
     public function paginatedImages()
     {
         $images = $this->fetchImages();
-        $preparedImages = $this->prepareImagesForSvgRendering($images);
-        return $preparedImages;
+        return $this->prepareImagesForSvgRendering($images);
     }
 
     public function mount($requestId)
@@ -56,57 +56,20 @@ class ReviewReduceDataset extends Component
     private function fetchImages()
     {
         $request = ActionRequest::find($this->requestId);
-        $payload = json_decode($request->payload, true);
+        $payload = $request->payload;
         $imageIds = $payload['image_ids'];
         $this->searchTerm = trim($this->searchTerm);
 
-        $query = Image::whereIn('id', $imageIds)
-            ->select(['id', 'filename', 'dataset_folder', 'width', 'height']);
-
-        if ($this->searchTerm) {
-            $query->where('filename', 'like', '%' . $this->searchTerm . '%');
-        }
-
-        $images = $query->paginate($this->perPage);
-
-        $imageIds = $images->pluck('id')->toArray();
-
-        $annotations = DB::table('annotation_data')
-            ->selectRaw('id, image_id, x, y, width, height, annotation_class_id, segmentation')
-            ->whereIn('image_id', $imageIds)
-            ->get()
-            ->map(function ($annotation) {
-                $annotation->segmentation = json_decode($annotation->segmentation, true);
-                return (array) $annotation;
-            })
-            ->groupBy('image_id')
-            ->toArray();
-
-        $annotationClasses = DB::table('annotation_classes')
-            ->selectRaw('id, name, rgb')
-            ->get()
-            ->mapWithKeys(fn($class) => [$class->id => (array) $class])
-            ->toArray();
-
-        $images->getCollection()->each(function ($image) use ($annotations, $annotationClasses) {
-            $imageAnnotations = $annotations[$image->id] ?? [];
-
-            foreach ($imageAnnotations as &$annotation) {
-                $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
-            }
-
-            $image->setRelation('annotations', collect($imageAnnotations));
-        });
-
-        return $images;
+        return ImageQuery::forDatasets([$this->datasetId])
+            ->search($this->searchTerm)
+            ->includeImages($imageIds)
+            ->get();
     }
 
     private function initStats()
     {
-
-
         $request = ActionRequest::find($this->requestId);
-        $payload = json_decode($request->payload, true);
+        $payload = $request->payload;
         $images = Image::whereIn('id', $payload['image_ids'])->with(['annotations.class'])->get();
         $this->stats['stats'] = [
             'numImages' => count($payload['image_ids']),

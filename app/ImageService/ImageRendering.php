@@ -31,9 +31,12 @@ trait ImageRendering
             foreach ($image['annotations'] as &$annotation) {
                 if (isset($annotation['segmentation'])) {
                     unset($annotation['x'], $annotation['y'], $annotation['width'], $annotation['height']);
-
+                    if($annotation['id'] == 25968)
+                    {
+                        $idk = 5;
+                    }
                     $pixelizedSegment = $this->pixelizePolygon($annotation['segmentation'], $image['width'], $image['height']);
-                    $annotation['segmentation'] = $this->transformPolygonToSvgString($pixelizedSegment);
+                    $annotation['segmentation'] = $this->transformPolygonToSvgPath($pixelizedSegment);
                 } else {
                     unset($annotation['segmentation']);
 
@@ -68,6 +71,21 @@ trait ImageRendering
         }
 
         return implode(' ', $parts);
+    }
+
+    private function transformPolygonToSvgPath($segmentation): string
+    {
+        if (empty($segmentation)) {
+            return '';
+        }
+
+        $pathData = 'M ' . $segmentation[0]['x'] . ',' . $segmentation[0]['y'];
+        for ($i = 1; $i < count($segmentation); $i++) {
+            $pathData .= ' L ' . $segmentation[$i]['x'] . ',' . $segmentation[$i]['y'];
+        }
+
+        $pathData .= ' Z';
+        return $pathData;
     }
 
 }

@@ -11,6 +11,7 @@ use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
 use App\Models\Image;
 use App\Models\MetadataValue;
+use App\Utils\ImageQuery;
 use App\Utils\QueryUtil;
 use App\Utils\Util;
 use Illuminate\Support\Facades\Cache;
@@ -20,11 +21,12 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class DatasetBuilder extends Component
 {
-    use ImageRendering, WithPagination;
+    use ImageRendering, WithPagination, WithoutUrlPagination;
     #[Locked]
     public $currentStage = 0;
     #[Locked]
@@ -78,7 +80,7 @@ class DatasetBuilder extends Component
     public $selectedMetadataValues = [];
     public $skipTypes = [];
     #[Locked]
-    public $datasets = [];
+    public array $datasetIds = [];
     public array $selectedDatasets = [];
     public $selectedClasses = [];
     private $images = [];
@@ -95,14 +97,55 @@ class DatasetBuilder extends Component
     #[Computed]
     public function paginatedImages()
     {
-        $images = $this->imagesQuery()->paginate($this->perPage);
+        $images = $this->imagesQuery($this->perPage);
         return $this->prepareImagesForSvgRendering($images);
+    }
+
+    #[Computed]
+    public function paginatedDatasets()
+    {
+        Util::logStart("BUILDER paginatedDatasets");
+        $dat = Dataset::approved()
+            ->whereIn('id', $this->datasetIds)
+            ->when(
+                $this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'],
+                fn($query) => $query->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
+            )
+            ->with([
+                'classes',
+                'metadataValues',
+                'categories',
+                'images' => fn($query) => $query->limit(1)->select(['id', 'filename', 'dataset_folder', 'dataset_id', 'width', 'height'])->with([
+                    'annotations' => fn($q) => $q->select(['id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation'])
+                        ->with([
+                            'class' => fn($q) => $q->select(['id', 'name', 'rgb'])->get()->map(fn($c) => $c->toArray()) // Convert to array
+                        ])
+                ]),
+            ])
+            ->paginate(5)
+            ->through(fn($dataset) => $this->processDataset($dataset));
+        Util::logEnd("BUILDER paginatedDatasets");
+        return $dat;
+    }
+    private function processDataset($dataset)
+    {
+        $dataset->stats = $dataset->getStats();
+        $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
+
+        if ($dataset->images->isEmpty()) {
+            $dataset->thumbnail = "placeholder-image.png";
+        } else {
+            $dataset->setRelation('images', $this->prepareImagesForSvgRendering($dataset->images->first()));
+        }
+
+        return $dataset;
     }
     #[On('add-selected')]
     public function receiveSelected($selectedClasses, $datasetId)
     {
-        $this->selectedClasses[$datasetId] = $selectedClasses;
-
+        if (!isset($this->selectedClasses[$datasetId])) {
+            $this->selectedClasses[$datasetId] = $selectedClasses;
+        }
     }
     public function render()
     {
@@ -212,7 +255,8 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
-        $this->datasets = [];
+        Util::logStart('datasets_stage');
+        $this->datasetIds = [];
         // Get all explicitly selected metadata values
         $explicitlyIncluded = array_keys(array_filter($this->selectedMetadataValues));
         // Get all metadata values from skipped types (treat them as included)
@@ -224,35 +268,27 @@ class DatasetBuilder extends Component
 
         // Query datasets that match at least one metadata value
         $datasetMetadataIds = DatasetMetadata::whereIn('metadata_value_id', $metadataValueIds)
+            ->whereHas('dataset', function ($query) {
+                $query->approved();
+            })
             ->whereHas('dataset.categories', function ($query) {
                 $query->whereIn('category_id', $this->selectedCategories);
             })
             ->distinct()
             ->pluck('dataset_id');
+
         // Query datasets that have no metadata but belong to selected categories
         $datasetsWithoutMetadata = Dataset::approved()->whereDoesntHave('metadataValues')
             ->whereHas('categories', function ($query) {
                 $query->whereIn('category_id', $this->selectedCategories);
             })
             ->pluck('id');
-        // Merge both sets of datasets
-        $datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique();
 
-        $this->datasets = Dataset::approved()->whereIn('id', $datasetIds)
-            ->when($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'], function ($query) {
-                return $query->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON']);
-            })
-            ->with(['classes', 'metadataValues', 'categories'])
-            ->get()
-            ->map(function ($dataset) {
-                $dataset->stats = $dataset->getStats();
-                $dataset->image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($dataset->unique_name))[0];
-                $dataset->image_stats = Util::getImageSizeStats([$dataset->id]);
-                return $dataset;
-            })
-            ->toArray();
+        // Merge both sets of datasets
+        $this->datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique()->toArray();
 
         $this->selectedImages = [];
+        Util::logEnd('datasets_stage');
     }
 
     private function finalStage()
@@ -262,25 +298,21 @@ class DatasetBuilder extends Component
         $this->finalDataset['stats'] = $this->getCustomStats();
         $this->finalDataset['image_stats'] = Util::getImageSizeStats($this->imagesQuery()->pluck('id')->toArray(), true);
     }
-    private function imagesQuery()
+
+    private function imagesQuery($perPage = null)
     {
         $classIds = $this->getSelectedClassesForSelectedDatasets();
 
-        return Image::whereIn('dataset_id', array_keys(array_filter($this->selectedDatasets)))
-            ->whereNotIn('id', $this->selectedImages ?? [])
-            // Only include images that has annotations with selected classes
-            ->whereHas('annotations.class', function ($query) use ($classIds) {
-                $query->whereIn('id', $classIds);
-            })
-            // Include only annotations with selected classes for the images
-            ->with(['annotations' => function ($query) use ($classIds) {
-                $query->whereIn('annotation_class_id', $classIds);
-            }, 'annotations.class']);
+        return ImageQuery::forDatasets(array_keys(array_filter($this->selectedDatasets)))
+            ->excludeImages($this->selectedImages)
+            ->filterByClassIds($classIds)
+            ->perPage($perPage)
+            ->get();
     }
 
     private function downloadFilter()
     {
-        $this->images = $this->imagesQuery()->get()->toArray();
+        $this->images = $this->imagesQuery()->toArray();
 
         $this->finalDataset['stats'] = $this->getCustomStats();
         $this->finalDataset['image_stats'] = Util::getImageSizeStats(array_column($this->images, 'id'), true);
@@ -301,7 +333,6 @@ class DatasetBuilder extends Component
     #[Renderless]
     public function cacheQuery()
     {
-        $payload['query'] = \EloquentSerialize::serialize($this->imagesQuery());
         $payload['classIds'] = $this->getSelectedClassesForSelectedDatasets();
         $payload['selectedImages'] = $this->selectedImages;
         $payload['datasets'] = array_keys(array_filter($this->selectedDatasets));
@@ -325,7 +356,7 @@ class DatasetBuilder extends Component
 
     private function getCustomStats()
     {
-        $images = $this->imagesQuery()->get()->toArray();
+        $images = $this->imagesQuery()->toArray();
         $classCount = AnnotationClass::whereIn('id', $this->getSelectedClassesForSelectedDatasets())
             ->get(['name'])
             ->unique('name')

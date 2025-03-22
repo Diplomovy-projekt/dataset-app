@@ -97,7 +97,7 @@ class FromCoco extends BaseFromMapper
     }
 
 
-    function transformPolygon( array $polygonPoints, array $imgDims = null): string
+    function transformPolygon( array $polygonPoints, array $imgDims = null): array
     {
         $normalizedPoints = [];
         foreach (array_chunk($polygonPoints, 2) as $pair) {
@@ -107,7 +107,7 @@ class FromCoco extends BaseFromMapper
             $normalizedPoints[] = ['x' => $pair[0], 'y' => $pair[1]];
         }
 
-        return json_encode($normalizedPoints);
+        return $normalizedPoints;
     }
 
     function getClasses($classesSource): array

@@ -20,10 +20,13 @@
 
     <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <div class="flex flex-wrap sm:gap-5 pt-5">
-        @forelse($datasets as $dataset)
+        @forelse($this->paginatedDatasets as $dataset)
             <x-dataset.dataset-card :dataset="$dataset"></x-dataset.dataset-card>
         @empty
         @endforelse
+    </div>
+    <div class="flex-1">
+        {{ $this->paginatedDatasets->links() }}
     </div>
 </div>
 

@@ -1,4 +1,4 @@
-<div class="flex flex-col">
+<div class="flex flex-col rounded-lg">
     {{-- Dataset Header Section --}}
     <div class="bg-slate-900/50 backdrop-blur-sm rounded-lg">
         <div class="p-6">

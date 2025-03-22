@@ -35,6 +35,7 @@ class ImportService
      */
     public function handleImport(array $requestData): Response
     {
+        DB::beginTransaction();
 
         try {
             $this->importPreprocessor = new ImportPreprocess($requestData['format']);
@@ -43,59 +44,53 @@ class ImportService
 
             $this->saveDataset($mappedData->data, $requestData);
 
-            return Response::success();
-        } catch (DataException $e) {
-            return Response::error($e->getMessage(), $e->getData());
-        } catch (Exception $e) {
-            return Response::error("An error occurred while importing the dataset ".$e->getMessage());
-        }
-    }
-
-    private function saveDataset($mappedData, $requestData): Response
-    {
-        DB::beginTransaction();
-
-        $datasetFolder = $requestData['unique_name'];
-        try {
-            // 1. Move images to full-image folder
-            $this->moveImages(
-                imageFileNames: array_column($mappedData['images'], 'filename'),
-                from: AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
-                to: AppConfig::DATASETS_PATH['private'] . $datasetFolder. '/' . AppConfig::FULL_IMG_FOLDER
-            );
-
-            // 2. Add unique suffixes to image filenames
-            $this->datasetActions->addUniqueSuffixes($datasetFolder, $mappedData);
-
-
-            // 4. Save to DB
-            $savedToDb = $this->saveToDatabase($mappedData, $requestData);
-
-            // 3. Create thumbnails
-            $imageFilenames = array_column($mappedData['images'], 'filename');
-            $this->createThumbnails($datasetFolder, $imageFilenames);
-
-            // 5. Create class crops
-            $createdClassCrops = $this->datasetActions->createSamplesForClasses($datasetFolder,
-                $savedToDb->data['classesToSample'],
-                $imageFilenames
-            );
-            if (!$createdClassCrops->isSuccessful()) {
-                throw new DataException($createdClassCrops->message);
-            }
-
-            // 6. Assign colors to classes
-            $this->datasetActions->assignColorsToClasses(datasetFolder: $datasetFolder);
-
             DB::commit();
             return Response::success();
         } catch (DataException $e) {
-            if(Storage::exists(AppConfig::DATASETS_PATH['private'] . $datasetFolder)) {
-                Storage::deleteDirectory(AppConfig::DATASETS_PATH['private'] . $datasetFolder);
-            }
             DB::rollBack();
+            $this->cleanupDataset($requestData['unique_name']);
             return Response::error($e->getMessage(), $e->getData());
+        } catch (Exception $e) {
+            DB::rollBack();
+            $this->cleanupDataset($requestData['unique_name']);
+            return Response::error("An error occurred while importing the dataset: " . $e->getMessage());
         }
+    }
+
+    private function saveDataset($mappedData, $requestData)
+    {
+        $datasetFolder = $requestData['unique_name'];
+
+        // 1. Move images
+        $this->moveImages(
+            imageFileNames: array_column($mappedData['images'], 'filename'),
+            from: AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
+            to: AppConfig::DATASETS_PATH['private'] . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER
+        );
+
+        // 2. Add unique suffixes
+        $this->datasetActions->addUniqueSuffixes($datasetFolder, $mappedData);
+
+        // 3. Save to DB
+        $savedToDb = $this->saveToDatabase($mappedData, $requestData);
+
+        // 4. Create thumbnails
+        $imageFilenames = array_column($mappedData['images'], 'filename');
+        $this->createThumbnails($datasetFolder, $imageFilenames);
+
+        // 5. Create class crops
+        $createdClassCrops = $this->datasetActions->createSamplesForClasses(
+            $datasetFolder,
+            $savedToDb->data['classesToSample'],
+            $imageFilenames
+        );
+
+        if (!$createdClassCrops->isSuccessful()) {
+            throw new DataException($createdClassCrops->message);
+        }
+
+        // 6. Assign colors to classes
+        $this->datasetActions->assignColorsToClasses(datasetFolder: $datasetFolder);
     }
 
     /**
@@ -179,7 +174,14 @@ class ImportService
         } catch (Exception $e) {
             throw new DataException($e->getMessage());
         }
+    }
 
+    private function cleanupDataset(string $datasetFolder): void
+    {
+        $path = AppConfig::DATASETS_PATH['private'] . $datasetFolder;
+        if (Storage::exists($path)) {
+            Storage::deleteDirectory($path);
+        }
     }
 
 }

@@ -10,6 +10,7 @@ use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Models\Image;
 use App\Traits\LivewireActions;
+use App\Utils\ImageQuery;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -21,15 +22,16 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
-    use WithPagination, ImageRendering, LivewireActions;
+    use WithPagination, ImageRendering, LivewireActions, WithoutUrlPagination;
     #[Locked]
     public $uniqueName;
     public $dataset;
-    public $searchTerm;
+    public string $searchTerm = '';
     public Collection $metadata;
     public Collection $categories;
     public array $toggleClasses;
@@ -40,11 +42,14 @@ class DatasetShow extends Component
     #[Locked]
     public array $request;
 
-    #[Computed(persist: true, seconds: 900)]
+    #[Computed]
     public function paginatedImages()
     {
         Util::logStart("paginatedImages");
-        $images = $this->fetchImages();
+        $images = ImageQuery::forDatasets([$this->dataset['id']])
+            ->search($this->searchTerm)
+            ->perPage($this->perPage)
+            ->get();
         $images = $this->prepareImagesForSvgRendering($images);
         Util::logEnd("paginatedImages");
         return $images;
@@ -109,58 +114,7 @@ class DatasetShow extends Component
 
     public function updatedSearchTerm()
     {
-        $this->searchTerm = trim($this->searchTerm);
         unset($this->paginatedImages);
-    }
-
-    private function fetchImages()
-    {
-        $query = Image::where('dataset_id', $this->dataset['id'])
-            ->select(['id', 'filename', 'dataset_folder', 'width', 'height']);
-
-        if ($this->searchTerm) {
-            $query->where('filename', 'like', '%' . $this->searchTerm . '%');
-        }
-
-        // Paginate images first
-        $images = $query->paginate($this->perPage);
-
-        // Extract image IDs to fetch annotations separately
-        $imageIds = $images->pluck('id')->toArray();
-
-        // Fetch annotations as arrays directly
-        $annotations = DB::table('annotation_data')
-            ->selectRaw('id, image_id, x, y, width, height, annotation_class_id, segmentation')
-            ->whereIn('image_id', $imageIds)
-            ->get()
-            ->map(function ($annotation) {
-                $annotation->segmentation = json_decode($annotation->segmentation, true);
-                return (array) $annotation;
-            })
-            ->groupBy('image_id')
-            ->toArray();
-
-        // Fetch annotation classes as arrays
-        $annotationClasses = DB::table('annotation_classes')
-            ->selectRaw('id, name, rgb')
-            ->get()
-            ->mapWithKeys(fn($class) => [$class->id => (array) $class])
-            ->toArray();
-
-        // Attach annotations & classes to images
-        $images->getCollection()->each(function ($image) use ($annotations, $annotationClasses) {
-            $imageAnnotations = $annotations[$image->id] ?? [];
-
-            // Attach annotation class data
-            foreach ($imageAnnotations as &$annotation) {
-                $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
-            }
-
-            // Properly set the relationship
-            $image->setRelation('annotations', collect($imageAnnotations));
-        });
-
-        return $images;
     }
 
     #[Renderless]
@@ -187,8 +141,6 @@ class DatasetShow extends Component
     #[Renderless]
     public function cacheQuery($id)
     {
-        $query = Image::where('dataset_id', $id)->with('annotations.class');
-        $payload['query'] = \EloquentSerialize::serialize($query);
         $payload['datasets'] = [$id];
 
         $token = Str::random(32);

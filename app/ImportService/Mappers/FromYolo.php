@@ -109,14 +109,14 @@ class FromYolo extends BaseFromMapper
         ];
     }
 
-    public function transformPolygon(array $polygonPoints, $imgDims = null): string
+    public function transformPolygon(array $polygonPoints, $imgDims = null): array
     {
         $normalizedPoints = [];
         foreach (array_chunk($polygonPoints, 2) as $pair) {
             $normalizedPoints[] = ['x' => $pair[0], 'y' => $pair[1]];
         }
 
-        return json_encode($normalizedPoints);
+        return $normalizedPoints;
     }
 
     private function createBboxFromPolygon(array $points)

@@ -9,6 +9,7 @@ use App\ExportService\Interfaces\ToMapperInterface;
 use App\Models\Dataset;
 use App\Utils\Util;
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
@@ -32,6 +33,7 @@ abstract class BaseToMapper implements ToMapperInterface
      */
     public function linkImages($images, $datasetFolder): void
     {
+        $env = App::environment();
         $datasets = Dataset::whereIn('id', array_column($images, 'dataset_id'))->get()->keyBy('id');
         $destinationDir = $this->getImageDestinationDir($datasetFolder);
 
@@ -44,8 +46,14 @@ abstract class BaseToMapper implements ToMapperInterface
             // Create symbolic link
             if (File::exists($source)) {
                 $destination = $destinationDir . '/' . $image['filename'];
-                if (!File::link($source, $destination)) {
-                    throw new Exception("Failed to link image... \nFrom: $source \nTo: $destination");
+                if ($env == 'local') {
+                    if (File::link($source, $destination)) {
+                        throw new Exception("Failed to symlink image... \nFrom: $source \nTo: $destination");
+                    }
+                } else {
+                    if (!File::link($source, $destination)) {
+                        throw new Exception("Failed to link image... \nFrom: $source \nTo: $destination");
+                    }
                 }
             } else {
                 throw new Exception("Image not found: $source");

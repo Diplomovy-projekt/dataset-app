@@ -8,7 +8,7 @@
     <livewire:components.download-dataset :key="'dataset-show-download-dataset'" :datasetId="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:components.resolve-request :key="'resolve-request-component'" lazy/>
 
-    <div class=" mb-5 bg-slate-900/50">
+    <div class=" mb-5 bg-slate-900/50 rounded-lg">
         <x-dataset.dataset-header></x-dataset.dataset-header>
         <div class="flex flex-col sm:flex-row sm:items-center border-t border-slate-800   p-4 gap-4">
             <x-search-bar searchTitle="Search Images..." searchModel="searchTerm" searchMethod="search" />

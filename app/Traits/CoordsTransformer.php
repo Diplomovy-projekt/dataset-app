@@ -89,7 +89,6 @@ trait CoordsTransformer
         } elseif ($segment instanceof Model) {
             $segment = $segment->segmentation;
         }
-        //$segment = Util::isJson($segment) ? json_decode($segment, true) : $segment;
         if(Util::isJson($segment)){
             $segment = json_decode($segment, true);
         }

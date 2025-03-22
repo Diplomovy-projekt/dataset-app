@@ -2,49 +2,42 @@
 
 namespace App\Livewire\FullPages;
 
-use App\Configs\AppConfig;
-use App\DatasetActions\DatasetActions;
-use App\DatasetCrud\DatasetCrud;
-use App\ExportService\ExportService;
-use App\ImageService\ImageProcessor;
 use App\ImageService\ImageRendering;
-use App\Jobs\DeleteTempFile;
 use App\Models\Dataset;
-use App\Models\Image;
-use App\Utils\QueryUtil;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Profile extends Component
 {
-    use ImageRendering;
-    public $datasets;
+    use ImageRendering, WithPagination;
+
+    #[Computed]
+    public function paginatedDatasets()
+    {
+        return Dataset::approved()
+            ->where('user_id', auth()->id())
+            ->with([
+                'images' => fn($query) => $query->limit(1)->with(['annotations.class']),
+                'classes'
+            ])
+            ->paginate(10)
+            ->through(fn($dataset) => $this->processDataset($dataset));
+    }
+
     public function render()
     {
-        $this->loadDatasets();
         return view('livewire.full-pages.profile');
     }
 
-    private function loadDatasets()
+    private function processDataset($dataset)
     {
-        $datasets = Dataset::approved()->where('user_id', auth()->id()) // Filter datasets by the authenticated user's ID
-        ->with([
-            'images' => function ($query) {
-                $query->limit(1)->with(['annotations.class']);
-            },
-        ])
-            ->with('classes')
-            ->get();
-        foreach($datasets as $key => $dataset){
-
-            if($dataset->images->isEmpty()){
-                $dataset->thumbnail = "placeholder-image.png";
-                continue;
-            }
-            $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
-            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            $dataset->setRelation('images', $processedImage);
-            $dataset->stats = $dataset->getStats();
+        if ($dataset->images->isEmpty()) {
+            $dataset->thumbnail = "placeholder-image.png";
+        } else {
+            $dataset->setRelation('images', $this->prepareImagesForSvgRendering($dataset->images->first()));
         }
-        $this->datasets = $datasets->toArray();
+        $dataset->stats = $dataset->getStats();
+        return $dataset;
     }
 }

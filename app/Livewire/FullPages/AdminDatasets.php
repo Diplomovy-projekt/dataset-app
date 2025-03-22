@@ -130,8 +130,6 @@ class AdminDatasets extends Component
 
     public function cacheQuery($id)
     {
-        $query = Image::where('dataset_id', $id)->with('annotations.class');
-        $payload['query'] = \EloquentSerialize::serialize($query);
         $payload['datasets'] = [$id];
 
         $token = Str::random(32);

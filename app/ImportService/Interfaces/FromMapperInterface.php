@@ -41,7 +41,7 @@ interface FromMapperInterface
      * @param array|null $imgDims Optional image dimensions.
      * @return string Transformed polygon data.
      */
-    public function transformPolygon(array $polygonPoints, array $imgDims = null): string;
+    public function transformPolygon(array $polygonPoints, array $imgDims = null): array;
 
     /**
      * Retrieves class labels from a given source.

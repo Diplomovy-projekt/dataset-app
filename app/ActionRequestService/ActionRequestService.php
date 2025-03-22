@@ -44,11 +44,11 @@ class ActionRequestService
                 'user_id' => $user->id,
                 'dataset_id' => $payload['dataset_id'],
                 'type' => $type,
-                'payload' => json_encode($payload),
+                'payload' => $payload,
             ]);
 
             // TODO change back to auto-approve
-            if (!$user->isAdmin()) {
+            if ($user->isAdmin()) {
                 $this->resolveRequest($request, 'approve', 'Auto-approved by system');
             }
 
@@ -79,9 +79,8 @@ class ActionRequestService
                 throw new \InvalidArgumentException("Invalid status: {$status}");
             }
             $handler = $this->getHandler($request);
-            $payload = json_decode($request->payload, true);
             $method = $status;
-            $handler->$method($payload);
+            $handler->$method($request->payload);
 
             $request->status = $status === 'approve' ? 'approved' : 'rejected';
             $request->reviewed_by = $user->id;
@@ -108,7 +107,6 @@ class ActionRequestService
 
     private function sameRequestExists(string $type, array $payload): bool
     {
-        // Find request with same type and check each payload
         return ActionRequest::where('type', $type)
             ->where('status', 'pending')
             ->where('payload', json_encode($payload))

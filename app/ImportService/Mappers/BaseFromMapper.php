@@ -44,7 +44,7 @@ abstract class BaseFromMapper implements FromMapperInterface
     }
     abstract function parse(string $folderName, $annotationTechnique): Response;
     abstract function transformBoundingBox(array $bbox, array $imgDims = null): array;
-    abstract function transformPolygon(array $polygonPoints, array $imgDims = null): string;
+    abstract function transformPolygon(array $polygonPoints, array $imgDims = null): array;
     abstract function getClasses($classesSource): array;
 
 

@@ -10,6 +10,30 @@
             </div>
             <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
 
+            <!-- Warning Card (If invitation already exists but not used) -->
+            @if ($emailAlreadySentMsg)
+                <div class="p-4 border-l-4 rounded-lg shadow-md
+                            bg-blue-900/40 border-blue-600 text-blue-300">
+                    <div class="flex items-start gap-3">
+                        <x-icon name="o-exclamation-circle" class="w-6 h-6 text-blue-500" />
+                        <div>
+                            <p class="font-medium">{{ $emailAlreadySentMsg }}</p>
+                            <p class="text-blue-300/70 text-sm mt-1">
+                                You can resend the invitation, or cancel if you don't want to.
+                            </p>
+                            <div class="mt-3 flex justify-end gap-2">
+                                <x-misc.button variant="secondary" wire:click="$set('emailAlreadySentMsg', '')">
+                                    Cancel
+                                </x-misc.button>
+                                <x-misc.button variant="primary" wire:click="resendInvitation">
+                                    Resend Invitation
+                                </x-misc.button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Form Section -->
             <div class="bg-slate-800 rounded-xl py-6">
                 <div class="space-y-6">
@@ -43,13 +67,11 @@
                                        wire:click="sendInvitation"
                                        :icon="@svg('o-paper-airplane')->toHtml()"
                         >
-                        Send Invitation
+                            Send Invitation
                         </x-misc.button>
                     </div>
                 </div>
             </div>
         </div>
-
-
     </x-modals.fixed-modal>
 </div>

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('metadata_type_id')->constrained()->onDelete('cascade');
             $table->string('value');
-            $table->timestamps();
         });
     }
 

@@ -28,14 +28,14 @@ class AnnotationDataSeeder extends Seeder
                     'y' => $this->faker->randomFloat(2, 0, 1),
                     'width' => $this->faker->randomFloat(2, 0, 1),
                     'height' => $this->faker->randomFloat(2, 0, 1),
-                    'segmentation' => json_encode(
+                    'segmentation' =>
                         array_map(function () {
                             return [
                                 $this->faker->randomFloat(2, 0, 1),
                                 $this->faker->randomFloat(2, 0, 1),
                             ];
                         }, range(1, rand(4, 10)))
-                    ),
+                    ,
                 ]);
             }
         }

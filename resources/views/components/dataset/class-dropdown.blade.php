@@ -1,4 +1,4 @@
-<div x-data="classSelector(@this)" class="">
+<div x-data="classSelector(@this)" class="relative">
     <!-- Dropdown Button -->
     <button @click="open = !open" class="z-20 bg-slate-900/50 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 hover:bg-slate-800/50 transition-colors">
         <span>Toggle classes</span>
@@ -8,8 +8,8 @@
     </button>
 
     <!-- Dropdown Content -->
-    <div x-cloak x-show="open" @click.away="open = false" class="z-30 absolute sm:right-0 sm:left-auto mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-auto min-w-max">
-        <div class="p-2 sm:flex gap-3 border-slate-700 items-center align-center">
+    <div x-cloak x-show="open" @click.away="open = false" class="z-30 absolute right-0 max-sm:left-0 mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-auto min-w-max">
+        <div class="p-2 flex flex-col sm:flex-row gap-3 border-slate-700 items-center align-center">
             <!-- Search Bar -->
             <div class="relative flex-1">
                 {{-- Search bar --}}

@@ -124,7 +124,7 @@ class ExtendDatasetHandler extends BaseHandler
 
     public function reviewChanges(Model $request): mixed
     {
-        $payload = json_decode($request->payload, true);
+        $payload = $request->payload;
         $uniqueName = $payload['child_unique_name'];
         return Redirect::route('dataset.review.extend', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
     }
