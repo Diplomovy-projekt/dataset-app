@@ -12,24 +12,29 @@ use Symfony\Component\Yaml\Yaml;
 
 class YoloZipValidator extends BaseZipValidator
 {
-    /**
-     * @throws DataException
-     */
-    public function validateStructure(string $folderName): void
-    {
-        $filePath = $this->getPath($folderName);
+    protected static string $configClass = YoloConfig::class;
 
-        $this->validateDataFile($filePath);
-        $this->validateImageOrganization($filePath, YoloConfig::IMAGE_FOLDER);
-        $this->validateAnnotationOrganization($filePath, YoloConfig::LABEL_EXTENSION, YoloConfig::LABELS_FOLDER);
+    protected function validateImageOrganization(string $datasetPath, ?string $imageFolder): void
+    {
+        $folderPath = $imageFolder ? $datasetPath . '/' . $imageFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, self::IMAGE_EXTENSIONS);
+    }
+
+    protected function validateAnnotationOrganization(string $datasetPath, string $labelExtension, ?string $annotationFolder = null): void
+    {
+        $folderPath = $annotationFolder ? $datasetPath . '/' . $annotationFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, $labelExtension);
     }
 
     /**
+     * Additional validation for the Yolo dataset.
+     * Check if the data.yaml file is present and contains the 'nc' and 'names' keys.
+     *
      * @throws DataException
      */
-    private function validateDataFile(string $filePath): void
+    protected function additionalStructureValidation(string $datasetPath): void
     {
-        $dataFilePath = $filePath . '/' . YoloConfig::DATA_YAML;
+        $dataFilePath = $datasetPath . '/' . YoloConfig::DATA_YAML;
         if (!Storage::exists($dataFilePath)) {
             throw new DataException("Data File not found");
         }

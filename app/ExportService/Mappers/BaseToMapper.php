@@ -99,5 +99,11 @@ abstract class BaseToMapper implements ToMapperInterface
         return Storage::path($path);
     }
 
+    /**
+     * Get the folder where the images are stored.
+     *
+     * @return string The path to the image folder.
+     */
     abstract public function getImageFolder(): string;
+
 }

@@ -13,26 +13,18 @@ use Symfony\Component\Yaml\Yaml;
 
 class CocoZipValidator extends BaseZipValidator
 {
-    /**
-     * @throws DataException
-     * @throws \Exception
-     */
-    public function validateStructure(string $folderName): void
-    {
-        $filePath = $this->getPath($folderName);
 
-        $this->validateImageOrganization($filePath, CocoConfig::IMAGE_FOLDER);
-        $this->validateAnnotationOrganization($filePath, CocoConfig::LABEL_EXTENSION);
+    protected static string $configClass = CocoConfig::class;
+
+    protected function validateImageOrganization(string $datasetPath, ?string $imageFolder): void
+    {
+        $folderPath = $imageFolder ? $datasetPath . '/' . $imageFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, self::IMAGE_EXTENSIONS);
     }
 
-    /**
-     * @throws DataException
-     */
-    public function validateAnnotationOrganization(string $filePath, string $labelExtension, $annotationFolder = null): void
+    protected function validateAnnotationOrganization(string $datasetPath, string $labelExtension, ?string $annotationFolder = null): void
     {
-        $labelsFile = $filePath . '/' . CocoConfig::LABELS_FILE;
-        if (!Storage::exists($labelsFile)) {
-            throw new DataException("COCO JSON file not found");
-        }
+        $folderPath = $annotationFolder ? $datasetPath . '/' . $annotationFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, $labelExtension);
     }
 }

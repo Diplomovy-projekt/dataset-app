@@ -11,13 +11,24 @@ class AppConfig
     public const ANNOTATION_FORMATS_INFO = [
         'yolo' => [
             'name' => 'YOLO',
-            'extension' => 'txt',],
+            'extension' => 'txt',
+            ],
         'labelme' => [
             'name' => 'Labelme',
-            'extension' => 'json',],
+            'extension' => 'json',
+            ],
         'coco' => [
             'name' => 'COCO',
-            'extension' => 'json',],
+            'extension' => 'json',
+            ],
+        'paligemma' => [
+            'name' => 'PaliGemma',
+            'extension' => 'json',
+            ],
+        'pascalvoc' => [
+            'name' => 'PascalVOC',
+            'extension' => 'xml',
+            ],
     ];
 
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';

@@ -6,6 +6,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-libxml": "*",
+        "ext-simplexml": "*",
         "ext-zip": "*",
         "anourvalar/eloquent-serialize": "^1.2",
         "blade-ui-kit/blade-heroicons": "^2.5",
@@ -28,6 +30,7 @@
         "mansoor/blade-lets-icons": "^1.0",
         "postare/blade-mdi": "^1.1",
         "robsontenorio/mary": "^1.40",
+        "saloonphp/xml-wrangler": "^1.4",
         "symfony/yaml": "^7.2"
     },
     "require-dev": {

@@ -11,19 +11,17 @@ use Illuminate\Support\Facades\Storage;
 
 class LabelmeZipValidator extends BaseZipValidator
 {
+    protected static string $configClass = LabelmeConfig::class;
 
-    /**
-     * @throws DataException
-     */
-    public function validateStructure(string $folderName): void
+    protected function validateImageOrganization(string $datasetPath, ?string $imageFolder): void
     {
-        $filePath = $this->getPath($folderName);
+        $folderPath = $imageFolder ? $datasetPath . '/' . $imageFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, self::IMAGE_EXTENSIONS);
+    }
 
-        $this->validateImageOrganization($filePath, LabelmeConfig::IMAGE_FOLDER);
-        $this->validateAnnotationOrganization($filePath, LabelmeConfig::LABEL_EXTENSION, LabelmeConfig::LABELS_FOLDER);
-
-        if (!empty($errors)) {
-            throw new DataException("Zip structure issues found", $errors);
-        }
+    protected function validateAnnotationOrganization(string $datasetPath, string $labelExtension, ?string $annotationFolder = null): void
+    {
+        $folderPath = $annotationFolder ? $datasetPath . '/' . $annotationFolder : $datasetPath;
+        $this->validateFolderContent($folderPath, $labelExtension);
     }
 }

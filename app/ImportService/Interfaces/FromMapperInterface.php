@@ -8,15 +8,6 @@ use Illuminate\Database\Eloquent\Collection;
 interface FromMapperInterface
 {
     /**
-     * Adds unique suffixes to image and annotation file names to ensure uniqueness.
-     *
-     * @param \Illuminate\Support\Collection $images Collection of image file paths.
-     * @param \Illuminate\Support\Collection $annotations Collection of annotation file paths.
-     * @throws \Exception If the count of images and annotations do not match.
-     */
-    public function addUniqueSuffixes(Collection &$images, Collection &$annotations);
-
-    /**
      * Parses a dataset folder using a given annotation technique.
      *
      * @param string $folderName The dataset folder name.

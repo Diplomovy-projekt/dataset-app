@@ -11,16 +11,24 @@ use Illuminate\Support\Facades\Storage;
 abstract class BaseAnnotationValidator implements AnnotationValidatorInterface
 {
     /**
+     * Get the path to the annotation folder.
      * @throws \Exception
      */
-    public function getAnnotationPath(string $datasetFolder, string $annotationTechnique): string
+    public function getAnnotationPath(string $datasetFolder, ?string $annotationFolder): string
     {
-        $path = AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder .'/'. $annotationTechnique;
-        if(!Storage::exists($path)) {
+        $path = AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder;
+
+        if ($annotationFolder !== null) {
+            $path .= '/' . $annotationFolder;
+        }
+
+        if (!Storage::exists($path)) {
             throw new \Exception("Annotation folder does not exist: $path");
         }
+
         return $path;
     }
+
     /**
      * Validates annotations in the dataset folder using the given annotation technique.
      *

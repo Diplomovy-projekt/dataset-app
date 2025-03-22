@@ -19,7 +19,7 @@ interface ToMapperInterface
     public function handle(array $images, string $datasetFolder, string $annotationTechnique): void;
 
     /**
-     * Create annotation file/files for the dataset.
+     * Parse image and annotation data to map them to the selected format and save them in the dataset folder.
      *
      * @param array $images The images to be processed.
      * @param string $datasetFolder The folder of the dataset.
@@ -37,7 +37,7 @@ interface ToMapperInterface
     public function getImageDestinationDir(string $datasetFolder): string;
 
     /**
-     * Get relative path where annotation will be created, (relative because uses Storage facade)
+     * Get relative path where annotation will be created, (relative to the storage folder, because uses Storage facade)
      *
      * @param string $datasetFolder The folder of the dataset.
      * @param array|null $image The image data.

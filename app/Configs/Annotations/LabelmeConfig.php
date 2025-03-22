@@ -2,7 +2,7 @@
 
 namespace App\Configs\Annotations;
 
-class LabelmeConfig
+class LabelmeConfig extends BaseAnnotationConfig
 {
     /*
      * Expected archive structure for Labelme:
@@ -12,8 +12,8 @@ class LabelmeConfig
      * │   ├── image1.jpg
      * │   └── image2.jpg
      * └── labels/
-     *     ├── annotation1.json
-     *     └── annotation2.json
+     *     ├── image1.json
+     *     └── image2.json
      */
     public const LABEL_EXTENSION = 'json';
     public const IMAGE_FOLDER = 'images';

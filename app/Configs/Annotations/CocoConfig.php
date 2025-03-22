@@ -2,7 +2,9 @@
 
 namespace App\Configs\Annotations;
 
-class CocoConfig
+use Faker\Provider\Base;
+
+class CocoConfig extends BaseAnnotationConfig
 {
     /*
      * Expected archive structure for YOLO:

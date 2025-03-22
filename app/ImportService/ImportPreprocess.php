@@ -47,7 +47,7 @@ class ImportPreprocess
         // 3. Parse the dataset
         $mappedData = $this->mapper->parse($folderName, $annotationTechnique);
         if (!$mappedData->isSuccessful()) {
-            throw new DataException($mappedData->message, $mappedData->data);
+            throw new DataException($mappedData->message);
         }
 
         return Response::success(data: $mappedData->data);
