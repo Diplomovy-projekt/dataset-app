@@ -2,13 +2,13 @@
 <x-app-layout>
     <div class=" min-h-screen text-gray-200 p-6">
         <div class="max-w-6xl mx-auto">
-            <!-- Page Header -->
+            {{--Page Header--}}
             <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 mb-8">
                 <h1 class="text-3xl font-bold mb-2">Dataset Upload Guidelines</h1>
                 <p class="text-slate-400">Learn how to structure your ZIP files for different annotation formats</p>
             </div>
 
-            <!-- Format Selection Tabs -->
+            {{--Format Selection Tabs--}}
             <div class="mb-8" x-data="{ activeTab: 'coco' }">
                 <div class="flex border-b border-slate-700 mb-6">
                     <button
@@ -68,13 +68,13 @@
 <x-app-layout>
     <div class="min-h-screen text-gray-200 p-6">
         <div class="max-w-6xl mx-auto">
-            <!-- Page Header -->
+            {{--Page Header--}}
             <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 mb-8">
                 <h1 class="text-3xl font-bold mb-2">Dataset Upload Guidelines</h1>
                 <p class="text-slate-400">Learn how to structure your ZIP files for different annotation formats</p>
             </div>
 
-            <!-- Format Selection Tabs -->
+            {{--Format Selection Tabs--}}
             <div class="mb-8" x-data="{ activeTab: '{{ array_key_first(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO) }}' }">
                 <div class="flex flex-wrap border-b border-slate-700 mb-6">
                     @foreach(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO as $format => $info)
@@ -89,7 +89,7 @@
                     @endforeach
                 </div>
 
-                <!-- Dynamically include format components -->
+                {{--Dynamically include format components--}}
                 @foreach(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO as $format => $info)
                     <div x-show="activeTab === '{{ $format }}'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
                         @if(view()->exists('components.zip-format-info.' . $format))

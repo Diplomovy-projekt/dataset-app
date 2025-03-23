@@ -1,8 +1,8 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 ">
-    <!-- Hero Section with gradient background -->
+    {{--Hero Section with gradient background--}}
     <div class="rounded-2xl border border-slate-700 py-16">
         <div class="max-w-4xl mx-auto sm:px-6">
-            <!-- Header -->
+            {{--Header--}}
             <div class="text-center mb-12">
                 <h2 class="text-4xl sm:text-5xl font-bold text-gray-200 mb-6 tracking-tight leading-tight">
                     Tailor Your Perfect Dataset
@@ -15,7 +15,7 @@
                     </p>
                 </div>
 
-                <!-- Info Card -->
+                {{--Info Card--}}
                 <div class="bg-slate-800/40 border-l-4 border-blue-500 p-6 rounded-lg mb-10">
                     <div class="flex items-center justify-center gap-3 text-gray-200">
                         <div class="bg-blue-500/20 p-2 rounded-lg">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
 
-                <!-- CTA Button -->
+                {{--CTA Button--}}
                 <div class="flex justify-center">
                     <button
                         wire:click="nextStage"
@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <!-- Builder Section -->
+    {{--Builder Section--}}
     <div id="builder" class="mt-12 space-y-4">
         @foreach($stageData as $stageNumber => $stage)
 

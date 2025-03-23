@@ -1,7 +1,7 @@
 <div x-data="classSampleSort(@this)"
      id="classes-sample-container-{{$this->dataset['unique_name']}}">
     <x-modals.fixed-modal modalId="display-classes" class="sm:max-w-11/12">
-        <!-- Modal Title -->
+        {{--Modal Title--}}
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-200">Class Sample Preview</h1>
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-6"></div>
@@ -10,7 +10,7 @@
             <p class="text-gray-500 font-sm mb-2">Here you can choose which classes to include in your dataset.</p>
         @endif
         <div class="mb-8" {{--wire:key="livewire-classes-sample-comp-{{$this->dataset['unique_name']}}"--}}>
-            <!-- Dataset Header -->
+            {{--Dataset Header--}}
             <div class="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-slate-800 to-slate-900 p-4 rounded-t-xl border-b border-slate-700">
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                     <div class="bg-blue-500 p-2 rounded-lg">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
 
-                <!-- Sorting Controls -->
+                {{--Sorting Controls--}}
                 <div class="flex sm:items-center gap-3" x-data="{ sortOrder: 'asc' }">
                     <span class="text-slate-400 text-sm">Sort by:</span>
                     <select
@@ -47,11 +47,11 @@
             </div>
 
 
-            <!-- Classes Grid -->
+            {{--Classes Grid--}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-slate-900/50 rounded-b-xl">
                 @foreach($this->dataset['classes'] as $class)
                     <div id="class-sample-{{$class['id']}}" class="bg-slate-800 rounded-lg hover:bg-slate-750 transition-all duration-200 group" wire:key="nested-classes-in-samples-{{$class['id']}}">
-                        <!-- Class Header -->
+                        {{--Class Header--}}
                         <div class="p-4 border-b border-slate-700">
                             <div class="flex items-center justify-between">
                                 @if($this->selectable)
@@ -98,7 +98,7 @@
                             </div>
                         </div>
 
-                        <!-- Image Preview Grid -->
+                        {{--Image Preview Grid--}}
                         <div class="p-4">
                             <div class="grid grid-cols-3 gap-2">
                                 @foreach($class['images'] as $image)
@@ -112,7 +112,7 @@
                                                       @click=" const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
                                                                 $dispatch('open-full-screen-image', { src: imgSrc, overlayId: null })">
                                         </x-images.img>
-                                        <!-- Hover Overlay -->
+                                        {{--Hover Overlay--}}
                                         <div class="w-14 pointer-events-none absolute inset-0 bg-slate-900/60 opacity-0 group-hover/image:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                                             <x-icon name="o-magnifying-glass" class="w-4 h-4 text-gray-200" />
                                         </div>

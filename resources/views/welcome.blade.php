@@ -2,7 +2,7 @@
     <div class="
     rounded-2xl my-12">
         <div class="max-w-7xl mx-auto py-6">
-            <!-- Hero Section -->
+            {{--Hero Section--}}
             <div class="text-center">
                 <h1 class="text-4xl sm:text-6xl font-bold text-gray-200 leading-tight mb-8 tracking-wide bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
                     Discover, Create, and Elevate Your Datasets
@@ -13,7 +13,7 @@
                         Unlock the potential of your research with custom datasets. Whether you're exploring, building, or analyzing, our intuitive platform helps you create the exact data you need.
                     </p>
                 </div>
-                <!-- CTA Buttons -->
+                {{--CTA Buttons--}}
                 <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-16">
                     <a wire:navigate href="{{ route('builder') }}"
                        class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-semibold text-gray-200 transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
@@ -31,7 +31,7 @@
                     </a>
                 </div>
 
-                <!-- Statistics -->
+                {{--Statistics--}}
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
                     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700">
                         <div class="text-3xl font-bold text-blue-400 mb-2">{{ $statistics['numImages'] }}</div>

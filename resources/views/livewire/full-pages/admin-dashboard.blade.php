@@ -1,8 +1,8 @@
 <div x-data="adminDashboard(@this)">
-    <!-- Header Section -->
+    {{--Header Section--}}
     <x-misc.header title="System Statistics"/>
 
-    <!-- Stats Grid -->
+    {{--Stats Grid--}}
     <div class="flex flex-col sm:flex-row justify-between gap-3">
         @foreach([
             ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount],
@@ -24,9 +24,9 @@
         @endforeach
     </div>
 
-    <!-- Categories Management Section -->
+    {{--Categories Management Section--}}
     <div class="space-y-6 mt-8">
-        <!-- Section Header -->
+        {{--Section Header--}}
         <x-misc.header title="Categories Management"/>
 
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
@@ -47,9 +47,9 @@
             </div>
         </div>
 
-        <!-- Categories List -->
+        {{--Categories List--}}
         <div class="space-y-3">
-            <!-- New Category Input (Initially Hidden) -->
+            {{--New Category Input (Initially Hidden)--}}
             <div
                 x-show="open == 'new-category'"
                 x-transition
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Existing Categories -->
+            {{--Existing Categories--}}
             <div class="bg-slate-800 rounded-xl overflow-hidden">
                 <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3 p-4">
                     @foreach($this->categories as $category)
@@ -86,7 +86,7 @@
                             class="p-4 bg-slate-700/50 rounded-lg flex items-center justify-between group hover:bg-slate-700 transition-colors"
                             x-data="{categoryText: '{{ $category['name'] }}', editing: false}">
 
-                            <!-- Category Text (View Mode) -->
+                            {{--Category Text (View Mode)--}}
                             <div x-show="!editing" @click="editing = true" class="flex items-center gap-2 cursor-pointer">
                                 <div class="bg-green-500/10 p-2 rounded-lg">
                                     <x-icon name="o-tag" class="w-4 h-4 text-green-400" />
@@ -94,7 +94,7 @@
                                 <span class="text-gray-200">{{ $category['name'] }}</span>
                             </div>
 
-                            <!-- Category Text (Edit Mode) -->
+                            {{--Category Text (Edit Mode)--}}
                             <div x-show="editing" class="flex-1 flex items-center gap-2">
                                 <input
                                     type="text"
@@ -108,7 +108,7 @@
                                 >
                             </div>
 
-                            <!-- Delete Button -->
+                            {{--Delete Button--}}
                             <button
                                 @click="categoryDelete = {{ $category['id'] }}; open = 'delete-category-modal'"
                                 class="p-1.5 text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        <!-- Delete Confirmation Modal for Categories -->
+        {{--Delete Confirmation Modal for Categories--}}
         <x-modals.fixed-modal modalId="delete-category-modal">
             <div class="p-6 space-y-4">
                 <div class="flex items-center gap-3 text-red-400">
@@ -144,9 +144,9 @@
         </x-modals.fixed-modal>
     </div>
 
-    <!-- Metadata Management Section -->
+    {{--Metadata Management Section--}}
     <div class="space-y-6">
-        <!-- Section Header -->
+        {{--Section Header--}}
         <x-misc.header title="Metadata Management"/>
 
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
@@ -167,9 +167,9 @@
             </div>
         </div>
 
-        <!-- Metadata Types List -->
+        {{--Metadata Types List--}}
         <div class="space-y-3">
-            <!-- New Type Input (Initially Hidden) -->
+            {{--New Type Input (Initially Hidden)--}}
             <div x-show="open == 'new-type'" x-transition class="bg-slate-800 rounded-xl p-4 border border-blue-500/50">
                 <div class="flex flex-wrap items-center gap-3">
                     <input
@@ -191,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- Existing Types -->
+            {{--Existing Types--}}
             @foreach($this->metadata as $type)
                 <div
                     class="bg-slate-800 rounded-xl overflow-hidden"
@@ -202,7 +202,7 @@
                     typeName: '{{ $type['name'] }}',
                     editingType: false
                 }">
-                    <!-- Type Header (Collapsed State) -->
+                    {{--Type Header (Collapsed State)--}}
                     <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-slate-700/50 transition-colors">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                             <div class="bg-purple-500/10 p-2 rounded-lg cursor-pointer w-fit" @click="expanded = !expanded">
@@ -212,13 +212,13 @@
                                     ::class="{ 'rotate-90': expanded }" />
                             </div>
 
-                            <!-- Type Name (View Mode) -->
+                            {{--Type Name (View Mode)--}}
                             <div x-show="!editingType" @click="editingType = true" class="flex items-center gap-2 cursor-pointer">
                                 <span class="text-xl font-bold text-gray-300">{{ $type['name'] }}</span>
                                 <span class="text-sm text-gray-400">({{ count($type['metadata_values']) }} values)</span>
                             </div>
 
-                            <!-- Type Name (Edit Mode) -->
+                            {{--Type Name (Edit Mode)--}}
                             <div x-show="editingType" class="flex items-center gap-2">
                                 <input
                                     type="text"
@@ -234,7 +234,7 @@
                             </div>
                         </div>
 
-                        <!-- Delete Type Button -->
+                        {{--Delete Type Button--}}
                         <button
                             @click="typeDelete = {{ $type['id'] }}; open = 'delete-type-modal'"
                             class="p-2 text-red-400 hover:text-red-300 transition-colors">
@@ -242,12 +242,12 @@
                         </button>
                     </div>
 
-                    <!-- Values Section (Expanded State) -->
+                    {{--Values Section (Expanded State)--}}
                     <div
                         x-show="expanded"
                         x-collapse
                         class="border-t border-slate-700">
-                        <!-- Add Value Input -->
+                        {{--Add Value Input--}}
                         <div class="p-4 bg-slate-800/50">
                             <div
                                 x-show="isAddingValue"
@@ -283,19 +283,19 @@
                             </button>
                         </div>
 
-                        <!-- Values List -->
+                        {{--Values List--}}
                         <div class="grid sm:grid-cols-2">
                             @foreach($type['metadata_values'] as $index => $value)
                                 <div
                                     class="p-4 flex items-center justify-between hover:bg-slate-700/50 group"
                                     x-data="{valueText: '{{ $value['value'] }}', editingValue: false}">
 
-                                    <!-- Value Text (View Mode) -->
+                                    {{--Value Text (View Mode)--}}
                                     <div x-show="!editingValue" @click="editingValue = true" class="flex items-center gap-2 cursor-pointer">
                                         <span class="text-gray-300">{{ $value['value'] }}</span>
                                     </div>
 
-                                    <!-- Value Text (Edit Mode) -->
+                                    {{--Value Text (Edit Mode)--}}
                                     <div x-show="editingValue" class="flex-1">
                                         <input
                                             type="text"
@@ -309,7 +309,7 @@
                                         >
                                     </div>
 
-                                    <!-- Action Buttons -->
+                                    {{--Action Buttons--}}
                                     <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             @click="deleteValue({{ $value['id'] }})"
@@ -325,7 +325,7 @@
             @endforeach
         </div>
 
-        <!-- Delete Confirmation Modal -->
+        {{--Delete Confirmation Modal--}}
         <x-modals.fixed-modal modalId="delete-type-modal">
             <div class="p-6 space-y-4">
                 <div class="flex items-center gap-3 text-red-400">

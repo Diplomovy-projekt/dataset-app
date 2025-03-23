@@ -7,7 +7,7 @@
     <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueName="$dataset['unique_name']"  />
 --}}
 
-    <!-- Header -->
+    {{--Header--}}
     <x-misc.highlight-card
         color="yellow"
         title="Reduce Dataset Review"

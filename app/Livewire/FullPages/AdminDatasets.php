@@ -17,10 +17,11 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 class AdminDatasets extends Component
 {
-    use WithPagination, LivewireActions;
+    use WithPagination, LivewireActions, WithoutUrlPagination;
     private array $tableIds = ['dataset-overview', 'pending-requests', 'resolved-requests'];
     public array $tables = [];
 
@@ -30,7 +31,7 @@ class AdminDatasets extends Component
     #[Computed]
     public function paginatedDatasetOverview()
     {
-        $d = Dataset::query()
+        return Dataset::query()
             ->approved()
             ->select('datasets.*')
             ->with(['categories:id,name', 'user:id,email,name'])
@@ -40,8 +41,7 @@ class AdminDatasets extends Component
             }, function ($query) {
                 $query->orderBy($this->tables['dataset-overview']['sortColumn'], $this->tables['dataset-overview']['sortDirection']);
             })
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
-        return $d;
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: 'datasets');
     }
 
     #[Computed]
@@ -168,7 +168,7 @@ class AdminDatasets extends Component
             ->when(!in_array($this->tables[$tableName]['sortColumn'], ['user.email', 'dataset.display_name']), function ($query) use ($tableName) {
                 $query->orderBy($this->tables[$tableName]['sortColumn'], $this->tables[$tableName]['sortDirection']);
             })
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: $tableName);
     }
 
 }

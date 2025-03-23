@@ -1,5 +1,5 @@
 <div x-data="{ activeTab:  '{{array_keys($tables)[0]}}' }">
-    <!-- Tabs -->
+    {{--Tabs--}}
     <div class="border-b border-slate-700">
         <div class="flex gap-6 px-6">
             @foreach($tables as $tabId => $table)
@@ -22,18 +22,21 @@
         </div>
     </div>
 
-    <!-- Table Content Section -->
-    @foreach($tables as $tabId => $table)
-        @php
-            $variableName = 'paginated' . Illuminate\Support\Str::studly(str_replace('-', ' ', $table['id']));
-        @endphp
+    {{--Table Content Section--}}
+    <div class="relative">
+        <x-misc.pagination-loading/>
+        @foreach($tables as $tabId => $table)
+            @php
+                $variableName = 'paginated' . Illuminate\Support\Str::studly(str_replace('-', ' ', $table['id']));
+            @endphp
 
-        <div x-show="activeTab === '{{ $tabId }}'" x-cloak>
-            <x-dynamic-component :component="'tables.' . $tabId" :table="$table" :items="$variableName"/>
-        </div>
+            <div x-show="activeTab === '{{ $tabId }}'" x-cloak>
+                <x-dynamic-component :component="'tables.' . $tabId" :table="$table" :items="$variableName"/>
+            </div>
 
-        <div class="mt-5" x-show="activeTab === '{{ $tabId }}'" x-cloak>
-            {{ $this->{$variableName}->links() }}
-        </div>
-    @endforeach
+            <div class="mt-5" x-show="activeTab === '{{ $tabId }}'" x-cloak>
+                {{ $this->{$variableName}->links() }}
+            </div>
+        @endforeach
+    </div>
 </div>

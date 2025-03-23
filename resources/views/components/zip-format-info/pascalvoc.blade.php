@@ -10,7 +10,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Description -->
+            {{--Left: Description--}}
             <div>
                 <p class="mb-4">The Pascal VOC (Visual Object Classes) format requires a specific structure in your ZIP file:</p>
 
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- Right: Visualization -->
+            {{--Right: Visualization--}}
             <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
                 <h3 class="text-lg font-medium mb-4 text-slate-300">Expected Structure:</h3>
 

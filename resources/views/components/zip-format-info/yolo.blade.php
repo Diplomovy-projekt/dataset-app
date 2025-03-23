@@ -10,7 +10,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Description -->
+            {{--Left: Description--}}
             <div>
                 <p class="mb-4">The YOLO (You Only Look Once) format requires specific structure in your ZIP file:</p>
 
@@ -33,7 +33,7 @@
                 </div>
             </div>
 
-            <!-- Right: Visualization -->
+            {{--Right: Visualization--}}
             <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
                 <h3 class="text-lg font-medium mb-4 text-slate-300">Expected Structure:</h3>
 

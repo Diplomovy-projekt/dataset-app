@@ -2,15 +2,15 @@
      class="min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md mx-auto p-6">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-slate-700 p-8">
-            <!-- Header -->
+            {{--Header--}}
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-2xl font-bold text-gray-200">Complete Registration</h1>
                 <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent ml-6"></div>
             </div>
 
-            <!-- Form -->
+            {{--Form--}}
             <form wire:submit.prevent="register">
-                <!-- Name Field -->
+                {{--Name Field--}}
                 <div class="mb-6">
                     <label for="name" class="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
                     <input
@@ -22,7 +22,7 @@
                     >
                 </div>
 
-                <!-- Password Field -->
+                {{--Password Field--}}
                 <div class="mb-6" x-data="{ show: false }">
                     <label for="password" class="block text-sm font-medium text-slate-400 mb-2">Password</label>
                     <div class="relative">
@@ -44,7 +44,7 @@
                     </div>
                 </div>
 
-                <!-- Confirm Password Field -->
+                {{--Confirm Password Field--}}
                 <div class="mb-8" x-data="{ show: false }">
                     <label for="password_confirmation" class="block text-sm font-medium text-slate-400 mb-2">Confirm Password</label>
                     <div class="relative">
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <!-- GDPR Compliance Agreement -->
+                {{--GDPR Compliance Agreement--}}
                 <div class="mb-6">
                     <div class="inline-flex items-center text-sm text-gray-200 cursor-pointer">
                         <input type="checkbox" id="agree" class="mr-2" wire:model="agreed">
@@ -79,7 +79,7 @@
                 </div>
 
 
-                <!-- Submit Button -->
+                {{--Submit Button--}}
                 <button
                     type="submit"
                     :disabled="!agreed"

@@ -1,5 +1,5 @@
 <div>
-    <!-- Search Bar -->
+    {{--Search Bar--}}
     <div id="searchBar" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
         <div class="flex flex-col sm:flex-row  sm:items-center gap-3 ">
             <div class="flex items-center gap-3 ">
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <!-- Dataset Card Container -->
+    {{--Dataset Card Container--}}
     <div class="relative flex flex-wrap sm:gap-5 pt-5">
         <x-misc.pagination-loading/>
         @foreach($this->paginatedDatasets as $dataset)

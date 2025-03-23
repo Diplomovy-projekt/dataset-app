@@ -16,12 +16,12 @@
             }
          }, 300);
      ">
-    <!-- Text field with truncation -->
+    {{--Text field with truncation--}}
     <p class="text-sm w-full truncate">
         {{ $filename }}
     </p>
 
-    <!-- Tooltip with dynamic positioning -->
+    {{--Tooltip with dynamic positioning--}}
     <div x-show="showTooltip"
          x-ref="tooltip"
          x-transition

@@ -2,12 +2,12 @@
     <x-modals.fixed-modal modalId="download-dataset" class="w-fit">
         @if(count($classesData) > 0)
             <div class="max-w-5xl mx-auto p-6 pt-0 bg-slate-800 rounded-lg space-y-4">
-                <!-- Annotation Statistics Section -->
+                {{--Annotation Statistics Section--}}
                 <div class="mb-4">
                     <x-misc.header title="Statistics"></x-misc.header>
-                        <!-- Statistics summary -->
+                        {{--Statistics summary--}}
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                            <!-- Total annotations card -->
+                            {{--Total annotations card--}}
                         <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 border-l-4 border-blue-500 shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center mb-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -22,7 +22,7 @@
                             <div class="text-xs text-gray-500 mt-1">Across {{ $stats['classCount'] }} classes</div>
                         </div>
 
-                        <!-- Highest frequency card -->
+                        {{--Highest frequency card--}}
                         <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 border-l-4 border-green-500 shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center mb-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -39,7 +39,7 @@
                             </div>
                         </div>
 
-                        <!-- Lowest frequency card -->
+                        {{--Lowest frequency card--}}
                         <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 border-l-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center mb-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -56,7 +56,7 @@
                             </div>
                         </div>
 
-                        <!-- Statistics card -->
+                        {{--Statistics card--}}
                         <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 border-l-4 border-purple-500 shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center mb-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -86,13 +86,13 @@
                     </div>
 
                     <x-misc.header title="Frequency per class"></x-misc.header>
-                    <!-- Scrollable container with fixed height -->
+                    {{--Scrollable container with fixed height--}}
                     <div class="max-h-[50vh] overflow-y-auto pr-2">
-                        <!-- Grid layout for desktop, 6 columns on PC -->
+                        {{--Grid layout for desktop, 6 columns on PC--}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                             @foreach($classesData as $annotation)
                                 <div class="flex items-center p-2 bg-slate-900 rounded-lg">
-                                    <!-- Class image thumbnail -->
+                                    {{--Class image thumbnail--}}
                                     <div class="w-12 h-12 rounded-full flex-shrink-0 mr-2 flex items-center justify-center border-2 overflow-hidden" style="border-color: {{$annotation['rgb']}};">
                                         <x-images.img dataset="{{$annotation['image']['dataset']}}"
                                                       filename="{{$annotation['image']['filename']}}"
@@ -123,7 +123,7 @@
 
                 <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
                     <div class="flex flex-col sm:flex-row gap-6">
-                        <!-- Min Annotations Control -->
+                        {{--Min Annotations Control--}}
                         <div class="flex-1">
                             <div class="flex items-center justify-between mb-2">
                                 <label class="text-sm text-gray-300">Min annotations</label>
@@ -155,7 +155,7 @@
                             </div>
                         </div>
 
-                        <!-- Max Annotations Control -->
+                        {{--Max Annotations Control--}}
                         <div class="flex-1">
                             <div class="flex items-center justify-between mb-2">
                                 <label class="text-sm text-gray-300">Max annotations</label>
@@ -207,7 +207,7 @@
                         </div>
                     </div>
 
-                    <!-- Simple validation message using standard Livewire -->
+                    {{--Simple validation message using standard Livewire--}}
                     @if($minAnnotations > $maxAnnotations)
                         <div class="mt-4">
                             <div class="text-red-400 text-xs">
@@ -218,7 +218,7 @@
                 </div>
 
 
-                <!-- Download Format Selection - Always visible -->
+                {{--Download Format Selection - Always visible--}}
                 <div class="relative w-48">
                     <select wire:model="exportFormat" class="w-full appearance-none px-3 py-1.5 pr-8 bg-slate-700 text-gray-300 text-sm rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-slate-500 transition-colors">
                         <option value="" disabled selected>Download Format</option>
@@ -234,7 +234,7 @@
                     </div>
                 </div>
 
-                <!-- Error Messages -->
+                {{--Error Messages--}}
                 @error('exportFormat')
                 <span class="w-full mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
                 @enderror
@@ -251,7 +251,7 @@
                     </x-dataset.dataset-errors>
                 @endif
 
-                <!-- Download Button - Always visible -->
+                {{--Download Button - Always visible--}}
                 <x-misc.button wire:click="download" id="download-btn"
                                class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                                :icon="@svg('eva-download')->toHtml()"
@@ -259,7 +259,7 @@
                     Download Dataset
                 </x-misc.button>
 
-                <!-- Progress Indicator -->
+                {{--Progress Indicator--}}
                 @if($this->locked)
                     <div wire:poll.1500ms="updateProgress" class="text-center text-sm text-gray-300">
                         <span>{{ $this->progress ?? null }}</span>

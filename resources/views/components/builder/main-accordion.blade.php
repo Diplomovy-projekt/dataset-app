@@ -31,7 +31,7 @@
                  wire:loading.attr="disabled"
                  wire:target="previousStage,nextStage"
                  class="mt-4 grid grid-cols-3 relative">
-                <!-- Left Column -->
+                {{--Left Column--}}
                 <div>
                     @if($currentStage > 1)
                         <button wire:click="previousStage"
@@ -45,7 +45,7 @@
                     @endif
                 </div>
 
-                <!-- Middle Column - Loading Indicator (Absolute Positioning) -->
+                {{--Middle Column - Loading Indicator (Absolute Positioning)--}}
                 <div wire:loading.class.remove="hidden"
                      wire:target="previousStage,nextStage"
                      class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -55,7 +55,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column -->
+                {{--Right Column--}}
                 <div class="col-start-3 flex justify-end">
                     @if($currentStage < max(array_keys($stageData)))
                         <button wire:click="nextStage"

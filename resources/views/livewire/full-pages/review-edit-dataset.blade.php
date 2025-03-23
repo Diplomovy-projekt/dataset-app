@@ -24,14 +24,14 @@
 
     <div class="container mx-auto px-4 pb-10 mt-10">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Current Dataset Info Column -->
+            {{--Current Dataset Info Column--}}
             <div class=" rounded-xl p-6 border border-slate-700  shadow-lg">
                 <div class="flex items-center mb-6">
                     <div class="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
                     <h3 class="text-xl font-bold text-white">Current Dataset</h3>
                 </div>
 
-                <!-- Dataset Name -->
+                {{--Dataset Name--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Dataset Name</span>
                     <div class="p-3 border border-slate-700 rounded-md mt-2 text-white">
@@ -39,7 +39,7 @@
                     </div>
                 </div>
 
-                <!-- Categories -->
+                {{--Categories--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Categories</span>
                     <div class="p-3 border border-slate-700 rounded-md mt-2 flex flex-wrap gap-2">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                <!-- Metadata -->
+                {{--Metadata--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Metadata</span>
                     @foreach($currentDataset['metadata'] as $group)
@@ -64,7 +64,7 @@
                     @endforeach
                 </div>
 
-                <!-- Description -->
+                {{--Description--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Description</span>
                     <div class="p-3 border border-slate-700 rounded-md mt-2 whitespace-pre-line text-gray-300">
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- Requested Changes Column -->
+            {{--Requested Changes Column--}}
             <div class=" rounded-xl p-6 border border-purple-500/30 shadow-lg relative">
 
                 <div class="flex items-center mb-6">
@@ -81,7 +81,7 @@
                     <h3 class="text-xl font-bold text-white">Requested Changes</h3>
                 </div>
 
-                <!-- Dataset Name -->
+                {{--Dataset Name--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Dataset Name</span>
                     <div class="rounded-md mt-2"
@@ -94,7 +94,7 @@
 
                 </div>
 
-                <!-- Categories -->
+                {{--Categories--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Categories</span>
                     <div class="relative"
@@ -106,10 +106,10 @@
                                                !this.currentIds.every(id => this.newIds.includes(id));
                                     }
                                  }">
-                        <!-- Border div (only if there are changes) -->
+                        {{--Border div (only if there are changes)--}}
                         <div x-cloak x-show="hasChanges()" class="absolute left-0 top-0 h-full w-1 bg-purple-500 rounded-l-md"></div>
 
-                        <!-- Main container -->
+                        {{--Main container--}}
                         <div class="p-3 border border-slate-700 rounded-md mt-2 flex flex-wrap gap-2"
                              >
 
@@ -127,7 +127,7 @@
 
                 </div>
 
-                <!-- Metadata -->
+                {{--Metadata--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Metadata</span>
                     @foreach($requestDataset['metadata'] as $group)
@@ -146,10 +146,10 @@
                                                !this.currentValues.every(id => this.newValues.includes(id));
                                     }
                                  }">
-                            <!-- Border div (only if there are changes) -->
+                            {{--Border div (only if there are changes)--}}
                             <div x-cloak x-show="hasChanges()" class="absolute left-0 top-0 h-full w-1 bg-purple-500 rounded-l-md"></div>
 
-                            <!-- Main container -->
+                            {{--Main container--}}
                             <div class="mt-3 border border-slate-700 rounded-md p-3"
                                  >
                                 <div class="font-medium text-white">{{ $group['name'] }}</div>
@@ -168,7 +168,7 @@
                     @endforeach
                 </div>
 
-                <!-- Description -->
+                {{--Description--}}
                 <div class="mb-5">
                     <span class="text-sm font-medium text-gray-400">Description</span>
                     <div class="relative"

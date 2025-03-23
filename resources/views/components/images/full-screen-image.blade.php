@@ -17,7 +17,7 @@
         <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
 
         <div class="relative h-full w-full flex items-center justify-center">
-            <!-- Zoom controls -->
+            {{--Zoom controls--}}
             <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center bg-black/50 rounded-full p-1">
                 <button
                     @click="zoomOut()"

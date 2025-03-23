@@ -1,4 +1,4 @@
-<!-- COCO Format Content -->
+{{--COCO Format Content--}}
 <div x-show="activeTab === 'coco'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
     <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
         <div class="flex items-center gap-3 mb-6">
@@ -11,7 +11,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Description -->
+            {{--Left: Description--}}
             <div>
                 <p class="mb-4">The COCO (Common Objects in Context) format requires a specific structure in your ZIP file:</p>
 
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- Right: Visualization -->
+            {{--Right: Visualization--}}
             <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
                 <h3 class="text-lg font-medium mb-4 text-slate-300">Expected Structure:</h3>
 

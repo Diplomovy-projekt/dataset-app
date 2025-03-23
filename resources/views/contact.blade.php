@@ -1,13 +1,13 @@
 <x-app-layout>
     <div class="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-lg mx-auto">
-            <!-- Header -->
+            {{--Header--}}
             <div class="text-center mb-8">
                 <x-misc.header title="Contact us" align="center" font="text-3xl"></x-misc.header>
                 <p class="text-slate-400 mt-2">We're here to help with any questions</p>
             </div>
 
-            <!-- Contact Form Card -->
+            {{--Contact Form Card--}}
             <div class=" rounded-xl p-6 border border-slate-700">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="bg-blue-500 p-2 rounded-lg">

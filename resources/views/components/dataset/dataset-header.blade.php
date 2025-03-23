@@ -4,7 +4,7 @@
         <div class="p-6">
             <div class="flex-col justify-between items-start">
                 <div class="flex flex-col sm:flex-row sm:justify-between gap-3 items-start sm:items-center w-full">
-                    <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0 w-full sm:w-auto">
                         <h2 class="text-2xl font-bold text-slate-100 truncate flex-shrink min-w-0">
                             {{ $this->dataset['display_name'] }}
                         </h2>

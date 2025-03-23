@@ -1,7 +1,7 @@
 <div>
     <x-modals.fixed-modal modalId="invite-user" class="w-fit">
         <div x-data="{ email: '' }" class="p-4 space-y-6">
-            <!-- Header Section -->
+            {{--Header Section--}}
             <div class="flex items-center gap-3">
                 <div class="bg-blue-500 p-2 rounded-lg">
                     <x-icon name="o-user-plus" class="w-6 h-6 text-gray-200" />
@@ -10,7 +10,7 @@
             </div>
             <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
 
-            <!-- Warning Card (If invitation already exists but not used) -->
+            {{--Warning Card (If invitation already exists but not used)--}}
             @if ($emailAlreadySentMsg)
                 <div class="p-4 border-l-4 rounded-lg shadow-md
                             bg-blue-900/40 border-blue-600 text-blue-300">
@@ -34,7 +34,7 @@
                 </div>
             @endif
 
-            <!-- Form Section -->
+            {{--Form Section--}}
             <div class="bg-slate-800 rounded-xl py-6">
                 <div class="space-y-6">
                     <div class="flex flex-col gap-2">

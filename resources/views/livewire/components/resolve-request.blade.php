@@ -6,9 +6,9 @@
                     <h2 class="text-xl font-semibold text-slate-200">Request Details</h2>
                 </div>
 
-                <!-- Request Details as Cards -->
+                {{--Request Details as Cards--}}
                 <div class="flex flex-col sm:grid sm:grid-cols-2 sm:gap-4 mb-5">
-                    <!-- Dataset Card -->
+                    {{--Dataset Card--}}
                     <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
                         <div class="flex items-center mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -19,7 +19,7 @@
                         <p class="text-base font-medium text-slate-200 truncate">{{ $request['dataset']['display_name'] ?? 'N/A' }}</p>
                     </div>
 
-                    <!-- User Card -->
+                    {{--User Card--}}
                     <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
                         <div class="flex items-center mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -30,7 +30,7 @@
                         <p class="text-base font-medium text-slate-200 truncate">{{ $request['user']['email'] ?? 'N/A' }}</p>
                     </div>
 
-                    <!-- Type Card -->
+                    {{--Type Card--}}
                     <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
                         <div class="flex items-center mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -51,7 +51,7 @@
                         <x-misc.tag text="{{ ucfirst($request['type']) }} Dataset" color="{{ $color }}" />
                     </div>
 
-                    <!-- Timestamp Card -->
+                    {{--Timestamp Card--}}
                     <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
                         <div class="flex items-center mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -65,7 +65,7 @@
                     </div>
                 </div>
 
-                <!-- Resolution Section -->
+                {{--Resolution Section--}}
                 <div class="bg-slate-800/30 p-4 rounded-lg border border-slate-700 mb-5">
                     <div class="flex items-center mb-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -78,7 +78,7 @@
                               placeholder="Add reason for approval or rejection (optional)..."></textarea>
                 </div>
 
-                <!-- Action Buttons with more distinction -->
+                {{--Action Buttons with more distinction--}}
                 <div class="flex justify-between sm:items-center gap-2">
                     <div class="flex sm:flex-row flex-col items-start sm:items-center gap-2 sm:gap-0  sm:space-x-3">
                         <x-misc.button

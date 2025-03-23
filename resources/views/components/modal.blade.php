@@ -47,7 +47,7 @@
     class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
     style="display: {{ $show ? 'block' : 'none' }};"
 >
-    <!-- Background Overlay -->
+    {{--Background Overlay--}}
     <div
         x-show="show"
         class="fixed inset-0 transform transition-all"
@@ -62,7 +62,7 @@
         <div class="absolute inset-0 bg-black opacity-50 backdrop-blur-sm"></div>
     </div>
 
-    <!-- Modal Content -->
+    {{--Modal Content--}}
     <div
         x-show="show"
         class="mb-6 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"

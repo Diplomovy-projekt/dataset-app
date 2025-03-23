@@ -9,7 +9,7 @@
                  @click="checked = !checked">
                 <div x-data="{ isChecked: false }"
                      class="p-4 flex flex-col sm:flex-row gap-4">
-                    <!-- Left section -->
+                    {{--Left section--}}
                     <div class="flex gap-4">
                         <div class="" @click.stop>
                             <input type="checkbox"
@@ -23,9 +23,9 @@
                         </div>
                     </div>
 
-                    <!-- Main Content -->
+                    {{--Main Content--}}
                     <div class="flex-1 min-w-0">
-                        <!-- Top row with title, tag, and buttons -->
+                        {{--Top row with title, tag, and buttons--}}
                         <div class="flex flex-col md:flex-row justify-between gap-4 mb-2">
                             <div class="flex flex-col md:flex-row md:items-center gap-3 flex-1 min-w-0">
                                 <div class="min-w-0 mt-2 sm:mt-0">
@@ -66,16 +66,16 @@
                         </div>
 
 
-                        <!-- Description -->
+                        {{--Description--}}
                         <p class="text-sm text-gray-400 line-clamp-2 mb-3 break-all">{{$dataset['description']}}</p>
 
-                        <!-- Stats and Properties -->
+                        {{--Stats and Properties--}}
                         <div class="flex flex-col gap-2">
-                            <!-- Stats -->
+                            {{--Stats--}}
                             <x-dataset.dataset-stats :stats="$dataset['stats']" class="text-base" svgSize="w-5 h-5"/>
                             <x-dataset.image-stats :image_stats="$dataset['image_stats']" class="p-0"  />
 
-                            <!-- Dataset Properties -->
+                            {{--Dataset Properties--}}
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
                                 @foreach($dataset['categories'] as $category)
                                     <div wire:key="dataset-categories-{{ $category['id'] }}"

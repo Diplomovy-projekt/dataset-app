@@ -9,11 +9,12 @@ use App\Models\Scopes\DatasetVisibilityScope;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class MyRequests extends Component
 {
-    use WithPagination;
+    use WithPagination, WithoutUrlPagination;
     public array $tableIds = ['my-requests-pending', 'my-requests-resolved'];
     public array $tables = [];
     #[Computed]
@@ -101,6 +102,6 @@ class MyRequests extends Component
             ->when(!in_array($this->tables[$tableName]['sortColumn'], ['user.email', 'dataset.display_name']), function ($query) use ($tableName) {
                 $query->orderBy($this->tables[$tableName]['sortColumn'], $this->tables[$tableName]['sortDirection']);
             })
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: $tableName);
     }
 }

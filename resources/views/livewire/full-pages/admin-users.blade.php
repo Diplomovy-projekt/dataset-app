@@ -1,10 +1,10 @@
 <div x-data="userManagement(@this)">
-    <!-- Header Section -->
+    {{--Header Section--}}
     <x-misc.header title="User Management"/>
 
-    <!-- Main Content -->
+    {{--Main Content--}}
     <div class="bg-slate-800 rounded-xl overflow-hidden">
-        <!-- Header -->
+        {{--Header--}}
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div class="flex items-center gap-3">
