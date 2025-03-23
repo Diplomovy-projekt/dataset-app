@@ -60,12 +60,13 @@
             </button>
 
             <div
-                class="relative max-w-[90vw] max-h-[90vh] overflow-hidden"
+                class="relative overflow-visible"
                 x-init="initWheelListener()"
+                :style="`max-width: ${zoom <= 1 ? '90vw' : 'none'}; max-height: ${zoom <= 1 ? '90vh' : 'none'};`"
             >
                 <div
                     x-show="imageSrc"
-                    class="transform-origin-center cursor-move"
+                    class="transform-origin-center cursor-move overflow-visible"
                     :style="`transform: translate(${panX}px, ${panY}px) scale(${zoom}); transition: transform ${isZooming ? '0s' : '0.3s'};`"
                     x-init="initTouchListeners($el)"
                     @mousedown="startPan($event)"
@@ -77,7 +78,8 @@
                     <img
                         :src="imageSrc"
                         alt="Full Screen Image"
-                        class="max-w-full max-h-[90vh] object-contain rounded-lg"
+                        class="rounded-lg"
+                        :class="zoom <= 1 ? 'max-w-full max-h-[90vh] object-contain' : ''"
                         x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="opacity-0 scale-95"
                         x-transition:enter-end="opacity-100 scale-100"
@@ -186,30 +188,34 @@
                 this.imageWidth = event.target.naturalWidth;
                 this.imageHeight = event.target.naturalHeight;
 
-                // Get container dimensions
-                const rect = event.target.getBoundingClientRect();
-                this.containerWidth = rect.width;
-                this.containerHeight = rect.height;
+                // Store viewport dimensions
+                this.viewportWidth = window.innerWidth * 0.9;
+                this.viewportHeight = window.innerHeight * 0.9;
+
+                // Calculate initial container dimensions based on image size and viewport
+                this.containerWidth = Math.min(this.viewportWidth, this.imageWidth);
+                this.containerHeight = Math.min(this.viewportHeight, this.imageHeight);
             },
 
             constrainPan() {
-                // Calculate the boundaries based on current zoom level
-                const scaledWidth = this.containerWidth * this.zoom;
-                const scaledHeight = this.containerHeight * this.zoom;
-
-                // Calculate maximum pan distances
-                const maxPanX = Math.max(0, (scaledWidth - this.containerWidth) / 2);
-                const maxPanY = Math.max(0, (scaledHeight - this.containerHeight) / 2);
-
-                // Constrain pan values within boundaries
-                this.panX = Math.min(maxPanX, Math.max(-maxPanX, this.panX));
-                this.panY = Math.min(maxPanY, Math.max(-maxPanY, this.panY));
-
-                // If zoom is 1 or less, reset pan
+                // When zoomed out, no panning
                 if (this.zoom <= 1) {
                     this.panX = 0;
                     this.panY = 0;
+                    return;
                 }
+
+                // Calculate zoomed dimensions
+                const scaledWidth = this.imageWidth * this.zoom;
+                const scaledHeight = this.imageHeight * this.zoom;
+
+                // Calculate boundaries based on how much larger the zoomed image is compared to viewport
+                const overflowX = Math.max(0, (scaledWidth - this.viewportWidth) / 2);
+                const overflowY = Math.max(0, (scaledHeight - this.viewportHeight) / 2);
+
+                // Constrain pan values to prevent image from moving too far off screen
+                this.panX = Math.min(overflowX, Math.max(-overflowX, this.panX));
+                this.panY = Math.min(overflowY, Math.max(-overflowY, this.panY));
             },
 
             zoomIn() {

@@ -9,67 +9,41 @@
         preserveAspectRatio="xMidYMid slice"
     >
         <defs>
-            <mask id="annotation-mask-{{$image['filename']}}">
+            @foreach($image['annotations'] as $index => $group)
+                <path
+                    id="path-{{$loop->parent->index ?? 0}}-{{$index}}"
+                    d="{{$group['maskPathData']}}"
+                />
+            @endforeach
+
+            <mask id="mask-{{$loop->index ?? 0}}">
                 <rect width="100%" height="100%" fill="white" />
 
-                @php
-                    // Process annotations once and store the results
-                    $processedAnnotations = collect($image['annotations'])->map(function($annotation) {
-                        $pathData = isset($annotation['segmentation'])
-                            ? trim($annotation['segmentation'])
-                            : "M{$annotation['x']},{$annotation['y']}L" .
-                              ($annotation['x'] + $annotation['width']) . ",{$annotation['y']}L" .
-                              ($annotation['x'] + $annotation['width']) . "," . ($annotation['y'] + $annotation['height']) . "L" .
-                              "{$annotation['x']}," . ($annotation['y'] + $annotation['height']) . "Z";
-
-                        return [
-                            'classId' => $annotation['class']['id'],
-                            'rgb' => $annotation['class']['rgb'] ?? 'default',
-                            'pathData' => $pathData
-                        ];
-                    });
-
-                    // Group by class for the mask
-                    $annotationsByClass = $processedAnnotations->groupBy('classId');
-                @endphp
-
-                @foreach($annotationsByClass as $classId => $items)
-                    <path
-                        annotation-class="{{$classId}}"
-                        d="@foreach($items as $item){{$item['pathData']}}@endforeach"
+                @foreach($image['annotations'] as $index => $group)
+                    <use
+                        xlink:href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
+                        annotation-class="{{$group['classId']}}"
                         fill="black"
                     />
                 @endforeach
             </mask>
         </defs>
 
-        <!-- Background black overlay with mask applied -->
         <rect
             width="100%"
             height="100%"
             fill="black"
             fill-opacity="0.6"
-            mask="url(#annotation-mask-{{$image['filename']}})"
+            mask="url(#mask-{{$loop->index ?? 0}})"
         />
 
-        @php
-            // Group by both classId and color for the strokes
-            $annotationsByClassAndColor = $processedAnnotations->groupBy(function($item) {
-                return $item['classId'] . '-' . $item['rgb'];
-            });
-        @endphp
-
-        @foreach($annotationsByClassAndColor as $key => $items)
-            @php
-                list($classId, $color) = explode('-', $key, 2);
-            @endphp
-
-            <path
-                stroke="{{ $color }}"
+        @foreach($image['annotations'] as $index => $group)
+            <use
+                xlink:href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
+                stroke="{{$group['rgb']}}"
                 stroke-width="{{$image['strokeWidth']}}"
                 fill="transparent"
-                annotation-class="{{$classId}}"
-                d="@foreach($items as $item){{$item['pathData']}}@endforeach"
+                annotation-class="{{$group['classId']}}"
             />
         @endforeach
     </svg>

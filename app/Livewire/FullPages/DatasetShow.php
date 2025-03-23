@@ -38,7 +38,7 @@ class DatasetShow extends Component
     #[Locked]
     public string $modalStyle;
     public array $selectedImages = [];
-    public int $perPage = 25;
+    public int $perPage = 50;
     #[Locked]
     public array $request;
 
