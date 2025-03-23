@@ -195,6 +195,7 @@ class DatasetBuilder extends Component
         $stageDetails = $this->stageData[$this->currentStage] ?? null;
 
         if ($stageDetails && method_exists($this, $stageDetails['method'])) {
+            $this->resetPage();
             $method = $stageDetails['method'];
 
             // Resolve method dependencies

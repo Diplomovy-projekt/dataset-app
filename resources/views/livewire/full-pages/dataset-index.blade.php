@@ -1,6 +1,6 @@
-<div >
+<div>
     <!-- Search Bar -->
-    <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
+    <div id="searchBar" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
         <div class="flex flex-col sm:flex-row  sm:items-center gap-3 ">
             <div class="flex items-center gap-3 ">
                 <div class="bg-blue-500 p-2 rounded-lg">
@@ -14,12 +14,13 @@
     </div>
 
     <!-- Dataset Card Container -->
-    <div class="flex flex-wrap sm:gap-5 pt-5">
+    <div class="relative flex flex-wrap sm:gap-5 pt-5">
+        <x-misc.pagination-loading/>
         @foreach($this->paginatedDatasets as $dataset)
             <x-dataset.dataset-card :dataset="$dataset"></x-dataset.dataset-card>
         @endforeach
     </div>
-    <div class="flex-1">
-        {{ $this->paginatedDatasets->links() }}
+    <div class="flex-1 my-3">
+        {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#searchBar']) }}
     </div>
 </div>

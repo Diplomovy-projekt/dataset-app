@@ -58,6 +58,7 @@ class DatasetShow extends Component
 
     public function mount($uniqueName, $requestId = null)
     {
+        $this->resetPage();
         $query = Dataset::query();
         $this->request = [
             'id' => $requestId,

@@ -6,11 +6,12 @@ use App\ImageService\ImageRendering;
 use App\Models\Dataset;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class Profile extends Component
 {
-    use ImageRendering, WithPagination;
+    use ImageRendering, WithPagination, WithoutUrlPagination;
 
     #[Computed]
     public function paginatedDatasets()

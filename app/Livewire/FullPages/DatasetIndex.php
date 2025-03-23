@@ -9,11 +9,12 @@ use Intervention\Image\ImageManager;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class DatasetIndex extends Component
 {
-    use ImageRendering, WithPagination;
+    use ImageRendering, WithPagination, WithoutUrlPagination;
     private $datasets;
     public $searchTerm;
 

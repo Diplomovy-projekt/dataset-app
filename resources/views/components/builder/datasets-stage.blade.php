@@ -1,6 +1,7 @@
 <div x-data="datasetsStage(@this)"
      class="container mx-auto py-4">
-    <div id="paginatedDatasets" class="space-y-3">
+    <div id="paginatedDatasets" class="relative space-y-3">
+        <x-misc.pagination-loading/>
         @forelse($this->paginatedDatasets as $index => $dataset)
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
@@ -103,7 +104,7 @@
     </div>
     <div class="flex-1 mt-3 overflow-x-auto">
         <div class="inline-block min-w-full">
-            {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#paginatedDatasets']) }}
+            {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#datasetsStage']) }}
         </div>
     </div>
 </div>
