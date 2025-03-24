@@ -18,7 +18,7 @@ class ExportComponentFactory
 
     public static function createConfig(string $format): object
     {
-        return self::instantiateClass($format, 'Config', 'config');
+        return self::instantiateClass(ucfirst(strtolower($format)), 'Config', 'config');
     }
 
     /**
@@ -26,9 +26,8 @@ class ExportComponentFactory
      */
     protected static function instantiateClass(string $format, string $suffix, string $type): object
     {
-        $classBaseName = ucfirst(strtolower($format));
         $namespace = self::$namespaces[$type];
-        $className = "{$namespace}\\{$classBaseName}{$suffix}";
+        $className = "{$namespace}\\{$format}{$suffix}";
 
         if (!class_exists($className)) {
             throw new \Exception("Class $className not found");

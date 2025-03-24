@@ -14,7 +14,7 @@ class ImportComponentFactory
 
     public static function createValidator(string $format, string $type): object
     {
-        return self::instantiateClass($format, ucfirst(strtolower($type)) . 'Validator', 'validator');
+        return self::instantiateClass(ucfirst(strtolower($format)), ucfirst(strtolower($type)) . 'Validator', 'validator');
     }
 
     public static function createMapper(string $format): object
@@ -24,7 +24,7 @@ class ImportComponentFactory
 
     public static function createConfig(string $format): object
     {
-        return self::instantiateClass($format, 'Config', 'config');
+        return self::instantiateClass(ucfirst(strtolower($format)), 'Config', 'config');
     }
 
     protected static function instantiateClass(string $format, string $suffix, string $type): object
