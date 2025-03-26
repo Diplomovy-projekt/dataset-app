@@ -35,7 +35,7 @@
     }
 }"
      class="relative inline-block">
-    <!-- Trigger Button -->
+    {{--Trigger Button--}}
     <button
         @click="openDropdown = !openDropdown; checkPosition()"
         class="p-2 rounded-full hover:bg-slate-800 transition-colors flex items-center space-x-2"
@@ -50,7 +50,7 @@
         @endif
     </button>
 
-    <!-- Dropdown Menu -->
+    {{--Dropdown Menu--}}
     <div x-cloak
         x-show="openDropdown"
         @click.away="openDropdown = false"

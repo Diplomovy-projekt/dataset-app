@@ -2,7 +2,9 @@
 
 namespace App\Configs\Annotations;
 
-class CocoConfig
+use Faker\Provider\Base;
+
+class CocoConfig extends BaseAnnotationConfig
 {
     /*
      * Expected archive structure for YOLO:
@@ -15,7 +17,6 @@ class CocoConfig
      */
     public const LABEL_EXTENSION = 'json';
     public const IMAGE_FOLDER = 'images';
-    public const LABELS_FOLDER = null;
     public const LABELS_FILE = '_annotations.coco.json';
 
 }

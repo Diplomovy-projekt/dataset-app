@@ -12,11 +12,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class AdminUsers extends Component
 {
-    use WithPagination;
+    use WithPagination, WithoutUrlPagination;
 
     private array $tableIds = ['user-overview', 'pending-invites', 'expired-invites'];
     public array $tables = [];
@@ -29,21 +30,21 @@ class AdminUsers extends Component
     {
         return User::withCount('datasets')
             ->orderBy($this->tables['user-overview']['sortColumn'], $this->tables['user-overview']['sortDirection'])
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: 'users');
     }
     #[Computed]
     public function paginatedPendingInvites()
     {
         return Invitation::pending()
             ->orderBy($this->tables['pending-invites']['sortColumn'], $this->tables['pending-invites']['sortDirection'])
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: 'invites');
     }
     #[Computed]
     public function paginatedExpiredInvites()
     {
         return Invitation::expired()->notUsed()
             ->orderBy($this->tables['expired-invites']['sortColumn'], $this->tables['expired-invites']['sortDirection'])
-            ->paginate(AppConfig::PER_PAGE_OPTIONS['10']);
+            ->paginate(AppConfig::PER_PAGE_OPTIONS['10'], pageName: 'invites');
     }
 
     public function mount()

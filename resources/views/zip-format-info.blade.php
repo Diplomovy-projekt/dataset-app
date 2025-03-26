@@ -1,195 +1,53 @@
 <x-app-layout>
-    <div class=" min-h-screen text-gray-200 p-6">
+    <div class="min-h-screen text-gray-200 p-6">
         <div class="max-w-6xl mx-auto">
-            <!-- Page Header -->
+            {{--Page Header--}}
             <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 mb-8">
                 <h1 class="text-3xl font-bold mb-2">Dataset Upload Guidelines</h1>
                 <p class="text-slate-400">Learn how to structure your ZIP files for different annotation formats</p>
             </div>
 
-            <!-- Format Selection Tabs -->
-            <div class="mb-8" x-data="{ activeTab: 'coco' }">
-                <div class="flex border-b border-slate-700 mb-6">
-                    <button
-                        @click="activeTab = 'coco'"
-                        :class="activeTab === 'coco' ? 'border-blue-500 text-blue-500' : 'text-slate-400 hover:text-gray-200'"
-                        class="py-3 px-6 font-medium border-b-2 transition-colors focus:outline-none"
-                        :style="activeTab === 'coco' ? 'border-opacity: 1' : 'border-opacity: 0'"
-                    >
-                        COCO Format
-                    </button>
-                    <button
-                        @click="activeTab = 'yolo'"
-                        :class="activeTab === 'yolo' ? 'border-blue-500 text-blue-500' : 'text-slate-400 hover:text-gray-200'"
-                        class="py-3 px-6 font-medium border-b-2 transition-colors focus:outline-none"
-                        :style="activeTab === 'yolo' ? 'border-opacity: 1' : 'border-opacity: 0'"
-                    >
-                        YOLO Format
-                    </button>
+            {{--Format Selection Tabs--}}
+            <div class="mb-8" x-data="{ activeTab: '{{ array_key_first(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO) }}' }">
+                <div class="flex flex-wrap border-b border-slate-700 mb-6">
+                    @foreach(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO as $format => $info)
+                        <button
+                            @click="activeTab = '{{ $format }}'"
+                            :class="activeTab === '{{ $format }}' ? 'border-blue-500 text-blue-500' : 'text-slate-400 hover:text-gray-200'"
+                            class="py-3 px-6 font-medium border-b-2 transition-colors focus:outline-none"
+                            :style="activeTab === '{{ $format }}' ? 'border-opacity: 1' : 'border-opacity: 0'"
+                        >
+                            {{ $info['name'] }} Format
+                        </button>
+                    @endforeach
                 </div>
 
-                <!-- COCO Format Content -->
-                <div x-show="activeTab === 'coco'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-                    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="bg-blue-500 p-2 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                </svg>
-                            </div>
-                            <h2 class="text-xl font-bold">COCO Format Structure</h2>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <!-- Left: Description -->
-                            <div>
-                                <p class="mb-4">The COCO (Common Objects in Context) format requires a specific structure in your ZIP file:</p>
-
-                                <ul class="space-y-2 mb-6 list-disc list-inside text-slate-300">
-                                    <li>All images must be in an <span class="text-blue-400 font-mono">images/</span> folder</li>
-                                    <li>Annotations must be in a single JSON file named <span class="text-blue-400 font-mono">_annotations.coco.json</span></li>
-                                    <li>The JSON file should be at the root of the archive</li>
-                                    <li>Supported image formats: JPG, PNG, JPEG</li>
-                                </ul>
-
-                                <div class="bg-slate-700 p-4 rounded-lg">
-                                    <p class="text-slate-300 text-sm mb-2">Make sure your COCO JSON file follows the official COCO format with:</p>
-                                    <ul class="list-disc list-inside text-slate-400 text-sm space-y-1">
-                                        <li>A list of image objects with id, width, height, and filename</li>
-                                        <li>A list of annotation objects with id, image_id, category_id, segmentation, area, bbox, and iscrowd</li>
-                                        <li>A list of categories with id and name</li>
+                {{--Dynamically include format components--}}
+                @foreach(\App\Configs\AppConfig::ANNOTATION_FORMATS_INFO as $format => $info)
+                    <div x-show="activeTab === '{{ $format }}'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                        @if(view()->exists('components.zip-format-info.' . $format))
+                            <x-dynamic-component :component="'zip-format-info.' . $format" />
+                        @else
+                            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="bg-amber-500 p-2 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <h2 class="text-xl font-bold">{{ $info['name'] }} Format Structure</h2>
+                                </div>
+                                <p class="text-slate-300">Documentation for this format is coming soon. Please check back later.</p>
+                                <div class="bg-slate-700 p-4 rounded-lg mt-6">
+                                    <p class="text-amber-400 font-medium mb-2">Format Quick Info:</p>
+                                    <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                        <li>File Extension: <span class="font-mono text-blue-400">.{{ $info['extension'] }}</span></li>
                                     </ul>
                                 </div>
                             </div>
-
-                            <!-- Right: Visualization -->
-                            <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
-                                <h3 class="text-lg font-medium mb-4 text-slate-300">Expected Structure:</h3>
-
-                                <div class="font-mono text-sm space-y-1">
-                                    <p class="text-slate-300">root_folder/</p>
-                                    <p class="text-slate-300 ml-4">├── <span class="text-blue-400">images/</span></p>
-                                    <p class="text-slate-400 ml-8">├── image1.jpg</p>
-                                    <p class="text-slate-400 ml-8">└── image2.jpg</p>
-                                    <p class="text-slate-300 ml-4">└── <span class="text-green-400">_annotations.coco.json</span></p>
-                                </div>
-
-                                <div class="mt-8 p-4 bg-slate-800 rounded-lg border border-slate-600">
-                                    <h4 class="text-sm font-semibold mb-2 text-slate-300">Example COCO JSON Structure:</h4>
-                                    <pre class="text-xs text-slate-300 overflow-x-auto"><code>{
-  "images": [
-    {
-      "id": 1,
-      "width": 640,
-      "height": 480,
-      "file_name": "image1.jpg"
-    },
-    {
-      "id": 2,
-      "width": 640,
-      "height": 480,
-      "file_name": "image2.jpg"
-    }
-  ],
-  "annotations": [
-    {
-      "id": 1,
-      "image_id": 1,
-      "category_id": 1,
-      "bbox": [100, 100, 200, 200],
-      "segmentation": [[100, 100, 200, 100, 200, 200, 100, 200]]
-    },
-    {
-      "id": 2,
-      "image_id": 2,
-      "category_id": 2,
-      "bbox": [150, 150, 250, 250],
-      "segmentation": [[150, 150, 250, 150, 250, 250, 150, 250]]
-    }
-  ],
-  "categories": [
-    {"id": 1, "name": "dog"},
-    {"id": 2, "name": "cat"}
-  ]
-}</code></pre>
-                                </div>
-                            </div>
-                        </div>
+                        @endif
                     </div>
-                </div>
-
-                <!-- YOLO Format Content -->
-                <div x-show="activeTab === 'yolo'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-                    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="bg-blue-500 p-2 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                </svg>
-                            </div>
-                            <h2 class="text-xl font-bold">YOLO Format Structure</h2>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <!-- Left: Description -->
-                            <div>
-                                <p class="mb-4">The YOLO (You Only Look Once) format requires specific structure in your ZIP file:</p>
-
-                                <ul class="space-y-2 mb-6 list-disc list-inside text-slate-300">
-                                    <li>Images must be in an <span class="text-blue-400 font-mono">images/</span> folder</li>
-                                    <li>Labels must be in a <span class="text-blue-400 font-mono">labels/</span> folder</li>
-                                    <li>Each label file should correspond to an image file (same name, .txt extension)</li>
-                                    <li>A <span class="text-blue-400 font-mono">data.yaml</span> file must be at the root</li>
-                                    <li>Supported image formats: JPG, PNG, JPEG</li>
-                                </ul>
-
-                                <div class="bg-slate-700 p-4 rounded-lg">
-                                    <p class="text-slate-300 text-sm mb-2">Each YOLO annotation text file should:</p>
-                                    <ul class="list-disc list-inside text-slate-400 text-sm space-y-1">
-                                        <li>Contain one line per annotation</li>
-                                        <li>Bounding box: Each line should have the format: <span class="font-mono">class_id center_x center_y width height</span></li>
-                                        <li>Polygon: Each line should have the format: <span class="font-mono">class_id x1 y1 x2 y2...</span></li>
-                                        <li>All values after class_id are relative to the image width and height (0.0-1.0)</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Right: Visualization -->
-                            <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
-                                <h3 class="text-lg font-medium mb-4 text-slate-300">Expected Structure:</h3>
-
-                                <div class="font-mono text-sm space-y-1">
-                                    <p class="text-slate-300">root_folder/</p>
-                                    <p class="text-slate-300 ml-4">├── <span class="text-green-400">data.yaml</span></p>
-                                    <p class="text-slate-300 ml-4">├── <span class="text-blue-400">images/</span></p>
-                                    <p class="text-slate-400 ml-8">├── image1.jpg</p>
-                                    <p class="text-slate-400 ml-8">└── image2.jpg</p>
-                                    <p class="text-slate-300 ml-4">└── <span class="text-blue-400">labels/</span></p>
-                                    <p class="text-slate-400 ml-8">├── image1.txt</p>
-                                    <p class="text-slate-400 ml-8">└── image2.txt</p>
-                                </div>
-
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
-                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-600">
-                                        <h4 class="text-sm font-semibold mb-2 text-slate-300">Example data.yaml:</h4>
-                                        <pre class="text-xs text-slate-300 overflow-x-auto"><code>
-nc: 3
-names:
-  - person
-  - car
-  - dog</code></pre>
-                                    </div>
-
-                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-600">
-                                        <h4 class="text-sm font-semibold mb-2 text-slate-300">Example annotation (image1.txt):</h4>
-                                        <pre class="text-xs text-slate-300 overflow-x-auto"><code>0 0.5 0.5 0.2 0.3
-1 0.7 0.7 0.1 0.1</code></pre>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>

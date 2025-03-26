@@ -27,10 +27,10 @@ new class extends Component
 }; ?>
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-    <!-- Header -->
+    {{--Header--}}
     <x-misc.header title="Deactivate Account" info="Once your account is deactivated, all of its resources and data will be reassigned under admins ownership"/>
 
-    <!-- Delete Button -->
+    {{--Delete Button--}}
     <x-danger-button
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
@@ -39,13 +39,13 @@ new class extends Component
         {{ __('Deactivate Account') }}
     </x-danger-button>
 
-    <!-- Modal -->
+    {{--Modal--}}
     <x-modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable>
         <form wire:submit="deactivateUser" class="space-y-6 p-6 bg-slate-800 rounded-lg shadow-xl">
             <h2 class="text-lg font-medium text-white">{{ __('Are you sure you want to deactivate your account?') }}</h2>
             <p class="mt-2 text-sm text-gray-300">{{ __("Once your account is deactivated, all of its resources and data will be reassigned under admin's ownership. Please enter your password to confirm you would like to deactivate your account. Admin can reactivate this account later") }}</p>
 
-            <!-- Password Field -->
+            {{--Password Field--}}
             <div>
                 <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
                 <x-text-input
@@ -59,7 +59,7 @@ new class extends Component
                 <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm text-red-500" />
             </div>
 
-            <!-- Action Buttons -->
+            {{--Action Buttons--}}
             <div class="mt-6 flex justify-end gap-4">
                 <x-secondary-button x-on:click="$dispatch('close')" class="w-auto">
                     {{ __('Cancel') }}

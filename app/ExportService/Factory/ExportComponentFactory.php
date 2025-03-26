@@ -6,40 +6,31 @@ use App\Utils\Response;
 
 class ExportComponentFactory
 {
+    protected static array $namespaces = [
+        'mapper' => "App\\ExportService\\Mappers",
+        'config' => "App\\Configs\\Annotations",
+    ];
 
     public static function createMapper(string $format): object
     {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
-
-        // Determine the namespace for the mapper
-        $namespace = "App\\ExportService\\Mappers";
-
-        // Construct the full class name
-        $className = "{$namespace}\\To{$classBaseName}";
-
-        // Check if the class exists
-        if (!class_exists($className)) {
-            throw new \Exception("Mapper {$className} does not exist.");
-        }
-
-        return new $className();
+        return self::instantiateClass('To' . ucfirst(strtolower($format)), '', 'mapper');
     }
 
     public static function createConfig(string $format): object
     {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
+        return self::instantiateClass(ucfirst(strtolower($format)), 'Config', 'config');
+    }
 
-        // Determine the namespace for the config
-        $namespace = "App\\Configs\\Annotations";
+    /**
+     * @throws \Exception
+     */
+    protected static function instantiateClass(string $format, string $suffix, string $type): object
+    {
+        $namespace = self::$namespaces[$type];
+        $className = "{$namespace}\\{$format}{$suffix}";
 
-        // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}Config";
-
-        // Check if the class exists
         if (!class_exists($className)) {
-            return Response::error("Config {$className} does not exist.");
+            throw new \Exception("Class $className not found");
         }
 
         return new $className();

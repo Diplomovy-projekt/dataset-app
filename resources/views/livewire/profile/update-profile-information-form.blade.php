@@ -67,9 +67,9 @@ new class extends Component
     <x-misc.header title="Profile Information" info="Update your account's profile information and email address."/>
 
 
-    <!-- Form -->
+    {{--Form--}}
     <form wire:submit="updateProfileInformation" class="space-y-4">
-        <!-- Name -->
+        {{--Name--}}
         <div>
             <label for="name" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Name') }}</label>
             <input
@@ -85,7 +85,7 @@ new class extends Component
             <x-input-error :messages="$errors->get('name')" class="mt-1 text-sm text-red-500" />
         </div>
 
-        <!-- Email -->
+        {{--Email--}}
         <div>
             <label for="email" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Email') }}</label>
             <input
@@ -116,7 +116,7 @@ new class extends Component
             @endif
         </div>
 
-        <!-- Save Button -->
+        {{--Save Button--}}
         <div class="flex justify-end">
             <x-primary-button>
                 {{ __('Save') }}

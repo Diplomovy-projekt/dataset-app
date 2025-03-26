@@ -1,26 +1,28 @@
-<div x-data="datasetManagement(@this)" class="p-6">
+<div x-data="datasetManagement(@this)">
 
+    {{-- Livewire component modals --}}
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
     <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
+    <livewire:forms.upload-dataset :key="'admin-datasets-upload-new-dataset'"/>
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
+    <livewire:components.resolve-request :key="'resolve-request-component'" />
 
-    <!-- Header Section -->
+    {{--Header Section--}}
     <x-misc.header title="Dataset Management"/>
 
-    <!-- Table Section -->
+    {{--Table Section--}}
     <div class="bg-slate-800 rounded-xl overflow-hidden">
-        <!-- Table Header -->
+        {{--Table Header--}}
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-500 p-2 rounded-lg">
                         <x-icon name="o-squares-2x2" class="w-5 h-5 text-gray-200" />
                     </div>
                     <h2 class="text-xl font-bold text-gray-200">Datasets</h2>
                 </div>
-                <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
                 <button @click.prevent="open = 'uploadDataset'"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-fit">
                     <div class="flex items-center gap-2">
                         <x-icon name="o-plus" class="w-4 h-4" />
                         <span>New Dataset</span>

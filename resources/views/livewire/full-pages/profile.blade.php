@@ -1,7 +1,6 @@
-<div x-data="{ open: '' }"
-     class="my-10">
+<div x-data="{ open: '' }">
 
-    <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
+    <div id="my-dataset-header" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-500 p-2 rounded-lg">
@@ -20,11 +19,16 @@
     </div>
 
     <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
-    <div class="flex flex-wrap sm:gap-5 pt-5">
-        @forelse($datasets as $dataset)
+    <div class="relative flex flex-wrap sm:gap-5 pt-5">
+        <x-misc.pagination-loading/>
+
+    @forelse($this->paginatedDatasets as $dataset)
             <x-dataset.dataset-card :dataset="$dataset"></x-dataset.dataset-card>
         @empty
         @endforelse
+    </div>
+    <div class="flex-1 my-3">
+        {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#my-dataset-header']) }}
     </div>
 </div>
 

@@ -1,8 +1,9 @@
 @props([
-    'table' => []
+    'table' => [],
+    'items'
 ])
 <x-tables.wrapper :table="$table">
-    @foreach($this->paginatedPendingInvites as $invite)
+    @foreach($this->{$items} as $invite)
         <x-tables.table-row id="admin-user-management-pending-{{ $invite['id'] }}">
             {{-- Invited email --}}
             <x-tables.table-cell>

@@ -11,6 +11,8 @@ class AnnotationClass extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'dataset_id',
         'rgb',

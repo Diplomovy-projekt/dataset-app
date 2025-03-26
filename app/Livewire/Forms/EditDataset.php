@@ -2,11 +2,17 @@
 
 namespace App\Livewire\Forms;
 
+use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
+use App\Models\ActionRequest;
 use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
+use App\Traits\LivewireActions;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -15,6 +21,7 @@ use Livewire\Component;
 /*#[Lazy(isolate: false)]*/
 class EditDataset extends Component
 {
+    use LivewireActions;
     public $editingDataset;
     public $metadataTypes;
     public $categories;
@@ -24,10 +31,11 @@ class EditDataset extends Component
     #[Validate('required')]
     public $selectedCategories = [];
     public $description;
+    #[Validate('required')]
     public $displayName;
 
     #[On('edit-selected')]
-    public function setDatasetInfo($uniqueName)
+    public function setDatasetInfo($uniqueName = null)
     {
         $this->setDataset($uniqueName);
     }
@@ -48,30 +56,14 @@ class EditDataset extends Component
         $this->populateFormFields();
     }
 
-    public function updateDatasetInfo()
+    public function updateDatasetInfo(ActionRequestService $actionRequestService)
     {
         Gate::authorize('update-dataset', $this->editingDataset->unique_name);
+        $this->displayName = trim($this->displayName);
+        $payload = $this->buildPayload();
 
-        try {
-            $this->editingDataset->description = $this->description;
-            $this->editingDataset->display_name = $this->displayName;
-
-            $ids = array_merge(...array_column($this->selectedMetadata, 'metadataValues'));
-            $this->editingDataset->metadataValues()->sync($ids);
-            $this->editingDataset->categories()->sync($this->selectedCategories);
-            $this->editingDataset->save();
-
-            /*$this->dispatch('flash-msg', [
-                'type' => 'success',
-                'message' => 'Dataset information updated successfully!'
-            ]);*/
-            $this->dispatch('refresh');
-        } catch (\Exception $e) {
-            $this->dispatch('flash-msg', [
-                'type' => 'error',
-                'message' => 'Failed to update dataset. Please try again.'
-            ]);
-        }
+        $result = $actionRequestService->createRequest('edit', $payload);
+        $this->handleResponse($result);
     }
 
     private function populateFormFields()
@@ -86,4 +78,27 @@ class EditDataset extends Component
         $this->description = $this->editingDataset->description;
         $this->displayName = $this->editingDataset->display_name;
     }
+
+    private function buildPayload(): array
+    {
+        return [
+            'dataset_unique_name' => $this->editingDataset->unique_name,
+            'dataset_id' => $this->editingDataset->id,
+            'display_name' => $this->displayName,
+            'description' => $this->description,
+            'metadata' => array_merge(...array_column($this->selectedMetadata, 'metadataValues')),
+            'categories' => $this->selectedCategories,
+        ];
+    }
+
+    private function hasChanges(array $payload): bool
+    {
+        return (
+            $payload['display_name'] !== $this->editingDataset->display_name ||
+            $payload['description'] !== $this->editingDataset->description ||
+            array_diff($payload['metadata'], $this->editingDataset->metadataValues()->pluck('metadata_values.id')->toArray()) ||
+            array_diff($payload['categories'], $this->editingDataset->categories()->pluck('categories.id')->toArray())
+        );
+    }
+
 }

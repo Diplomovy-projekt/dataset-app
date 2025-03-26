@@ -115,10 +115,12 @@ trait ImageTransformer
     {
         $baseSize = 2;
         $scalingFactor = 0.005;
+        $maxBorderSize = 5;
 
         $averageDimension = ($width + $height) / 2;
         $borderSize = $baseSize + ($averageDimension * $scalingFactor);
 
-        return round($borderSize);
+        return min(round($borderSize), $maxBorderSize);
     }
+
 }

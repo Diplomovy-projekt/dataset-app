@@ -10,6 +10,8 @@ class AnnotationData extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'image_id',
         'annotation_class_id',
@@ -21,7 +23,7 @@ class AnnotationData extends Model
     ];
 
     protected $casts = [
-        'segmentation' => 'json',
+        'segmentation' => 'array',
     ];
 
     public function image(): BelongsTo

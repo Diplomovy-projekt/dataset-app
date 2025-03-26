@@ -43,19 +43,28 @@ class TableDefinition
         ],
         'pending-requests' => [
             'id' => 'pending-requests',
-            'headers' => [],
-            'sortColumn' => 'display_name',
+            'headers' => [
+                ['label' => 'Dataset', 'field' => 'dataset.display_name', 'sortable' => true, 'width' => 'w-64'],
+                ['label' => 'Requested By', 'field' => 'user.email', 'sortable' => true, 'width' => 'w-20'],
+                ['label' => 'Type', 'field' => 'type', 'sortable' => true, 'width' => 'w-18'],
+                ['label' => 'Status', 'field' => 'status', 'sortable' => false, 'width' => 'w-18'],
+                ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-16'],
+            ],
+            'sortColumn' => 'created_at',
             'sortDirection' => 'asc',
         ],
-        'accepted-requests' => [
-            'id' => 'accepted-requests',
-            'headers' => [],
-            'sortColumn' => 'display_name',
-            'sortDirection' => 'asc',
-        ],
-        'rejected-requests' => [
-            'id' => 'rejected-requests',
-            'headers' => [],
+        'resolved-requests' => [
+            'id' => 'resolved-requests',
+            'headers' => [
+                ['label' => 'Dataset', 'field' => 'dataset.display_name', 'sortable' => true, 'width' => 'w-64'],
+                ['label' => 'Requested By', 'field' => 'user.email', 'sortable' => true, 'width' => 'w-20'],
+                ['label' => 'Type', 'field' => 'type', 'sortable' => true, 'width' => 'w-18'],
+                ['label' => 'Status', 'field' => 'status', 'sortable' => true, 'width' => 'w-18'],
+                ['label' => 'Reviewed By', 'field' => 'reviewers.email', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Comment', 'field' => 'comment', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
+            ],
             'sortColumn' => 'display_name',
             'sortDirection' => 'asc',
         ],
@@ -95,6 +104,31 @@ class TableDefinition
             'sortColumn' => 'email',
             'sortDirection' => 'asc',
         ],
+        // User tables
+        'my-requests-pending' => [
+            'id' => 'my-requests-pending',
+            'headers' => [
+                ['label' => 'Dataset', 'field' => 'dataset.display_name', 'sortable' => true, 'width' => 'w-64'],
+                ['label' => 'Type', 'field' => 'type', 'sortable' => true, 'width' => 'w-20'],
+                ['label' => 'Status', 'field' => 'status', 'sortable' => true, 'width' => 'w-18'],
+                ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-16'],
+            ],
+            'sortColumn' => 'created_at',
+            'sortDirection' => 'asc',
+        ],
+        'my-requests-resolved' => [
+            'id' => 'my-requests-resolved',
+            'headers' => [
+                ['label' => 'Dataset', 'field' => 'dataset.display_name', 'sortable' => true, 'width' => 'w-64'],
+                ['label' => 'Type', 'field' => 'type', 'sortable' => true, 'width' => 'w-20'],
+                ['label' => 'Status', 'field' => 'status', 'sortable' => true, 'width' => 'w-18'],
+                ['label' => 'Reviewed By', 'field' => 'reviewers.email', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Comment', 'field' => 'comment', 'sortable' => true, 'width' => 'w-16'],
+                ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
+            ],
+            'sortColumn' => 'created_at',
+            'sortDirection' => 'asc',
+        ],
     ];
-
 }

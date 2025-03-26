@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Image extends Model
 {
     use HasFactory;
+
+    public $timestamps = false;
+
     protected $fillable = [
         'dataset_id',
         'dataset_folder',

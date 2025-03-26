@@ -1,4 +1,4 @@
-<div x-data="annotationSelector()" class="p-4 bg-gray-900 rounded-lg">
+<div x-data="annotationSelector()" class="p-4  rounded-lg">
     @php
         $dataset['stats'] = [
             'numImages' => 24,

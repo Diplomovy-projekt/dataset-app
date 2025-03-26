@@ -8,16 +8,9 @@ use App\Utils\Util;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-class ToCoco extends BaseMapper
+class ToCoco extends BaseToMapper
 {
-    /**
-     * @throws \Exception
-     */
-    public function handle(array $images, string $datasetFolder, string $annotationTechnique): void
-    {
-        $this->linkImages($images, $datasetFolder);
-        $this->createAnnotations($images, $datasetFolder, $annotationTechnique);
-    }
+    protected static string $configClass = CocoConfig::class;
 
     public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void
     {
@@ -73,26 +66,20 @@ class ToCoco extends BaseMapper
         }
     }
 
-    protected function getImageDestinationPath($datasetFolder, $image): string
-    {
-        $path = AppConfig::DATASETS_PATH['public'] . $datasetFolder . '/' . CocoConfig::IMAGE_FOLDER . '/' . $image['filename'];
-        return Storage::path($path);
-    }
-
-    protected function getAnnotationDestinationPath($datasetFolder, $image = null): string
+    public function getAnnotationDestinationPath($datasetFolder, $image = null): string
     {
         return AppConfig::DATASETS_PATH['public'] .
             $datasetFolder . '/' .
             CocoConfig::LABELS_FILE;
     }
 
-    protected function mapPolygon(mixed $annotation, array $imgDims = null): mixed
+    public function mapPolygon(mixed $annotation, array $imgDims = null): mixed
     {
         if (empty($annotation['segmentation'])) {
             return [];
         }
 
-        $segmentation = json_decode($annotation['segmentation'], true);
+        $segmentation = $annotation['segmentation'];
         $polygon = [];
 
         foreach ($segmentation as $point) {
@@ -103,7 +90,7 @@ class ToCoco extends BaseMapper
         return [$polygon];
     }
 
-    protected function mapBbox(mixed $annotation, array $imgDims = null): mixed
+    public function mapBbox(mixed $annotation, array $imgDims = null): mixed
     {
         return [
             Util::formatNumber($annotation['x'] * $imgDims[0]),
@@ -117,7 +104,7 @@ class ToCoco extends BaseMapper
     {
         // Prefer area of segmentation if available
         if (!empty($annotation['segmentation'])) {
-            $segmentation = json_decode($annotation['segmentation'], true);
+            $segmentation = $annotation['segmentation'];
             $n = count($segmentation);
             $area = 0;
 
@@ -139,4 +126,8 @@ class ToCoco extends BaseMapper
     }
 
 
+    public function getImageFolder(): string
+    {
+        return CocoConfig::IMAGE_FOLDER;
+    }
 }

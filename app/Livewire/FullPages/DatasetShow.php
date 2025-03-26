@@ -2,58 +2,100 @@
 
 namespace App\Livewire\FullPages;
 
+use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
-use App\ExportService\ExportService;
 use App\ImageService\ImageRendering;
+use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Traits\LivewireActions;
+use App\Utils\ImageQuery;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 class DatasetShow extends Component
 {
-    use WithPagination, ImageRendering;
+    use WithPagination, ImageRendering, LivewireActions, WithoutUrlPagination;
+    #[Locked]
     public $uniqueName;
     public $dataset;
-    public $searchTerm;
+    public string $searchTerm = '';
     public Collection $metadata;
     public Collection $categories;
     public array $toggleClasses;
+    #[Locked]
     public string $modalStyle;
     public array $selectedImages = [];
     public int $perPage = 50;
+    #[Locked]
+    public array $request;
 
     #[Computed]
     public function paginatedImages()
     {
-        $images = $this->fetchImages();
-        $preparedImages = $this->prepareImagesForSvgRendering($images);
-        return $preparedImages;
+        Util::logStart("paginatedImages");
+        $images = ImageQuery::forDatasets([$this->dataset['id']])
+            ->search($this->searchTerm)
+            ->perPage($this->perPage)
+            ->get();
+        $images = $this->prepareImagesForSvgRendering($images);
+        Util::logEnd("paginatedImages");
+        return $images;
     }
 
-    public function mount()
+
+    public function mount($uniqueName, $requestId = null)
     {
-        Util::logStart("dataset show MOUNT");
-        $dataset = Dataset::where('unique_name', $this->uniqueName)->with(['classes'])->first();
+        $this->resetPage();
+        $query = Dataset::query();
+        $this->request = [
+            'id' => $requestId,
+            'route' => Route::currentRouteName()
+        ];
+         if (!isset($requestId)) {
+            $query->approved();
+        }
+        else{
+            $request = ActionRequest::where('id', $requestId)->where('status', 'pending')->first();
+            if(!$request){
+                abort(404);
+            }
+        }
+
+        $dataset = $query->where('unique_name', $this->uniqueName)->with(['classes'])->first();
         if (!$dataset) {
             return redirect()->route('dataset.index');
         }
+        $this->initProperties($dataset);
+    }
 
+    public function render()
+    {
+        Util::logStart("Livewire render");
+        Util::logEnd("Livewire render");
+        return view('livewire.full-pages.dataset-show');
+    }
+    public function initProperties($dataset)
+    {
         $dataset->stats = $dataset->getStats();
+        $datasetPath = Util::getDatasetPath($dataset);
         foreach ($dataset->classes as $class) {
-            $datasetPath = Util::getDatasetPath($dataset);
             $firstFile = collect(Storage::files($datasetPath . AppConfig::CLASS_IMG_FOLDER . $class->id))
                 ->first();
             $class->image = [
+                'dataset' => $dataset->unique_name,
                 'filename' => pathinfo($firstFile, PATHINFO_BASENAME),
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class->id,
             ];
@@ -64,8 +106,6 @@ class DatasetShow extends Component
         $this->toggleClasses = $dataset['classes']->toArray();
         $this->metadata = $dataset->metadataGroupedByType();
         $this->categories = $dataset->categories()->get();
-        Util::logEnd("dataset show MOUNT");
-
     }
 
     public function updatedPerPage()
@@ -73,49 +113,40 @@ class DatasetShow extends Component
         unset($this->paginatedImages);
     }
 
-    public function search()
+    public function updatedSearchTerm()
     {
-        $this->searchTerm = trim($this->searchTerm);
         unset($this->paginatedImages);
     }
-    private function fetchImages()
-    {
-        if ($this->searchTerm) {
-            return Image::where('dataset_id', $this->dataset['id'])->where('filename', 'like', '%' . $this->searchTerm . '%')->with(['annotations.class'])->paginate($this->perPage);
-        }
-        else {
-            return Image::where('dataset_id', $this->dataset['id'])->with(['annotations.class'])->paginate($this->perPage);
-        }
-    }
+
+    #[Renderless]
     public function deleteDataset(DatasetActions $datasetService): void
     {
-        $result = $datasetService->deleteDataset($this->uniqueName);
-        if($result->isSuccessful()){
-            redirect()->route('profile');
-        }
+        $payload = ['dataset_unique_name' => $this->uniqueName,
+                    'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id
+            ];
+        $result = app(ActionRequestService::class)->createRequest('delete', $payload);
+        $this->handleResponse($result);
     }
 
+    #[Renderless]
     public function deleteImages(DatasetActions $datasetService)
     {
-        $result = $datasetService->deleteImages($this->uniqueName, $this->selectedImages);
-        if($result->isSuccessful()){
-            $this->mount();
-        }
+        $payload = ['dataset_unique_name' => $this->uniqueName,
+            'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id,
+            'image_ids' => $this->selectedImages
+        ];
+        $result = app(ActionRequestService::class)->createRequest('reduce', $payload);
+        $this->handleResponse($result);
     }
 
+    #[Renderless]
     public function cacheQuery($id)
     {
-        Util::logStart("dataset show CACHE QUERY");
-        $query = Image::where('dataset_id', $id)->with('annotations.class');
-        $payload['query'] = \EloquentSerialize::serialize($query);
         $payload['datasets'] = [$id];
 
         $token = Str::random(32);
         Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
-        Util::logEnd("dataset show CACHE QUERY");
-        Util::logStart("dataset show DISPATCH");
         $this->dispatch('store-download-token', token: $token);
-        Util::logEnd("dataset show DISPATCH");
     }
 
 }

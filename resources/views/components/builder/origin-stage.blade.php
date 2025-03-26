@@ -76,7 +76,7 @@
     <div class="bg-gray-800 rounded-lg p-4 mt-4">
         <div class="flex items-center justify-between text-gray-200">
             <span class="text-sm">Matching Datasets</span>
-            <span class="text-2xl font-bold text-blue-500">{{ count($this->datasets) }}</span>
+            <span class="text-2xl font-bold text-blue-500">{{ count($this->datasetIds) }}</span>
         </div>
         <p class="text-sm text-gray-400 mt-1">
             Datasets matching any of the selected values or those without metadata will be included.

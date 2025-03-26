@@ -16,15 +16,14 @@ trait DatasetImportHelper
             $flattenedErrors = [];
 
             // Iterate through each file's errors
-            foreach ($errors as $filename => $errorArray) {
-                // Check if the value is an array and flatten it
-                if (is_array($errorArray)) {
-                    foreach ($errorArray as $error) {
-                        $flattenedErrors[] = ['filename' => $filename, 'error' => $error];
-                    }
+            foreach ($errors as $filename => $errorData) {
+                // Check if the value is an array
+                if (is_array($errorData)) {
+                    // Recursive function to flatten nested arrays
+                    $this->flattenErrorArray($flattenedErrors, $errorData, $filename);
                 } else {
                     // In case there's a single error for the file, just add it
-                    $flattenedErrors[] = ['filename' => $filename, 'error' => $errorArray];
+                    $flattenedErrors[] = ['filename' => $filename, 'error' => $errorData];
                 }
             }
 
@@ -34,28 +33,23 @@ trait DatasetImportHelper
         return [['error' => $errors]]; // Handle case when it's not an array
     }
 
-
-    /*public function chunkUpload()
+    private function flattenErrorArray(&$result, $errors, $filename, $prefix = '')
     {
-        $chunkFileName = $this->fileChunk->getFileName();
-        $finalFilePath = 'livewire-tmp/' . $this->uniqueName;
-
-        // Read the chunk file
-        $buff = Storage::disk('private')->get('livewire-tmp/' . $chunkFileName);
-
-        // Append chunk to final file
-        Storage::disk('private')->append($finalFilePath, $buff, null);
-
-        // Delete the chunk file
-        Storage::disk('private')->delete('livewire-tmp/' . $chunkFileName);
-
-        // Check if the file is complete
-        $curSize = Storage::disk('private')->size($finalFilePath);
-        if ($curSize == $this->fileSize) {
-            $this->finalFile = TemporaryUploadedFile::createFromLivewire('/' . $this->uniqueName);
-            $this->finishImport(app(ZipManager::class));
+        foreach ($errors as $key => $value) {
+            if (is_array($value)) {
+                // For nested arrays, recurse with updated prefix
+                $newPrefix = is_numeric($key) ? $prefix : "$prefix$key: ";
+                $this->flattenErrorArray($result, $value, $filename, $newPrefix);
+            } else {
+                // Add leaf error with full path prefix
+                $result[] = [
+                    'filename' => $filename,
+                    'error' => $prefix . $value
+                ];
+            }
         }
-    }*/
+    }
+
     public function chunkUpload() {
         $chunkFileName = $this->fileChunk->getFileName();
 

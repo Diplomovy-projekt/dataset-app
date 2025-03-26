@@ -43,7 +43,9 @@
                     These will be added to the existing dataset
                 @endif
             </p>
-            <a wire:navigate href="{{ route('zip.format.info') }}" class="text-xs text-indigo-500 hover:underline">See format guidelines</a>
+            <a target="_blank" href="{{ route('zip.format.info') }}" class="text-xs text-indigo-500 hover:underline">
+                See format guidelines
+            </a>
 
         </div>
         {{-- FORMAT SELECT --}}
@@ -112,7 +114,6 @@
                         'fileChunk',
                         chunkFile,
                         (resolve) => {
-                            $wire.$set('lockUpload', false, true);
                         },
                         (error) => {
                             $wire.$set('lockUpload', false);

@@ -21,7 +21,6 @@ return new class extends Migration
             $table->float('width');
             $table->float('height');
             $table->json('segmentation')->nullable();
-            $table->timestamps();
         });
     }
 

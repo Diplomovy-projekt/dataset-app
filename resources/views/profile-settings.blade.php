@@ -5,23 +5,23 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <!-- Update Profile Information Section -->
+            {{--Update Profile Information Section--}}
             {{--<div class="p-6 sm:p-8    rounded-xl">
                 <div class="max-w-2xl mx-auto">
                     <livewire:profile.update-profile-information-form />
                 </div>
             </div>--}}
 
-            <!-- Update Password Section -->
+            {{--Update Password Section--}}
             <div class="p-6 sm:p-8    rounded-xl">
                 <div class="max-w-2xl mx-auto">
                     <livewire:profile.update-password-form />
                 </div>
             </div>
 
-            <!-- Delete Account Section -->
+            {{--Delete Account Section--}}
             <div class="p-6 sm:p-8    rounded-xl">
                 <div class="max-w-2xl mx-auto">
                     <livewire:profile.delete-user-form />

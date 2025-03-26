@@ -3,10 +3,12 @@
 namespace App\ImageService;
 
 use App\Configs\AppConfig;
+use App\Exceptions\DataException;
 use App\Utils\FileUtil;
 use App\Utils\Response;
-use Faker\Core\File;
+use App\Utils\Util;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 trait ImageProcessor
@@ -16,19 +18,20 @@ trait ImageProcessor
     /**
      * Creates thumbnails for each image
      * @param string $datasetFolderPath
-     * @return Response
+     * @throws DataException
      */
-    public function createThumbnails(string $datasetFolder, $images): array
+    public function createThumbnails(string $datasetFolder, $images): void
     {
         if(!is_array($images)){
             $images = [$images];
         }
         if(empty($images)){
-            return [];
+            throw new DataException("No images found");
         }
 
-        $source = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::FULL_IMG_FOLDER);
-        $destination = Storage::path(AppConfig::DEFAULT_DATASET_LOCATION . $datasetFolder."/".AppConfig::IMG_THUMB_FOLDER);
+        $datasetPath = Util::getDatasetPath($datasetFolder);
+        $source = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER);
+        $destination = Storage::path($datasetPath . AppConfig::IMG_THUMB_FOLDER);
         FileUtil::ensureFolderExists($destination);
         $createdThumbnails = [];
         foreach($images as $image){
@@ -36,24 +39,28 @@ trait ImageProcessor
                 $createdThumbnails[] = $image;
             }
         }
-        return $createdThumbnails;
+        if(count($createdThumbnails) != count($images)){
+            throw new DataException("Failed to create thumbnails for some images");
+        }
     }
 
     public function createClassCrops(string $datasetFolder, Collection $images): array
     {
         $classCounts = [];
+        $datasetPath = Util::getDatasetPath($datasetFolder);
         foreach ($images as $image) {
-            $imagePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::FULL_IMG_FOLDER.$image->filename);
+            $imagePath = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER.$image->filename);
 
             foreach ($image->annotations as $index => $annotation) {
                 $classId = $annotation->annotation_class_id;
-                $directoryPath = $datasetFolder . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
+                $directoryPath = $datasetPath . '/' . AppConfig::CLASS_IMG_FOLDER . $classId;
 
                 if(!isset($classCounts[$classId])) {
-                    $classCounts[$classId] = count(Storage::disk('datasets')->files($directoryPath));
+                    $classCounts[$classId] = count(Storage::files($directoryPath));
                 }
                 if ($classCounts[$classId] < AppConfig::SAMPLES_COUNT) {
-                    $savePath = Storage::disk('datasets')->path($datasetFolder.'/'.AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
+
+                    $savePath = Storage::path($datasetPath . AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
                     FileUtil::ensureFolderExists($savePath);
 
                     $pixelizedBbox = $this->pixelizeBbox(["x" => $annotation->x, "y" => $annotation->y, "width" => $annotation->width, "height" => $annotation->height], $image['width'], $image['height']);
@@ -67,25 +74,24 @@ trait ImageProcessor
         return $classCounts;
     }
 
-
-    public function moveFullImages($imageFileNames, $sourceFolder, $destinationFolder): Response
+    /**
+     * @throws DataException
+     */
+    public function moveImages($imageFileNames, $from, $to): void
     {
         foreach ($imageFileNames as $file) {
             $extension = pathinfo($file, PATHINFO_EXTENSION);
 
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $source = AppConfig::LIVEWIRE_TMP_PATH . $sourceFolder . '/' .  $file;
-                $destination = AppConfig::DEFAULT_DATASET_LOCATION . $destinationFolder . '/' . AppConfig::FULL_IMG_FOLDER . $file;
+                $source = rtrim($from, '/') . '/' . $file;
+                $dest = rtrim($to, '/') . '/' . $file;
 
-                try {
-                    FileUtil::ensureFolderExists($destination);
-                    Storage::move($source, $destination);
-                } catch (\Exception $e) {
-                    Response::error("An error occurred while moving images to public static storage: " . $e->getMessage());
+                File::ensureDirectoryExists($to);
+
+                if (!Storage::move($source, $dest)) {
+                    throw new DataException("Failed to move image $file to $to");
                 }
             }
         }
-
-        return Response::success(data: ['datasetFolder' => $destinationFolder]);
     }
 }

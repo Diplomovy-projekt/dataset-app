@@ -14,30 +14,29 @@ class ExportService
 
     public static function handleExport($images, $format, $annotationTechnique)
     {
+        $datasetFolderToDownload = uniqid('custom_dataset_build_');
+        $datasetFolderToDownloadPath = AppConfig::DATASETS_PATH['public'] . $datasetFolderToDownload;
+
         try {
-            $datasetFolder = uniqid('custom_dataset_build_');
             $mapper = ExportComponentFactory::createMapper($format);
 
             //1. Create and map the dataset folder
-            $mapper->handle($images, $datasetFolder, $annotationTechnique);
+            $mapper->handle($images, $datasetFolderToDownload, $annotationTechnique);
 
             //2. Create a zip file from the dataset folder
-            $absolutePath = Storage::disk('datasets')->path($datasetFolder);
+            $absolutePath = Storage::path($datasetFolderToDownloadPath);
             ZipManager::createZipFromFolder($absolutePath);
 
             //3. Delete the dataset folder and create job to delete zip
-            Storage::disk('datasets')->deleteDirectory($datasetFolder);
-            DeleteTempFile::dispatch(AppConfig::DATASETS_PATH['public'] . $datasetFolder . '.zip')
-                ->delay(now()->add(AppConfig::EXPIRATION['TMP_FILE']['value'], AppConfig::EXPIRATION['TMP_FILE']['unit']))
-                ->onQueue('temp-files');
+            Storage::deleteDirectory($datasetFolderToDownloadPath);
 
-            return Response::success(data: ['datasetFolder' => $datasetFolder.'.zip']);
+            return Response::success(data: ['datasetFolder' => $datasetFolderToDownload.'.zip']);
         }catch (\Exception $e) {
-            if(Storage::disk('datasets')->exists($datasetFolder)) {
-                Storage::disk('datasets')->deleteDirectory($datasetFolder);
+            if(Storage::exists($datasetFolderToDownloadPath)) {
+                Storage::deleteDirectory($datasetFolderToDownloadPath);
             }
-            if(Storage::disk('datasets')->exists($datasetFolder.'.zip')) {
-                Storage::disk('datasets')->delete($datasetFolder.'.zip');
+            if(Storage::exists($datasetFolderToDownloadPath.'.zip')) {
+                Storage::delete($datasetFolderToDownloadPath.'.zip');
             }
             return Response::error("An error occurred while exporting the dataset: " . $e->getMessage());
         }

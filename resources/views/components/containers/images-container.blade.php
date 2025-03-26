@@ -3,15 +3,19 @@
         'inputAction' => 'add',
     ]
 )
-<div>
+<div id="paginatedImages" class="relative">
+
+    {{-- Loading indicator for switching pages --}}
+    <x-misc.pagination-loading/>
+
     <div x-data="{
             open: ''
          }"
          class="grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 justify-items-center">
         @foreach ($this->paginatedImages as $image)
             <div wire:key="builder-img-grid-container-{{$image['filename']}}"
-                 x-data="{ imageId: {{ $image->id }} }"
-                 @mouseenter="hoveredImageIndex = {{ $image->id }}"
+                 x-data="{ imageId: {{ $image['id'] }} }"
+                 @mouseenter="hoveredImageIndex = {{ $image['id'] }}"
                  @mouseleave="hoveredImageIndex = null"
                  class="">
                 <div class="relative w-full group">
@@ -23,7 +27,7 @@
                                                 })"/>
                     <input
                         type="checkbox"
-                        value="{{ $image->id }}"
+                        value="{{ $image['id'] }}"
                         wire:model="selectedImages"
                         class="peer appearance-none absolute top-1 right-1 w-5 h-5 rounded-sm  bg-gray-500 border-gray-400 border-2 opacity-0
                                 group-hover:opacity-100 checked:opacity-100 transition-opacity cursor-pointer {{ $inputAction === 'add'
@@ -32,19 +36,19 @@
                     />
                     <div class="absolute top-1 right-1 w-5 h-5 opacity-0 group-hover:opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
                         @if($inputAction === 'add')
-                            <!-- Checkmark SVG -->
+                            {{--Checkmark SVG--}}
                             <svg class="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                             </svg>
                         @else
-                            <!-- X mark SVG -->
+                            {{--X mark SVG--}}
                             <svg class="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         @endif
                     </div>
                 </div>
-                <x-misc.tooltip :filename="$image->filename" />
+                <x-misc.tooltip :filename="$image['filename']" />
             </div>
         @endforeach
     </div>
@@ -63,8 +67,10 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex-1">
-                {{ $this->paginatedImages->links() }}
+            <div class="flex-1 mt-3 overflow-x-auto">
+                <div class="inline-block min-w-full">
+                    {{ $this->paginatedImages->links(data: ['scrollTo' => '#paginatedImages']) }}
+                </div>
             </div>
         </div>
     @endif

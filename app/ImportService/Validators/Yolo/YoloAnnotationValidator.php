@@ -2,17 +2,19 @@
 
 namespace App\ImportService\Validators\Yolo;
 
+use App\Configs\Annotations\CocoConfig;
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
+use App\ImportService\Validators\BaseValidator\BaseAnnotationValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class YoloAnnotationValidator
+class YoloAnnotationValidator extends BaseAnnotationValidator
 {
-    public function validate(string $datasetFolder, string $annotationTechnique): Response
+    public function validateAnnotationData(string $datasetFolder, string $annotationTechnique): Response
     {
-        $annotationsPath = AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder .'/'. YoloConfig::LABELS_FOLDER;
+        $annotationsPath = $this->getAnnotationPath($datasetFolder, YoloConfig::LABELS_FOLDER);
         $labels = collect(Storage::files($annotationsPath));
         $errors = [];
 

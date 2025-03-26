@@ -8,7 +8,7 @@ use App\Configs\AppConfig;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
-class FromCoco extends BaseMapper
+class FromCoco extends BaseFromMapper
 {
 
     function parse(string $folderName, $annotationTechnique): Response
@@ -97,7 +97,7 @@ class FromCoco extends BaseMapper
     }
 
 
-    function transformPolygon( array $polygonPoints, array $imgDims = null): string
+    function transformPolygon( array $polygonPoints, array $imgDims = null): array
     {
         $normalizedPoints = [];
         foreach (array_chunk($polygonPoints, 2) as $pair) {
@@ -107,11 +107,15 @@ class FromCoco extends BaseMapper
             $normalizedPoints[] = ['x' => $pair[0], 'y' => $pair[1]];
         }
 
-        return json_encode($normalizedPoints);
+        return $normalizedPoints;
     }
 
     function getClasses($classesSource): array
     {
-        return array_column($classesSource, 'name');
+        return array_map(fn($class) => [
+            'name' => $class['name'],
+            'supercategory' => $class['supercategory'] ?? null
+        ], $classesSource);
     }
+
 }

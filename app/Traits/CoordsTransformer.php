@@ -75,10 +75,10 @@ trait CoordsTransformer
             $pixelized_y -= $pixelized_height / 2;
         }
         return [
-            'x' => round($pixelized_x, 1),
-            'y' => round($pixelized_y, 1),
-            'width' => round($pixelized_width, 1),
-            'height' => round($pixelized_height, 1)
+            'x' => (int)$pixelized_x,
+            'y' => (int)$pixelized_y,
+            'width' => (int)$pixelized_width,
+            'height' => (int)$pixelized_height
         ];
     }
 
@@ -89,7 +89,9 @@ trait CoordsTransformer
         } elseif ($segment instanceof Model) {
             $segment = $segment->segmentation;
         }
-        $segment = Util::isJson($segment) ? json_decode($segment, true) : $segment;
+        if(Util::isJson($segment)){
+            $segment = json_decode($segment, true);
+        }
 
         $pixelizedPolygon = [];
 
@@ -103,12 +105,11 @@ trait CoordsTransformer
 
             for ($i = 0; $i < $count; $i++) {
                 $pixelizedPolygon[$i] = [
-                    'x' => $segment[$i]['x'] * $imgWidth,
-                    'y' => $segment[$i]['y'] * $imgHeight
+                    'x' => (int)($segment[$i]['x'] * $imgWidth),
+                    'y' => (int)($segment[$i]['y'] * $imgHeight)
                 ];
             }
         } else {
-            // For flat arrays, avoid array_chunk for better performance
             $count = count($segment);
             if ($count % 2 == 0) { // Ensure we have pairs
                 $pairs = $count / 2;
@@ -116,8 +117,8 @@ trait CoordsTransformer
 
                 for ($i = 0, $j = 0; $i < $count; $i += 2, $j++) {
                     $pixelizedPolygon[$j] = [
-                        'x' => $segment[$i] * $imgWidth,
-                        'y' => $segment[$i + 1] * $imgHeight
+                        'x' => (int)($segment[$i] * $imgWidth),
+                        'y' => (int)($segment[$i + 1] * $imgHeight)
                     ];
                 }
             }

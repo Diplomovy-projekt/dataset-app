@@ -122,15 +122,16 @@ class Util
 
     public static function getImageSizeStats(array $ids, bool $isImageId = false): array
     {
+        if(empty($ids)) {
+            return [
+                'median' => '0x0',
+                'min' => '0x0',
+                'max' => '0x0',
+            ];
+        }
+
         $query = DB::table('images')
-            ->selectRaw('
-            AVG(width) as average_width,
-            AVG(height) as average_height,
-            MIN(width) as min_width,
-            MIN(height) as min_height,
-            MAX(width) as max_width,
-            MAX(height) as max_height
-        ');
+            ->select('width', 'height');
 
         if ($isImageId) {
             $query->whereIn('id', $ids);
@@ -138,14 +139,31 @@ class Util
             $query->whereIn('dataset_id', $ids);
         }
 
-        $stats = $query->first();
+        $sizes = $query->get();
+
+        $widths = $sizes->pluck('width')->sort()->values()->all();
+        $heights = $sizes->pluck('height')->sort()->values()->all();
+
+        $medianWidth = self::calculateMedian($widths);
+        $medianHeight = self::calculateMedian($heights);
 
         return [
-            'average' => (int)$stats->average_width . 'x' . (int)$stats->average_height,
-            'min' =>  (int)$stats->min_width . 'x' . (int)$stats->min_height,
-            'max' => (int)$stats->max_width . 'x' . (int)$stats->max_height,
+            'median' => $medianWidth . 'x' . $medianHeight,
+            'min' => min($widths) . 'x' . min($heights),
+            'max' => max($widths) . 'x' . max($heights),
         ];
     }
 
+    private static function calculateMedian(array $values): int
+    {
+        $count = count($values);
+        if ($count === 0) return 0;
+
+        $middle = (int) floor($count / 2);
+
+        return ($count % 2)
+            ? $values[$middle]
+            : (int) (($values[$middle - 1] + $values[$middle]) / 2);
+    }
 
 }

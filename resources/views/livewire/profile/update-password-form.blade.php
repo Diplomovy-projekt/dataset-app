@@ -39,12 +39,12 @@ new class extends Component
 }; ?>
 
 <section class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-    <!-- Header -->
+    {{--Header--}}
     <x-misc.header title="Update Password" info="Ensure your account is using a long, random password to stay secure."/>
 
-    <!-- Form -->
+    {{--Form--}}
     <form wire:submit="updatePassword" class="space-y-4">
-        <!-- Current Password -->
+        {{--Current Password--}}
         <div>
             <label for="update_password_current_password" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Current Password') }}</label>
             <input
@@ -58,7 +58,7 @@ new class extends Component
             <x-input-error :messages="$errors->get('current_password')" class="mt-1 text-sm text-red-500" />
         </div>
 
-        <!-- New Password -->
+        {{--New Password--}}
         <div>
             <label for="update_password_password" class="block text-sm font-medium text-slate-400 mb-1">{{ __('New Password') }}</label>
             <input
@@ -72,7 +72,7 @@ new class extends Component
             <x-input-error :messages="$errors->get('password')" class="mt-1 text-sm text-red-500" />
         </div>
 
-        <!-- Confirm Password -->
+        {{--Confirm Password--}}
         <div class="mb-4">
             <label for="update_password_password_confirmation" class="block text-sm font-medium text-slate-400 mb-1">{{ __('Confirm Password') }}</label>
             <input
@@ -86,7 +86,7 @@ new class extends Component
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-sm text-red-500" />
         </div>
 
-        <!-- Submit Button -->
+        {{--Submit Button--}}
         <div class="flex justify-end">
             <x-primary-button>
                 {{ __('Save') }}

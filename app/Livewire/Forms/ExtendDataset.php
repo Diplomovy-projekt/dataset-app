@@ -5,22 +5,18 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
-use App\ImportService\Strategies\ExtendDatasetStrategy;
-use App\ImportService\Strategies\NewDatasetStrategy;
-use App\Models\Category;
 use App\Models\Dataset;
-use App\Models\MetadataType;
+use App\ActionRequestService\ActionRequestService;
 use App\Traits\DatasetImportHelper;
+use App\Traits\LivewireActions;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class ExtendDataset extends Component
 {
-    use WithFileUploads, DatasetImportHelper;
+    use WithFileUploads, DatasetImportHelper, LivewireActions;
 
     public $errors;
     public $lockUpload = false;
@@ -73,6 +69,7 @@ class ExtendDataset extends Component
         $zipExtracted = $zipManager->processZipFile($this->finalFile);
 
         $payload = [
+            "display_name" => pathinfo($this->displayName, PATHINFO_FILENAME),
             "unique_name" => pathinfo($this->uniqueName, PATHINFO_FILENAME),
             "parent_dataset_unique_name" => $this->editingDataset->unique_name,
             'format' => $this->selectedFormat,
@@ -84,14 +81,20 @@ class ExtendDataset extends Component
             return;
         }
 
-        $importService = app(ImportService::class, ['strategy' => new ExtendDatasetStrategy()]);
-        $datasetImported = $importService->handleImport($payload);
+        $importService = app(ImportService::class);
+        $result = $importService->handleImport($payload);
 
-        if($datasetImported->isSuccessful()){
-            $this->redirectRoute('dataset.show', ['uniqueName' => $this->editingDataset->unique_name]);
+        if($result->isSuccessful()){
+            $actionPayload = [
+                'dataset_id' => Dataset::where('unique_name', $payload['parent_dataset_unique_name'])->first()->id,
+                'dataset_unique_name' => $payload['parent_dataset_unique_name'],
+                'child_unique_name' => $payload['unique_name']
+            ];
+            $result = app(ActionRequestService::class)->createRequest('extend', $actionPayload);
+            $this->handleResponse($result);
         } else {
-            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
-            $this->errors['message'] = $datasetImported->message;
+            $this->errors['data'] = $this->normalizeErrors($result->data);
+            $this->errors['message'] = $result->message;
             $this->lockUpload = false;
             $this->reset('finalFile', 'fileChunk', 'displayName', 'uniqueName', 'fileSize');
         }

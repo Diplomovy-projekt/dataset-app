@@ -41,9 +41,4 @@
         {{ $slot }}
         </tbody>
     </table>
-    {{--@php
-        $variableName = 'paginated' . Illuminate\Support\Str::studly(str_replace('-', ' ', $table['id']));
-    @endphp
-
-    {{ $this->{$variableName}->links() }}--}}
 </div>

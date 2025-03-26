@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('role')->default('user');
             $table->string('invited_by');
             $table->string('token')->unique();

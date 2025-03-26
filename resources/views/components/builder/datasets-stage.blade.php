@@ -1,14 +1,15 @@
 <div x-data="datasetsStage(@this)"
      class="container mx-auto py-4">
-    <div class="space-y-3">
-        @forelse($this->datasets as $index => $dataset)
+    <div id="paginatedDatasets" class="relative space-y-3">
+        <x-misc.pagination-loading/>
+        @forelse($this->paginatedDatasets as $index => $dataset)
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
                  @click="checked = !checked">
                 <div x-data="{ isChecked: false }"
-                     class="p-4 flex gap-4">
-                    <!-- Left section -->
+                     class="p-4 flex flex-col sm:flex-row gap-4">
+                    {{--Left section--}}
                     <div class="flex gap-4">
                         <div class="" @click.stop>
                             <input type="checkbox"
@@ -18,16 +19,16 @@
                         </div>
 
                         <div class="flex-shrink-0 w-20 h-20">
-                            <x-images.annotated-image :image="$dataset['image']"></x-images.annotated-image>
+                            <x-images.annotated-image :image="$dataset->images->first()"></x-images.annotated-image>
                         </div>
                     </div>
 
-                    <!-- Main Content -->
+                    {{--Main Content--}}
                     <div class="flex-1 min-w-0">
-                        <!-- Top row with title, tag, and buttons -->
+                        {{--Top row with title, tag, and buttons--}}
                         <div class="flex flex-col md:flex-row justify-between gap-4 mb-2">
                             <div class="flex flex-col md:flex-row md:items-center gap-3 flex-1 min-w-0">
-                                <div class="min-w-0">
+                                <div class="min-w-0 mt-2 sm:mt-0">
                                     <h3 class="text-lg font-semibold text-white truncate">{{ $dataset['display_name'] }}</h3>
                                 </div>
                                 <span class="w-fit px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $dataset['annotation_technique'] === 'Bounding box' ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300' }}">
@@ -65,16 +66,16 @@
                         </div>
 
 
-                        <!-- Description -->
+                        {{--Description--}}
                         <p class="text-sm text-gray-400 line-clamp-2 mb-3 break-all">{{$dataset['description']}}</p>
 
-                        <!-- Stats and Properties -->
+                        {{--Stats and Properties--}}
                         <div class="flex flex-col gap-2">
-                            <!-- Stats -->
+                            {{--Stats--}}
                             <x-dataset.dataset-stats :stats="$dataset['stats']" class="text-base" svgSize="w-5 h-5"/>
                             <x-dataset.image-stats :image_stats="$dataset['image_stats']" class="p-0"  />
 
-                            <!-- Dataset Properties -->
+                            {{--Dataset Properties--}}
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
                                 @foreach($dataset['categories'] as $category)
                                     <div wire:key="dataset-categories-{{ $category['id'] }}"
@@ -82,7 +83,7 @@
                                         {{ $category['name'] }}
                                     </div>
                                 @endforeach
-                                @forelse($dataset['metadata_values'] as $metadata)
+                                @forelse($dataset['metadataValues'] as $metadata)
                                     <div wire:key="dataset-metadata-{{ $metadata['id'] }}"
                                         class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
                                         {{ $metadata['value'] }}
@@ -101,7 +102,11 @@
             <p class="text-gray-400">No datasets found</p>
         @endforelse
     </div>
-    {{--<x-images.full-screen-image/>--}}
+    <div class="flex-1 mt-3 overflow-x-auto">
+        <div class="inline-block min-w-full">
+            {{ $this->paginatedDatasets->links(data: ['scrollTo' => '#datasetsStage']) }}
+        </div>
+    </div>
 </div>
 
 @script

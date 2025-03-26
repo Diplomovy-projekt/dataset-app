@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
-class FromYolo extends BaseMapper
+class FromYolo extends BaseFromMapper
 {
     public function parse(string $folderName, $annotationTechnique): Response
     {
@@ -57,7 +57,6 @@ class FromYolo extends BaseMapper
             $absolutePath = Storage::path($imageFile);
             list($imageWidth, $imageHeight) = getimagesize($absolutePath);
 
-
             $imageFileName = pathinfo($imageFile, PATHINFO_BASENAME);
             $imageData[$index] = [
                 'filename' => $imageFileName,
@@ -85,8 +84,11 @@ class FromYolo extends BaseMapper
             $annotation = [
                 'class_id' => $classId,
             ];
-            $annotation += $this->transformBoundingBox($points);
-            if ($annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
+
+            if ($annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX']) {
+                $annotation += $this->transformBoundingBox($points);
+            } elseif ($annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
+                $annotation += $this->createBboxFromPolygon($points);
                 $annotation['segmentation'] = $this->transformPolygon($points);
             }
             $annotationData[] = $annotation;
@@ -107,14 +109,34 @@ class FromYolo extends BaseMapper
         ];
     }
 
-    public function transformPolygon(array $polygonPoints, $imgDims = null): string
+    public function transformPolygon(array $polygonPoints, $imgDims = null): array
     {
         $normalizedPoints = [];
         foreach (array_chunk($polygonPoints, 2) as $pair) {
             $normalizedPoints[] = ['x' => $pair[0], 'y' => $pair[1]];
         }
 
-        return json_encode($normalizedPoints);
+        return $normalizedPoints;
+    }
+
+    private function createBboxFromPolygon(array $points)
+    {
+        // Get x values
+        $xCoords = array_filter($points, fn($key) => $key % 2 == 0, ARRAY_FILTER_USE_KEY);
+        // Get y values
+        $yCoords = array_filter($points, fn($key) => $key % 2 != 0, ARRAY_FILTER_USE_KEY);
+
+        $minX = min($xCoords);
+        $minY = min($yCoords);
+        $maxX = max($xCoords);
+        $maxY = max($yCoords);
+
+        return [
+            'x' => $minX,
+            'y' => $minY,
+            'width' => $maxX - $minX,
+            'height' => $maxY - $minY
+        ];
     }
 
     public function getClasses($classesSource): array
@@ -128,6 +150,10 @@ class FromYolo extends BaseMapper
         $dataContent = Storage::get($dataFilePath);
         $annotationData = Yaml::parse($dataContent);
 
-        return $annotationData['names'];
+        return array_map(fn($name) => [
+            'name' => $name,
+        ], $annotationData['names']);
     }
+
+
 }

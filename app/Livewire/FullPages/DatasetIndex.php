@@ -6,39 +6,46 @@ use App\ImageService\ImageRendering;
 use App\ImageService\MyImageManager;
 use App\Models\Dataset;
 use Intervention\Image\ImageManager;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
+use Livewire\WithoutUrlPagination;
+use Livewire\WithPagination;
 
 class DatasetIndex extends Component
 {
-    use ImageRendering;
-    public $datasets;
+    use ImageRendering, WithPagination, WithoutUrlPagination;
+    private $datasets;
     public $searchTerm;
+
+    #[Computed]
+    public function paginatedDatasets()
+    {
+        return Dataset::approved()
+            ->when($this->searchTerm, function ($query) {
+                $query->where('display_name', 'like', '%' . $this->searchTerm . '%');
+            })
+            ->with([
+                'images' => fn($query) => $query->limit(1)->with(['annotations.class']),
+                'classes'
+            ])
+            ->paginate(10)
+            ->through(fn($dataset) => $this->processDataset($dataset));
+    }
 
     public function render()
     {
-        $this->loadDatasets();
         return view('livewire.full-pages.dataset-index');
     }
 
-    public function loadDatasets()
+    private function processDataset($dataset)
     {
-        $datasets = Dataset::with([
-            'images' => function ($query) {
-                $query->limit(1)->with(['annotations.class']);
-            },
-        ])->with('classes')->get();
-        foreach($datasets as $key => $dataset){
-
-            if($dataset->images->isEmpty()){
-                $dataset->thumbnail = "placeholder-image.png";
-                continue;
-            }
-            $dataset->thumbnail = "storage/datasets/{$dataset->unique_name}/thumbnails/{$dataset->images->first()->filename}";
-            $processedImage = $this->prepareImagesForSvgRendering($dataset->images->first());
-            $dataset->images = $processedImage;
-            $dataset->stats = $dataset->getStats();
+        if ($dataset->images->isEmpty()) {
+            $dataset->thumbnail = "placeholder-image.png";
+        } else {
+            $dataset->setRelation('images', $this->prepareImagesForSvgRendering($dataset->images->first()));
         }
-        $this->datasets = $datasets->toArray();
+        $dataset->stats = $dataset->getStats();
+        return $dataset;
     }
 }

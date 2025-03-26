@@ -4,15 +4,17 @@ namespace App\ImportService\Validators\Coco;
 
 use App\Configs\Annotations\CocoConfig;
 use App\Configs\AppConfig;
+use App\ImportService\Validators\BaseValidator\BaseAnnotationValidator;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
-class CocoAnnotationValidator
+class CocoAnnotationValidator extends BaseAnnotationValidator
 {
-    public function validate(string $datasetFolder, string $annotationTechnique): Response
+    public function validateAnnotationData(string $datasetFolder, string $annotationTechnique): Response
     {
         // Get the COCO annotations file
-        $cocoJson = Storage::get(AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder . '/' . CocoConfig::LABELS_FILE);
+        $annotationPath = $this->getAnnotationPath($datasetFolder, CocoConfig::LABELS_FILE);
+        $cocoJson = Storage::get($annotationPath);
         $cocoJson = json_decode($cocoJson, true);
 
         $errors = [];

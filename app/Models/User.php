@@ -29,17 +29,6 @@ class User extends Authenticatable
         'is_active'
     ];
 
-    public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
-
-
-    public function datasets(): HasMany
-    {
-        return $this->hasMany(Dataset::class);
-    }
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -61,5 +50,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function datasets(): HasMany
+    {
+        return $this->hasMany(Dataset::class);
+    }
+
+    public function requests(): HasMany
+    {
+        return $this->hasMany(ActionRequest::class);
     }
 }

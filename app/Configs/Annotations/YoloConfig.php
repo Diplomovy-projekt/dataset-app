@@ -2,7 +2,7 @@
 
 namespace App\Configs\Annotations;
 
-class YoloConfig
+class YoloConfig extends BaseAnnotationConfig
 {
     /*
      * Expected archive structure for YOLO:
@@ -13,8 +13,8 @@ class YoloConfig
      * │   ├── image1.jpg
      * │   └── image2.jpg
      * └── labels/
-     *     ├── annotation1.txt
-     *     └── annotation2.txt
+     *     ├── image1.txt
+     *     └── image2.txt
      */
     public const DATA_YAML = 'data.yaml';
     public const LABEL_EXTENSION = 'txt';

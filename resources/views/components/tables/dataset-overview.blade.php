@@ -1,8 +1,9 @@
 @props([
-    'table' => []
+    'table' => [],
+    'items'
 ])
 <x-tables.wrapper :table="$table">
-    @foreach($this->paginatedDatasetOverview as $dataset)
+    @foreach($this->{$items} as $dataset)
         <x-tables.table-row id="admin-dataset-management-{{ $dataset['id'] }}">
             {{-- Display name --}}
             <x-tables.table-cell>
@@ -63,15 +64,23 @@
             <x-tables.table-cell>
                 <x-dropdown-menu direction="left" class="w-50">
                     <x-dropdown-menu-item
-                        @click="$dispatch('extend-selected','{{ $dataset['unique_name'] }}'); open = 'extend-dataset'"
+                        @click="$dispatch('extend-selected',{uniqueName: '{{ $dataset['unique_name'] }}'});
+                                open = 'extend-dataset'"
                         :icon="@svg('eva-upload')->toHtml()">
                         Extend Dataset
                     </x-dropdown-menu-item>
 
                     <x-dropdown-menu-item
-                        @click="$dispatch('edit-selected','{{ $dataset['unique_name'] }}'); open = 'edit-dataset'"
+                        @click="$dispatch('edit-selected',{uniqueName: '{{ $dataset['unique_name'] }}'});
+                                open = 'edit-dataset'"
                         :icon="@svg('eos-edit')->toHtml()">
                         Edit Dataset info
+                    </x-dropdown-menu-item>
+
+                    <x-dropdown-menu-item
+                        @click.prevent="open = 'display-classes'"
+                        :icon="@svg('o-tag')->toHtml()">
+                        Preview Classes
                     </x-dropdown-menu-item>
 
                     <x-dropdown-menu-item

@@ -28,15 +28,15 @@ new #[Layout('layouts.app')] class extends Component
 
 <div class="w-full max-w-md mx-auto p-6">
     <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-slate-700 p-8">
-        <!-- Header -->
+        {{--Header--}}
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-2xl font-bold text-gray-200">Log in</h1>
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent ml-6"></div>
         </div>
 
-        <!-- Form -->
+        {{--Form--}}
         <form wire:submit="login">
-            <!-- Email Field -->
+            {{--Email Field--}}
             <div class="mb-6">
                 <label for="email" class="block text-sm font-medium text-slate-400 mb-2">Email</label>
                 <input
@@ -51,7 +51,7 @@ new #[Layout('layouts.app')] class extends Component
                 @enderror
             </div>
 
-            <!-- Password Field -->
+            {{--Password Field--}}
             <div class="mb-6" x-data="{ show: false }">
                 <label for="password" class="block text-sm font-medium text-slate-400 mb-2">Password</label>
                 <div class="relative">
@@ -76,7 +76,7 @@ new #[Layout('layouts.app')] class extends Component
                 @enderror
             </div>
 
-            <!-- Remember Me -->
+            {{--Remember Me--}}
             <div class="block mt-4">
                 <label for="remember" class="inline-flex items-center">
                     <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">

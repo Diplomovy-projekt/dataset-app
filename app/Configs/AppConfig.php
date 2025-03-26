@@ -11,13 +11,24 @@ class AppConfig
     public const ANNOTATION_FORMATS_INFO = [
         'yolo' => [
             'name' => 'YOLO',
-            'extension' => 'txt',],
-        'pascalvoc' => [
-            'name' => 'Pascal Voc',
-            'extension' => 'xml',],
+            'extension' => 'txt',
+            ],
+        'labelme' => [
+            'name' => 'Labelme',
+            'extension' => 'json',
+            ],
         'coco' => [
             'name' => 'COCO',
-            'extension' => 'json',],
+            'extension' => 'json',
+            ],
+        'pascalvoc' => [
+            'name' => 'PascalVOC',
+            'extension' => 'xml',
+            ],
+        'paligemma' => [
+            'name' => 'PaliGemma',
+            'extension' => 'jsonl',
+            ],
     ];
 
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';
@@ -25,7 +36,6 @@ class AppConfig
         'public' => 'app/public/datasets/',
         'private' => 'app/private/datasets/',
     ];
-    public const string DEFAULT_DATASET_LOCATION = self::DATASETS_PATH['public'];
     public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
     public const FULL_IMG_FOLDER = 'full-images/';
@@ -42,7 +52,7 @@ class AppConfig
         '100MB' => 100000000,
         '200MB' => 200000000,
     ];
-    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['100MB'];
+    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['20MB'];
     public const int DOWNLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['100MB'];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
     public const PER_PAGE_OPTIONS = [
@@ -55,6 +65,7 @@ class AppConfig
         'admin' => 'Admin',
     ];
 
+    // TODO increase expiration date for url invite
     public const EXPIRATION = [
         'URL' => ['value' => 5, 'unit' => 'seconds'],
         'TMP_FILE' => ['value' => 6, 'unit' => 'hours'],

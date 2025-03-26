@@ -7,27 +7,33 @@ use App\ExportService\ExportService;
 use App\Models\AnnotationClass;
 use App\Models\Dataset;
 use App\Models\Image;
+use App\Utils\ImageQuery;
 use App\Utils\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DownloadDataset extends Component
 {
     public string $exportDataset = '';
+    #[Locked]
     public string $filePath;
     public mixed $progress;
+    #[Locked]
     public  $failedDownload = null;
     public string $exportFormat = '';
+    #[Locked]
     public string $token = '';
     public array|Collection $classesData = [];
     public array|Collection $originalClassesData = [];
     public array $stats = [];
     public int $minAnnotations;
     public int $maxAnnotations;
+    public bool $randomizeAnnotations = false;
     #[Locked]
     public bool $locked = false;
     protected $rules = [
@@ -45,12 +51,15 @@ class DownloadDataset extends Component
     public function storeDownloadToken($token)
     {
         $this->token = $token;
-        Util::logStart("setting classes data");
         $this->setClassesData($this->getFromCache());
-        Util::logEnd("setting classes data");
-        Util::logStart("calculate stats");
-        $this->calculateStats($this->classesData);
-        Util::logEnd("calculate stats");
+        if($this->classesData) {
+            $this->calculateStats($this->classesData);
+        } else {
+            $this->failedDownload = [
+                'message' => 'No Images and Classes found in the dataset',
+                'data' => null
+            ];
+        }
     }
 
     public function render()
@@ -81,14 +90,22 @@ class DownloadDataset extends Component
     public function download()
     {
         $this->validate();
-        if ($this->locked) {
+        if ($this->locked || ($this->minAnnotations > $this->maxAnnotations)) {
             return;
         }
         $this->failedDownload = null;
         $this->locked = true;
 
         $payload = $this->getFromCache();
-        $images = $this->getFilteredImages($payload['query']);
+        if(empty($payload)) {
+            return;
+        }
+        $images = ImageQuery::forDatasets($payload['datasets'])
+            ->excludeImages($payload['selectedImages'] ?? [])
+            ->filterByClassIds($payload['classIds'] ?? [])
+            ->get()
+            ->toArray();
+        $images = $this->filterAnnotationsByThreshold($images, $this->classesData);
         $annotationTechnique = $this->findOutAnnotationTechnique($payload['datasets']);
 
         $response = $this->exportDataset($images, $annotationTechnique);
@@ -97,11 +114,6 @@ class DownloadDataset extends Component
         }
 
         return $this->streamDownload();
-    }
-    private function getFilteredImages(string $query): array
-    {
-        $images = \EloquentSerialize::unserialize($query)->get()->toArray();
-        return $this->filterAnnotationsByThreshold($images, $this->classesData, false);
     }
     private function exportDataset(array $images, string $annotationTechnique): bool
     {
@@ -147,6 +159,11 @@ class DownloadDataset extends Component
 
             fclose($handle);
             session()->forget("download_progress_{$this->exportDataset}");
+            register_shutdown_function(function () {
+                if (file_exists($this->filePath)) {
+                    unlink($this->filePath);
+                }
+            });
             $this->locked = false;
             $this->failedDownload = null;
         }, 200, [
@@ -169,6 +186,9 @@ class DownloadDataset extends Component
         $excludedImages = $payload['selectedImages'] ?? [];
         $datasets = $payload['datasets'];
 
+        if(empty($classIds)) {
+            return;
+        }
         $this->originalClassesData = AnnotationClass::whereIn('id', $classIds)
             ->withCount([
                 'annotations as annotation_count' => function ($query) use ($datasets, $excludedImages) {
@@ -245,8 +265,7 @@ class DownloadDataset extends Component
      */
     function filterAnnotationsByThreshold(
         array $images,
-        array $classesData,
-        bool $randomizeAnnotations = true
+        array $classesData
     ): array
     {
         $targetCounts = [];
@@ -259,22 +278,22 @@ class DownloadDataset extends Component
         }
 
         // Group annotations by class for randomized selection
-        if ($randomizeAnnotations) {
+        if ($this->randomizeAnnotations) {
             shuffle($images);
             $annotationsByClass = [];
 
             // Initialize the classes
-            foreach (array_keys($targetCounts) as $classId) {
-                $annotationsByClass[$classId] = [];
+            foreach (array_keys($targetCounts) as $className) {
+                $annotationsByClass[$className] = [];
             }
 
             // Collect all annotations by class
             foreach ($images as $imageIndex => $image) {
                 foreach ($image['annotations'] as $annotationIndex => $annotation) {
-                    $classId = $annotation['class']['id'];
+                    $className = $annotation['class']['name'];
 
-                    if (isset($targetCounts[$classId])) {
-                        $annotationsByClass[$classId][] = [
+                    if (isset($targetCounts[$className])) {
+                        $annotationsByClass[$className][] = [
                             'image_index' => $imageIndex,
                             'annotation' => $annotation
                         ];
@@ -283,9 +302,9 @@ class DownloadDataset extends Component
             }
 
             // Randomize annotations within each class and take only what we need
-            foreach ($annotationsByClass as $classId => &$annotations) {
+            foreach ($annotationsByClass as $className => &$annotations) {
                 shuffle($annotations);
-                $annotations = array_slice($annotations, 0, $targetCounts[$classId]);
+                $annotations = array_slice($annotations, 0, $targetCounts[$className]);
             }
             unset($annotations);
 
@@ -332,6 +351,7 @@ class DownloadDataset extends Component
 
     private function calculateStats(array $classesData): void
     {
+
         $this->stats = [
             'totalCount' => $this->calculateTotalCount(),
             'classCount' => count($classesData),
@@ -353,9 +373,6 @@ class DownloadDataset extends Component
     private function findMaxClass(): array
     {
         $counts = array_column($this->classesData, 'count');
-        $idk0 = max($counts);
-        $idk = array_search(max($counts), $counts);
-        $idk2 = $this->classesData[array_search(max($counts), $counts)];
         return $this->classesData[array_search(max($counts), $counts)];
     }
 

@@ -4,62 +4,44 @@ namespace App\ImportService\Factory;
 
 use App\Utils\Response;
 
-class ImportComponentFactory {
+class ImportComponentFactory
+{
+    protected static array $namespaces = [
+        'validator' => "App\\ImportService\\Validators",
+        'mapper' => "App\\ImportService\\Mappers",
+        'config' => "App\\Configs\\Annotations",
+    ];
+
     public static function createValidator(string $format, string $type): object
     {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
-        $type = ucfirst(strtolower($type)) . 'Validator';
-
-        // Determine the namespace based on the type
-        $namespace = "App\\ImportService\\Validators";
-
-        // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}\\{$classBaseName}{$type}";
-
-        // Check if the class exists
-        if (!class_exists($className)) {
-            return Response::error("Validator {$className} does not exist.");
-        }
-
-        return new $className();
+        return self::instantiateClass(ucfirst(strtolower($format)), ucfirst(strtolower($type)) . 'Validator', 'validator');
     }
 
     public static function createMapper(string $format): object
     {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
-
-        // Determine the namespace for the mapper
-        $namespace = "App\\ImportService\\Mappers";
-
-        // Construct the full class name
-        $className = "{$namespace}\\From{$classBaseName}";
-
-        // Check if the class exists
-        if (!class_exists($className)) {
-            return Response::error("Mappers {$className} does not exist.");
-        }
-
-        return new $className();
+        return self::instantiateClass('From' . ucfirst(strtolower($format)), '', 'mapper');
     }
 
     public static function createConfig(string $format): object
     {
-        // Convert format name to PascalCase
-        $classBaseName = ucfirst(strtolower($format));
+        return self::instantiateClass(ucfirst(strtolower($format)), 'Config', 'config');
+    }
 
-        // Determine the namespace for the config
-        $namespace = "App\\Configs\\Annotations";
+    protected static function instantiateClass(string $format, string $suffix, string $type): object
+    {
+        $namespace = self::$namespaces[$type];
 
-        // Construct the full class name
-        $className = "{$namespace}\\{$classBaseName}Config";
+        if ($type === 'validator') {
+            $className = "{$namespace}\\{$format}\\{$format}{$suffix}";
+        } else {
+            $className = "{$namespace}\\{$format}{$suffix}";
+        }
 
-        // Check if the class exists
         if (!class_exists($className)) {
-            return Response::error("Config {$className} does not exist.");
+            return Response::error(ucfirst($type) . " {$className} does not exist.");
         }
 
         return new $className();
     }
+
 }

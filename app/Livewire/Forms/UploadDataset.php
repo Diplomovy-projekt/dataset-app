@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\ActionRequestService\ActionRequestService;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
@@ -11,6 +12,7 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\MetadataType;
 use App\Traits\DatasetImportHelper;
+use App\Traits\LivewireActions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -19,7 +21,7 @@ use Livewire\WithFileUploads;
 
 class UploadDataset extends Component
 {
-    use WithFileUploads, DatasetImportHelper;
+    use WithFileUploads, DatasetImportHelper, LivewireActions;
 
     public $modalStyle;
     public $errors;
@@ -79,14 +81,17 @@ class UploadDataset extends Component
             return;
         }
 
-        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
-        $datasetImported = $importService->handleImport($payload);
+        $importService = app(ImportService::class);
+        $result = $importService->handleImport($payload);
 
-        if($datasetImported->isSuccessful()){
-            $this->redirectRoute('dataset.show', ['uniqueName' => pathinfo($this->uniqueName, PATHINFO_FILENAME)]);
+        if($result->isSuccessful()){
+            $datasetId = Dataset::where('unique_name', $payload['unique_name'])->first()->id;
+            $actionPayload = ['dataset_id' => $datasetId, 'dataset_unique_name' => $payload['unique_name']];
+            $result = app(ActionRequestService::class)->createRequest('new', $actionPayload);
+            $this->handleResponse($result);
         } else {
-            $this->errors['data'] = $this->normalizeErrors($datasetImported->data);
-            $this->errors['message'] = $datasetImported->message;
+            $this->errors['data'] = $this->normalizeErrors($result->data);
+            $this->errors['message'] = $result->message;
             $this->lockUpload = false;
             $this->reset('finalFile', 'fileChunk', 'displayName', 'uniqueName', 'fileSize');
         }

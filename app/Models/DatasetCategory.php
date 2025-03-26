@@ -12,6 +12,8 @@ class DatasetCategory extends Model
     /** @use HasFactory<\Database\Factories\DatasetCategoryFactory> */
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'dataset_id',
         'category_id'

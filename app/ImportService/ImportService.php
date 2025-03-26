@@ -4,7 +4,7 @@ namespace App\ImportService;
 
 use App\Configs\AppConfig;
 use App\DatasetActions\DatasetActions;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
@@ -12,6 +12,7 @@ use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
 use App\Models\Image;
+use App\Services\ActionRequestService;
 use App\Utils\Response;
 use App\Utils\Util;
 use Exception;
@@ -21,11 +22,12 @@ use Illuminate\Support\Facades\Storage;
 class ImportService
 {
     use ImageProcessor;
-    protected $strategy;
     protected $importPreprocessor;
-    public function __construct($strategy)
+    private DatasetActions $datasetActions;
+
+    public function __construct()
     {
-        $this->strategy = $strategy;
+        $this->datasetActions = new DatasetActions();
     }
 
     /**
@@ -33,74 +35,152 @@ class ImportService
      */
     public function handleImport(array $requestData): Response
     {
-
-        $this->importPreprocessor = new ImportPreprocess($requestData['format']);
-
-        $result = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
-
-        if (!$result->isSuccessful()) {
-            return Response::error($result->message, $result->data);
-        }
-
-        $isSaved = $this->saveDataset($result->data, $requestData);
-
-        if (!$isSaved->isSuccessful()) {
-            return Response::error($isSaved->message);
-        }
-
-        return Response::success("Dataset imported successfully");
-    }
-
-    private function saveDataset($mappedData, $requestData): Response
-    {
         DB::beginTransaction();
 
         try {
-            // 1. Move images to full-image folder
-            $result = $this->moveFullImages(
-                imageFileNames: array_column($mappedData['images'], 'filename'),
-                sourceFolder: $requestData['unique_name'] . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
-                destinationFolder: $requestData['parent_dataset_unique_name'] ?? $requestData['unique_name']
-            );
-            if (!$result->isSuccessful()) {
-                throw new DatasetImportException($result->message);
-            }
-            $datasetFolder = $result->data['datasetFolder'];
+            $this->importPreprocessor = new ImportPreprocess($requestData['format']);
 
-            // 2. Add unique suffixes to image filenames
-            $result = $this->strategy->addUniqueSuffixes($datasetFolder, $mappedData);
-            if(!$result->isSuccessful()){
-                throw new DatasetImportException($result->message);
-            }
-            $imageFilenames = array_column($mappedData['images'], 'filename');
+            $mappedData = $this->importPreprocessor->preprocessDataset($requestData['unique_name'], $requestData['technique']);
 
-            // 3. Create thumbnails
-            $thumbnails = $this->createThumbnails($datasetFolder, $imageFilenames);
-            if (count($thumbnails) != count($imageFilenames)) {
-                throw new DatasetImportException("Failed to create thumbnails for some images");
-            }
-
-            // 4. Save to DB
-            $savedToDb = $this->strategy->saveToDatabase($mappedData, $requestData);
-            if (!$savedToDb->isSuccessful()) {
-                throw new DatasetImportException($savedToDb->message);
-            }
-
-            // 5. Create class crops
-            $datasetService = new DatasetActions();
-            $createdClassCrops = $datasetService->createSamplesForClasses($datasetFolder,
-                $savedToDb->data['classesToSample'],
-                $imageFilenames
-            );
-            if (!$createdClassCrops->isSuccessful()) {
-                throw new DatasetImportException($createdClassCrops->message);
-            }
+            $this->saveDataset($mappedData->data, $requestData);
 
             DB::commit();
             return Response::success();
-        } catch (DatasetImportException $e) {
-            $this->strategy->handleRollback($requestData);
+        } catch (DataException $e) {
+            DB::rollBack();
+            $this->cleanupDataset($requestData['unique_name']);
             return Response::error($e->getMessage(), $e->getData());
+        } catch (Exception $e) {
+            DB::rollBack();
+            $this->cleanupDataset($requestData['unique_name']);
+            return Response::error("An error occurred while importing the dataset: " . $e->getMessage());
+        }
+    }
+
+    private function saveDataset($mappedData, $requestData)
+    {
+        $datasetFolder = $requestData['unique_name'];
+
+        // 1. Move images
+        $this->moveImages(
+            imageFileNames: array_column($mappedData['images'], 'filename'),
+            from: AppConfig::LIVEWIRE_TMP_PATH . $datasetFolder . '/' . $this->importPreprocessor->config::IMAGE_FOLDER,
+            to: AppConfig::DATASETS_PATH['private'] . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER
+        );
+
+        // 2. Add unique suffixes
+        $this->datasetActions->addUniqueSuffixes($datasetFolder, $mappedData);
+
+        // 3. Save to DB
+        $savedToDb = $this->saveToDatabase($mappedData, $requestData);
+
+        // 4. Create thumbnails
+        $imageFilenames = array_column($mappedData['images'], 'filename');
+        $this->createThumbnails($datasetFolder, $imageFilenames);
+
+        // 5. Create class crops
+        $createdClassCrops = $this->datasetActions->createSamplesForClasses(
+            $datasetFolder,
+            $savedToDb->data['classesToSample'],
+            $imageFilenames
+        );
+
+        if (!$createdClassCrops->isSuccessful()) {
+            throw new DataException($createdClassCrops->message);
+        }
+
+        // 6. Assign colors to classes
+        $this->datasetActions->assignColorsToClasses(datasetFolder: $datasetFolder);
+    }
+
+    /**
+     * @throws DataException
+     */
+    public function saveToDatabase($mappedData, $requestData): Response
+    {
+        $classes = $mappedData['classes'];
+        $imageData = $mappedData['images'];
+        // 1. Create Dataset
+        try {
+            $dataset = Dataset::create([
+                'user_id' => auth()->id() ?? "1",
+                'display_name' => $requestData['display_name'],
+                'unique_name' => $requestData['unique_name'],
+                'description' => $requestData['description'] ?? "",
+                'num_images' => count($imageData),
+                'total_size' => array_sum(array_column($imageData, 'size')),
+                'annotation_technique' => $requestData['technique'],
+                'is_public' => false,
+            ]);
+
+            // 2. Save Classes
+            $classIds = [];
+            foreach ($classes as $class) {
+                $classIds[] = AnnotationClass::create([
+                    'dataset_id' => $dataset->id,
+                    'name' => $class['name'],
+                    'supercategory' => $class['superCategory'] ?? null,
+                ])->id;
+            }
+            $this->datasetActions->assignColorsToClasses($classIds);
+
+
+            // 3. Save Images and Annotations
+            foreach ($imageData as $img) {
+                $image = Image::create([
+                    'dataset_id' => $dataset->id,
+                    'dataset_folder' => $dataset->unique_name,
+                    'filename' => $img['filename'],
+                    'width' => $img['width'],
+                    'height' => $img['height'],
+                    'size' => $img['size'],
+                ]);
+
+                // Save Annotations
+                foreach ($img['annotations'] as $annotation) {
+                    AnnotationData::create([
+                        'image_id' => $image->id,
+                        'annotation_class_id' => $classIds[$annotation['class_id']],
+                        'x' => $annotation['x'],
+                        'y' => $annotation['y'],
+                        'width' => $annotation['width'],
+                        'height' => $annotation['height'],
+                        'segmentation' => $annotation['segmentation'] ?? null,
+                    ]);
+                }
+            }
+
+            // 4. Save dataset metadata
+            foreach ($requestData['metadata'] ?? [] as $id => $value) {
+                DatasetMetadata::create([
+                    'dataset_id' => $dataset->id,
+                    'metadata_value_id' => $value,
+                ]);
+            }
+
+            // 5. Save dataset categories
+            foreach ($requestData['categories'] ?? [] as $id) {
+                DatasetCategory::create([
+                    'dataset_id' => $dataset->id,
+                    'category_id' => $id,
+                ]);
+            }
+
+            return Response::success(data: [
+                'classesToSample' => $classIds,
+                'newImages' => array_column($mappedData['images'], 'filename'),
+                'dataset_id' => $dataset->id,
+            ]);
+        } catch (Exception $e) {
+            throw new DataException($e->getMessage());
+        }
+    }
+
+    private function cleanupDataset(string $datasetFolder): void
+    {
+        $path = AppConfig::DATASETS_PATH['private'] . $datasetFolder;
+        if (Storage::exists($path)) {
+            Storage::deleteDirectory($path);
         }
     }
 

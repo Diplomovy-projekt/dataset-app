@@ -74,15 +74,15 @@ new #[Layout('layouts.clean')] class extends Component
 <div class="min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md mx-auto p-6">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-slate-700 p-8">
-            <!-- Header -->
+            {{--Header--}}
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-2xl font-bold text-gray-200">Reset Your Password</h1>
                 <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent ml-6"></div>
             </div>
 
-            <!-- Form -->
+            {{--Form--}}
             <form wire:submit.prevent="resetPassword">
-                <!-- Email Field -->
+                {{--Email Field--}}
                 <div class="mb-6">
                     <label for="email" class="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
                     <input
@@ -96,7 +96,7 @@ new #[Layout('layouts.clean')] class extends Component
                     @error('email') <p class="text-red-500 text-sm mt-2">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Password Field -->
+                {{--Password Field--}}
                 <div class="mb-6" x-data="{ show: false }">
                     <label for="password" class="block text-sm font-medium text-slate-400 mb-2">New Password</label>
                     <div class="relative">
@@ -119,7 +119,7 @@ new #[Layout('layouts.clean')] class extends Component
                     </div>
                 </div>
 
-                <!-- Confirm Password Field -->
+                {{--Confirm Password Field--}}
                 <div class="mb-8" x-data="{ show: false }">
                     <label for="password_confirmation" class="block text-sm font-medium text-slate-400 mb-2">Confirm Password</label>
                     <div class="relative">
@@ -142,7 +142,7 @@ new #[Layout('layouts.clean')] class extends Component
                     </div>
                 </div>
 
-                <!-- Submit Button -->
+                {{--Submit Button--}}
                 <button
                     type="submit"
                     class="p-1 w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"

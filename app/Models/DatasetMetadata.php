@@ -10,6 +10,9 @@ use Illuminate\Support\Collection;
 class DatasetMetadata extends Model
 {
     use HasFactory;
+
+    public $timestamps = false;
+
     protected $fillable = [
         'dataset_id',
         'metadata_value_id'

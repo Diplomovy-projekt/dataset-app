@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('width');
             $table->integer('height');
             $table->integer('size');
-            $table->timestamps();
         });
     }
 

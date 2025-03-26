@@ -7,7 +7,7 @@
 
 <div class="rounded-lg {{ $currentStage == $stageIndex ? 'mb-2' : 'mb-0' }} ">
     {{--Header part, showed even when locked --}}
-    <div class=" rounded-t-lg p-4 py-5 {{ $currentStage == $stageIndex ? 'pb-1 border-x border-t border-gray-700' : 'border border-gray-700' }} bg-gray-900">
+    <div class=" rounded-t-lg p-4 py-5 {{ $currentStage == $stageIndex ? 'pb-1 border-x border-t border-gray-700' : 'border border-gray-700' }} ">
         <h3 class="flex font-bold {{ $currentStage == $stageIndex ? 'text-gray-200 text-2xl' : 'text-gray-500 text-base' }}">
             @if(in_array($stageIndex, $completedStages))
                 <x-tni-tick-circle-o class="w-7 pr-2 text-green-500"/>
@@ -18,7 +18,7 @@
         </h3>
     </div>
     @if($currentStage == $stageIndex)
-        <div class="p-1 sm:p-4 pt-1 shadow-md bg-gray-900 rounded-b-lg border-x border-b border-gray-700">
+        <div class="p-1 sm:p-4 pt-1 shadow-md  rounded-b-lg border-x border-b border-gray-700">
             <hr class="border border-gray-700">
             <p class="text-gray-400 pb-4">{{ $stageData[$stageIndex]['description'] ?? " " }}</p>
             {{--MAIN SLOT CONTENT--}}
@@ -31,7 +31,7 @@
                  wire:loading.attr="disabled"
                  wire:target="previousStage,nextStage"
                  class="mt-4 grid grid-cols-3 relative">
-                <!-- Left Column -->
+                {{--Left Column--}}
                 <div>
                     @if($currentStage > 1)
                         <button wire:click="previousStage"
@@ -45,7 +45,7 @@
                     @endif
                 </div>
 
-                <!-- Middle Column - Loading Indicator (Absolute Positioning) -->
+                {{--Middle Column - Loading Indicator (Absolute Positioning)--}}
                 <div wire:loading.class.remove="hidden"
                      wire:target="previousStage,nextStage"
                      class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -55,7 +55,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column -->
+                {{--Right Column--}}
                 <div class="col-start-3 flex justify-end">
                     @if($currentStage < max(array_keys($stageData)))
                         <button wire:click="nextStage"

@@ -3,13 +3,17 @@
 namespace App\DatasetActions;
 
 use App\Configs\AppConfig;
-use App\Exceptions\DatasetImportException;
+use App\Exceptions\DataException;
 use App\ExportService\ExportService;
 use App\ImageService\ImageProcessor;
 use App\Models\AnnotationClass;
+use App\Models\AnnotationData;
 use App\Models\Dataset;
+use App\Models\Image;
 use App\Utils\FileUtil;
 use App\Utils\Response;
+use App\Utils\Util;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,18 +21,14 @@ class DatasetActions
 {
     use ImageProcessor;
 
-    public function deleteDataset($unique_name): Response
+    public function deleteDataset($unique_name): void
     {
         Gate::authorize('delete-dataset', $unique_name);
-        try {
-            $dataset = Dataset::where('unique_name', $unique_name)->first();
-            $dataset->delete();
-            if (Storage::disk('datasets')->exists($dataset->unique_name)) {
-                Storage::disk('datasets')->deleteDirectory($dataset->unique_name);
-            }
-            return Response::success('Dataset deleted successfully');
-        } catch (\Exception $e) {
-            return Response::error($e->getMessage());
+        $dataset = Dataset::where('unique_name', $unique_name)->first();
+        $datasetPath = Util::getDatasetPath($dataset);
+        $dataset->delete();
+        if (Storage::exists($datasetPath)) {
+            Storage::delete($datasetPath);
         }
     }
 
@@ -37,25 +37,26 @@ class DatasetActions
         Gate::authorize('delete-dataset', $uniqueName);
         try {
             $dataset = Dataset::where('unique_name', $uniqueName)->first();
+            $datasetPath = Util::getDatasetPath($dataset);
             $images = $dataset->images()->whereIn('id', $ids)->get();
             foreach ($images as $image) {
-                Storage::disk('datasets')->delete($dataset->unique_name . '/' . AppConfig::FULL_IMG_FOLDER . $image->filename);
-                Storage::disk('datasets')->delete($dataset->unique_name . '/' . AppConfig::IMG_THUMB_FOLDER . $image->filename);
+                Storage::delete($datasetPath . AppConfig::FULL_IMG_FOLDER . $image->filename);
+                Storage::delete($datasetPath . AppConfig::IMG_THUMB_FOLDER . $image->filename);
                 // Delete all class images
-                $files = Storage::disk('datasets')->allFiles($dataset->unique_name . '/' . AppConfig::CLASS_IMG_FOLDER);
+                $files = Storage::allFiles($datasetPath . AppConfig::CLASS_IMG_FOLDER);
                 foreach ($files as $file) {
                     $filename = pathinfo($file, PATHINFO_BASENAME);
                     if (str_contains($filename, '_' . $image->filename)) {
-                        Storage::disk('datasets')->delete($file);
+                        Storage::delete($datasetPath . '/' . $file);
                     }
                 }
                 $image->delete();
             }
 
-            FileUtil::deleteEmptyDirectories(AppConfig::DATASETS_PATH['public'] . $dataset->unique_name);
+            FileUtil::deleteEmptyDirectories($datasetPath);
             $this->deleteUnusedClassesFromDb();
             $result = $this->createSamplesForClasses($dataset->unique_name, $dataset->classes->pluck('id')->toArray(), $dataset->images()->pluck('filename')->toArray());
-            $dataset->updateImageCount(-count($ids));
+            $dataset->updateImageCount();
             if (!$result->isSuccessful()) {
                 throw new \Exception($result->message);
             }
@@ -88,7 +89,7 @@ class DatasetActions
 
                 if ($this->allClassesSampled($classCounts, $classesToSample)) break;
             }
-        } catch (DatasetImportException $e) {
+        } catch (DataException $e) {
             return Response::error($e->getMessage(), $e->getData());
         }
 
@@ -103,11 +104,77 @@ class DatasetActions
         return true;
     }
 
-    public function deleteUnusedClassesFromDb(): void
+    private function deleteUnusedClassesFromDb(): void
     {
         $classes = AnnotationClass::doesntHave('annotations')->get();
         foreach ($classes as $class) {
             $class->delete();
         }
     }
+
+    public function assignColorsToClasses(array $classIds = null, string $datasetFolder = null): void
+    {
+        if ($datasetFolder) {
+            $classIds = Dataset::where('unique_name', $datasetFolder)->first()->classes->pluck('id')->toArray();
+        }
+
+        $coloredClasses = Util::generateDistinctColors($classIds);
+
+        $updateData = [];
+        foreach ($coloredClasses as $id => $color) {
+            $updateData[] = "WHEN `id` = '$id' THEN '$color'";
+        }
+
+        $ids = implode(", ", array_keys($coloredClasses));
+        $updates = implode(" ", $updateData);
+
+        DB::statement("
+            UPDATE annotation_classes
+            SET rgb = CASE $updates END
+            WHERE id IN ($ids)
+        ");
+    }
+
+    /**
+     * @throws DataException
+     */
+    public function addUniqueSuffixes($datasetFolder, &$mappedData): void
+    {
+        $images = &$mappedData['images'];
+        $datasetPath = AppConfig::DATASETS_PATH['private'] . $datasetFolder . '/' . AppConfig::FULL_IMG_FOLDER;
+
+        foreach ($images as &$image) {
+            $suffix = uniqid('_da_');
+            $newName = pathinfo($image['filename'], PATHINFO_FILENAME) . $suffix . '.' . pathinfo($image['filename'], PATHINFO_EXTENSION);
+
+            $oldPath = $datasetPath . '/' . $image['filename'];
+            $newPath = $datasetPath . '/' . $newName;
+
+            if (!Storage::move($oldPath, $newPath)) {
+                throw new DataException("Failed to move file: {$oldPath} to {$newPath}");
+            }
+
+            $image['filename'] = $newName;
+        }
+    }
+
+
+    public static function moveDatasetTo(string $uniqueName, string $targetVisibility): Response
+    {
+        if (!in_array($targetVisibility, ['public', 'private'])) {
+            return Response::error("Invalid target visibility");
+        }
+
+        $fromPath = AppConfig::DATASETS_PATH[$targetVisibility === 'public' ? 'private' : 'public'] . $uniqueName;
+        $toPath = AppConfig::DATASETS_PATH[$targetVisibility] . $uniqueName;
+
+        if (!Storage::move($fromPath, $toPath)) {
+            return Response::error("Failed to move dataset");
+        }
+
+        Dataset::where('unique_name', $uniqueName)->update(['is_public' => $targetVisibility === 'public']);
+
+        return Response::success("Dataset moved to $targetVisibility");
+    }
+
 }
