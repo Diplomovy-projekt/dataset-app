@@ -4,6 +4,7 @@ namespace App\ActionRequestService\Handlers;
 
 use App\Configs\AppConfig;
 use App\ImageService\ImageProcessor;
+use App\Models\ActionRequest;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
 use App\Models\Dataset;
@@ -139,8 +140,9 @@ class ExtendDatasetHandler extends BaseHandler
         }
         return ['route' => 'dataset.show', 'params' => ['uniqueName' => $request->dataset->unique_name]];
     }
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
+        $request->delete();
         return ['type' => 'error', 'message' => $errorMessage];
     }
 }

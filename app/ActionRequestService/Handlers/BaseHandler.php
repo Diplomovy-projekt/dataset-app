@@ -4,6 +4,7 @@ namespace App\ActionRequestService\Handlers;
 
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
 use App\DatasetActions\DatasetActions;
+use App\Models\ActionRequest;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -50,7 +51,7 @@ abstract class BaseHandler implements ActionRequestHandlerInterface
         return ['type' => 'success', 'message' => 'Request submitted successfully'];
     }
 
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
         return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }

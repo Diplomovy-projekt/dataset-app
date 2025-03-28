@@ -92,7 +92,7 @@ class ActionRequestService
 
             return $handler->resolveResponse($request);
         } catch (\Exception $e) {
-            return $handler->errorResponse($e->getMessage());
+            return $handler->errorResponse($e->getMessage(), $request);
         }
     }
 

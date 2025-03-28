@@ -2,6 +2,7 @@
 
 namespace App\ActionRequestService\Interfaces;
 
+use App\Models\ActionRequest;
 use Illuminate\Database\Eloquent\Model;
 
 interface ActionRequestHandlerInterface
@@ -15,6 +16,6 @@ interface ActionRequestHandlerInterface
     // Response methods
     public function adminResponse(Model $request): mixed;
     public function userResponse(Model $request): mixed;
-    public function errorResponse(string $errorMessage): mixed;
+    public function errorResponse(string $errorMessage, ?ActionRequest $request): mixed;
 
 }

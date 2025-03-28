@@ -3,6 +3,7 @@
 namespace App\ActionRequestService\Handlers;
 
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
+use App\Models\ActionRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
@@ -45,7 +46,7 @@ class DeleteDatasetHandler extends BaseHandler
         return ['route' => 'dataset.index'];
     }
 
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
         return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }
