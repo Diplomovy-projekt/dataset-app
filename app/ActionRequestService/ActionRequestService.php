@@ -49,7 +49,10 @@ class ActionRequestService
 
             // TODO change back to auto-approve
             if ($user->isAdmin()) {
-                $this->resolveRequest($request, 'approve', 'Auto-approved by system');
+                $resolveResponse = $this->resolveRequest($request, 'approve', 'Auto-approved by system');
+                if (is_array($resolveResponse) && isset($resolveResponse['type']) && $resolveResponse['type'] === 'error') {
+                    return $resolveResponse;
+                }
             }
 
             if ($user->isAdmin()) {

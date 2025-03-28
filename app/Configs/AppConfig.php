@@ -25,10 +25,6 @@ class AppConfig
             'name' => 'PascalVOC',
             'extension' => 'xml',
             ],
-        'paligemma' => [
-            'name' => 'PaliGemma',
-            'extension' => 'jsonl',
-            ],
     ];
 
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';

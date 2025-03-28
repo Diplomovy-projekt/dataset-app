@@ -57,7 +57,7 @@ trait CoordsTransformer
         return $normalizedPolygon;
     }
 
-    public function pixelizeBbox($bbox, $imgWidth, $imgHeight, $coordsAreCentered = false)
+    public static function pixelizeBbox($bbox, $imgWidth, $imgHeight, $coordsAreCentered = false)
     {
         if($bbox instanceof Model || $bbox instanceof Collection){
             $bbox = $bbox->toArray();
@@ -82,7 +82,7 @@ trait CoordsTransformer
         ];
     }
 
-    public function pixelizePolygon($segment, $imgWidth, $imgHeight): array
+    public static function pixelizePolygon($segment, $imgWidth, $imgHeight): array
     {
         if ($segment instanceof Collection) {
             $segment = $segment->toArray();

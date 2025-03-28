@@ -146,6 +146,7 @@ class ImportService
                         'width' => $annotation['width'],
                         'height' => $annotation['height'],
                         'segmentation' => $annotation['segmentation'] ?? null,
+                        'svg_path' => Util::generateSvgPath($annotation, $img['width'], $img['height']),
                     ]);
                 }
             }

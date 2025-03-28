@@ -21,6 +21,7 @@ return new class extends Migration
             $table->float('width', 5);
             $table->float('height', 5);
             $table->json('segmentation')->nullable();
+            $table->string('svg_path')->nullable();
         });
     }
 

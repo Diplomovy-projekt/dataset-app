@@ -74,6 +74,7 @@
     Alpine.data('chunkedUpload', () => ({
         progress: 0,
         lock: $wire.entangle('lockUpload'),
+        processing: false,
         get progressFormatted() {
             return this.progress.toFixed(2) + '%';
         },
@@ -127,11 +128,17 @@
 
                                 if (start < file.size) {
                                     this.livewireUploadChunk(file, start);
+                                }else {
+                                    this.processing = true;
+                                    this.progress = 100;
                                 }
                             }
                         }
                     );
                 });
+                if (start >= file.size) {
+                    this.processing = true;
+                }
             } catch (error) {
                 this.lock = false;
                 throw error;

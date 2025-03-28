@@ -92,6 +92,7 @@ class ExtendDataset extends Component
             ];
             $result = app(ActionRequestService::class)->createRequest('extend', $actionPayload);
             $this->handleResponse($result);
+            $this->lockUpload = false;
         } else {
             $this->errors['data'] = $this->normalizeErrors($result->data);
             $this->errors['message'] = $result->message;
@@ -102,8 +103,14 @@ class ExtendDataset extends Component
 
     public function updatedFileChunk()
     {
-        $this->validateDataset();
-        $this->chunkUpload();
+        try {
+            $this->validateDataset();
+            $this->lockUpload = true;
+            $this->chunkUpload();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->lockUpload = false;
+            throw $e;
+        }
     }
     private function validateDataset()
     {

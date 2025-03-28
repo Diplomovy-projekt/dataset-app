@@ -116,10 +116,9 @@ class ImageQuery
     public function get()
     {
         // Fetch either paginated or non-paginated images
-        /*$images = $this->perPage
-            ? $this->query->paginate($this->perPage)->through(fn($image) => (array)$image)
-            : $this->query->get()->map(fn($image) => (array)$image);*/
-        $images = $this->perPage ? $this->query->paginate($this->perPage) : $this->query->get();
+        $images = $this->perPage
+            ? $this->query->paginate($this->perPage)
+            : $this->query->get();
 
         // Attach annotations and classes, and preserve pagination if it exists
         $this->attachAnnotationsAndClasses($images);
@@ -146,19 +145,6 @@ class ImageQuery
         $annotationClasses = $this->fetchAnnotationClasses($usedClassIds);
 
         Util::logStart("collection->transform");
-        // Map annotations and classes onto the images
-        /*$collection->transform(function ($image) use ($annotations, $annotationClasses) {
-            $imageAnnotations = collect($annotations)->where('image_id', $image['id'])->all();
-
-            // Attach the class information to each annotation
-            foreach ($imageAnnotations as &$annotation) {
-                $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
-            }
-
-            // Assign the annotations to the image
-            $image['annotations'] = $imageAnnotations;
-            return $image;
-        });*/
 
         $collection->each(function ($image) use ($annotations, $annotationClasses) {
             $imageAnnotations = $annotations[$image->id];
@@ -182,12 +168,11 @@ class ImageQuery
     private function fetchAnnotations(array $imageIds): array
     {
         return DB::table('annotation_data')
-            ->select('id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation')
+            ->select('id', 'image_id', 'annotation_class_id', 'svg_path')
             ->whereIn('image_id', $imageIds)
             ->when(!empty($this->classIds), fn($query) => $query->whereIn('annotation_class_id', $this->classIds))
             ->get()
             ->map(function ($annotation) {
-                $annotation->segmentation = json_decode($annotation->segmentation, true);
                 return (array) $annotation;
             })
             ->groupBy('image_id')
@@ -211,8 +196,6 @@ class ImageQuery
             ->groupBy('image_id')
             ->toArray();
     }
-
-
 
     private function fetchAnnotationClasses(array $classIds): array
     {

@@ -53,6 +53,7 @@ class ExportService
 
     private function processImageExport(array $payload, $mapper, string $customDatasetFolder): void
     {
+
         ImageQuery::forDatasets($payload['datasets'])
             ->excludeImages($payload['selectedImages'] ?? [])
             ->filterByClassIds($payload['classIds'] ?? [])

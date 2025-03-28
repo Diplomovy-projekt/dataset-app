@@ -16,20 +16,31 @@ class ToCoco extends BaseToMapper
     {
         $cocoJsonPath = $this->getAnnotationDestinationPath($datasetFolder);
 
-        $cocoJson = [
-            'images' => [],
-            'annotations' => [],
-            'categories' => [],
-        ];
+        if (!Storage::exists($cocoJsonPath)) {
+            $cocoJson = [
+                'images' => [],
+                'annotations' => [],
+                'categories' => [],
+            ];
+        } else {
+            $cocoJson = json_decode(Storage::get($cocoJsonPath), true);
+        }
 
         // Create images
         foreach ($images as $index => $image) {
-            $cocoJson['images'][] = [
-                'id' => $index,
-                'file_name' => $image['filename'],
-                'height' => $image['height'],
-                'width' => $image['width'],
-            ];
+
+            if(!$this->imageExists($cocoJson['images'], $image['filename'])) {
+                $index = count($cocoJson['images']);
+
+                $cocoJson['images'][] = [
+                    'id' => $index,
+                    'file_name' => $image['filename'],
+                    'height' => $image['height'],
+                    'width' => $image['width'],
+                ];
+            } else {
+                $index = array_search($image['filename'], array_column($cocoJson['images'], 'file_name'));
+            }
 
             // Create annotations
             foreach($image['annotations'] as $annotation) {
@@ -54,10 +65,13 @@ class ToCoco extends BaseToMapper
 
         // Create categories
         foreach ($this->classMap as $class) {
-            $cocoJson['categories'][] = [
-                'id' => $class['id'],
-                'name' => $class['name'],
-            ];
+            if(!in_array($class['id'], array_column($cocoJson['categories'], 'id'))) {
+                $cocoJson['categories'][] = [
+                    'id' => $class['id'],
+                    'name' => $class['name'],
+                    'supercategory' => $class['supercategory'] ?? null,
+                ];
+            }
         }
 
         // Save the coco json file
@@ -125,9 +139,8 @@ class ToCoco extends BaseToMapper
         return Util::formatNumber($annotation['width'] * $imgDims[0]) * Util::formatNumber($annotation['height'] * $imgDims[1]);
     }
 
-
-    public function getImageFolder(): string
+    private function imageExists(array $images, string $filename): bool
     {
-        return CocoConfig::IMAGE_FOLDER;
+        return in_array($filename, array_column($images, 'file_name'));
     }
 }
