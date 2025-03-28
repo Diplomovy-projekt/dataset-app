@@ -4,6 +4,8 @@ namespace App\Livewire\FullPages;
 
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
+use App\Utils\ImageQuery;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
@@ -28,6 +30,14 @@ class Profile extends Component
 
     public function render()
     {
+        ImageQuery::forDatasets([9])
+            ->excludeImages($payload['selectedImages'] ?? [])
+            ->filterByClassIds($payload['classIds'] ?? [])
+            ->chunkByAnnotations(3, function ($images) {
+                foreach ($images as $image) {
+                    echo "Processing Image ID: {$image['id']}, Annotations: ";
+                }
+            });
         return view('livewire.full-pages.profile');
     }
 

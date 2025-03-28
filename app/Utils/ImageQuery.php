@@ -2,7 +2,11 @@
 
 namespace App\Utils;
 
+use App\Configs\AppConfig;
 use App\Models\Image;
+use Closure;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ImageQuery
@@ -10,13 +14,17 @@ class ImageQuery
     private $query;
     private ?int $perPage = null;
     private ?array $classIds = null;
+    private int $chunk = AppConfig::DEFAULT_CHUNK_FETCH;
 
     public function __construct(array $selectedDatasets)
     {
         $datasetIds = array_values(array_filter($selectedDatasets, 'is_numeric', ARRAY_FILTER_USE_KEY))
             ?: array_values($selectedDatasets);
 
-        $this->query = Image::whereIn('dataset_id', $datasetIds)
+        /*$this->query = Image::whereIn('dataset_id', $datasetIds)
+            ->select(['id', 'filename', 'dataset_folder', 'dataset_id', 'width', 'height']);*/
+        $this->query = DB::table("images")
+            ->whereIn('dataset_id', $datasetIds)
             ->select(['id', 'filename', 'dataset_folder', 'dataset_id', 'width', 'height']);
     }
 
@@ -69,62 +77,121 @@ class ImageQuery
         return $this;
     }
 
-    public function get()
+    public function chunkByAnnotations(?int $size, Closure $callback): void
     {
-        $images = $this->perPage ? $this->query->paginate($this->perPage) : $this->query->get();
-        $this->attachAnnotationsAndClasses($images);
-        return $images;
+        $size = $size > 0 ? $size : $this->chunk;
+        $lastId = 0;
+        $imageIds = $this->query->pluck('id')->toArray();
+        do {
+            $annotations = $this->fetchAnnotationsChunk($size, $lastId, $imageIds);
+            if (empty($annotations)) {
+                break;
+            }
+            $lastId = end($annotations)['id'];
+            $annotationsCount = count($annotations);
+
+            // Get images
+            $imageIdsForChunk  = array_unique(array_column($annotations, 'image_id'));
+            $images = (clone $this->query)->whereIn('id', $imageIdsForChunk)->get()->map(fn($image) => (array)$image);
+
+
+            // Attach annotations to images
+            $images = $this->attachAnnotationsAndClasses($images, $annotations);
+
+            $callback($images);
+
+            unset($annotations, $images);
+            gc_collect_cycles();
+
+        } while ($annotationsCount === $size);
     }
 
-    private function attachAnnotationsAndClasses($images)
-    {
-        // Ensure we always have a collection (works for both paginator & collection)
-        $collection = method_exists($images, 'getCollection') ? $images->getCollection() : $images;
 
+    public function get()
+    {
+        // Fetch either paginated or non-paginated images
+        $images = $this->perPage
+            ? $this->query->paginate($this->perPage)->through(fn($image) => (array)$image)
+            : $this->query->get()->map(fn($image) => (array)$image);
+
+        // Attach annotations and classes, and preserve pagination if it exists
+        return $this->attachAnnotationsAndClasses($images);
+    }
+
+    private function attachAnnotationsAndClasses($images, $annotations = null): LengthAwarePaginator|array
+    {
+        // Handle both paginated and non-paginated results
+        $isPaginator = method_exists($images, 'getCollection');
+        $collection = $isPaginator ? $images->getCollection() : collect($images);
         $imageIds = $collection->pluck('id')->toArray();
+
         if (empty($imageIds)) {
-            return;
+            return $images; // No images to process, return as is
         }
 
-        // Fetch annotations
-        $annotations = $this->fetchAnnotations($imageIds);
+        // Fetch annotations if not provided
+        if (is_null($annotations)) {
+            $annotations = $this->fetchAnnotations($imageIds);
+        }
 
-        // Fetch only used annotation classes
-        $usedClassIds = collect($annotations)->flatten(1)->pluck('annotation_class_id')->unique()->toArray();
+        // Fetch annotation classes based on annotation class IDs
+        $usedClassIds = collect($annotations)->pluck('annotation_class_id')->unique()->toArray();
         $annotationClasses = $this->fetchAnnotationClasses($usedClassIds);
 
-        // Attach data
-        $collection->each(function ($image) use ($annotations, $annotationClasses) {
-            $imageAnnotations = $annotations[$image->id] ?? [];
+        // Map annotations and classes onto the images
+        $collection->transform(function ($image) use ($annotations, $annotationClasses) {
+            $imageAnnotations = collect($annotations)->where('image_id', $image['id'])->all();
 
+            // Attach the class information to each annotation
             foreach ($imageAnnotations as &$annotation) {
                 $annotation['class'] = $annotationClasses[$annotation['annotation_class_id']] ?? null;
             }
 
-            $image->setRelation('annotations', collect($imageAnnotations));
+            // Assign the annotations to the image
+            $image['annotations'] = $imageAnnotations;
+            return $image;
         });
-    }
 
-    private function fetchAnnotations(array $imageIds)
-    {
-        $query = DB::table('annotation_data')
-            ->select('id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation')
-            ->whereIn('image_id', $imageIds);
-
-        if (!empty($this->classIds)) {
-            $query->whereIn('annotation_class_id', $this->classIds);
+        // Return the images with annotations and classes
+        if ($isPaginator) {
+            return $images->setCollection($collection);
         }
 
-        return $query->get()
+        return $collection->toArray();
+    }
+
+
+    private function fetchAnnotations(array $imageIds): array
+    {
+        return DB::table('annotation_data')
+            ->select('id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation')
+            ->whereIn('image_id', $imageIds)
+            ->when(!empty($this->classIds), fn($query) => $query->whereIn('annotation_class_id', $this->classIds))
+            ->get()
             ->map(function ($annotation) {
                 $annotation->segmentation = json_decode($annotation->segmentation, true);
                 return (array) $annotation;
-            })
-            ->groupBy('image_id')
-            ->toArray();
+            })->toArray();
     }
 
-    private function fetchAnnotationClasses(array $classIds)
+    private function fetchAnnotationsChunk(int $size, int $lastId, array $imageIds): array
+    {
+        return DB::table('annotation_data')
+            ->select('id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation')
+            ->when(!empty($this->classIds), fn($query) => $query->whereIn('annotation_class_id', $this->classIds))
+            ->where('id', '>', $lastId)
+            ->whereIn('image_id', $imageIds)
+            ->orderBy('id')
+            ->limit($size)
+            ->get()
+            ->map(function ($annotation) {
+                $annotation->segmentation = json_decode($annotation->segmentation, true);
+                return (array) $annotation;
+            })->toArray();
+    }
+
+
+    private function fetchAnnotationClasses(array $classIds): array
     {
         if (empty($classIds)) {
             return [];

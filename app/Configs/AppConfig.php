@@ -38,6 +38,7 @@ class AppConfig
     ];
     public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
+    public const DEFAULT_CHUNK_FETCH = 1000;
     public const FULL_IMG_FOLDER = 'full-images/';
     public const IMG_THUMB_FOLDER = 'thumbnails/';
     public const CLASS_IMG_FOLDER = 'class-images/';

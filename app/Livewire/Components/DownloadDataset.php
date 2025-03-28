@@ -100,24 +100,23 @@ class DownloadDataset extends Component
         if(empty($payload)) {
             return;
         }
-        $images = ImageQuery::forDatasets($payload['datasets'])
-            ->excludeImages($payload['selectedImages'] ?? [])
-            ->filterByClassIds($payload['classIds'] ?? [])
-            ->get()
-            ->toArray();
-        $images = $this->filterAnnotationsByThreshold($images, $this->classesData);
-        $annotationTechnique = $this->findOutAnnotationTechnique($payload['datasets']);
 
-        $response = $this->exportDataset($images, $annotationTechnique);
+        $response = $this->exportDataset($payload);
         if (!$response) {
             return;
         }
 
         return $this->streamDownload();
     }
-    private function exportDataset(array $images, string $annotationTechnique): bool
+    private function exportDataset(array $payload): bool
     {
-        $response = ExportService::handleExport($images, $this->exportFormat, $annotationTechnique);
+        $targetCounts = array_column($this->classesData, 'count', 'name');
+        $payload['targetCounts'] = $targetCounts;
+        $payload['randomizeAnnotations'] = $this->randomizeAnnotations;
+        $payload['format'] = $this->exportFormat;
+
+        $exportService = app(ExportService::class);
+        $response = $exportService->handleExport($payload);
 
         if (!$response->isSuccessful()) {
             $this->failedDownload = [
@@ -225,7 +224,7 @@ class DownloadDataset extends Component
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class['id'],
             ];
         }
-        unset($class); // Unset reference to avoid unexpected behavior
+        unset($class);
         $this->maxAnnotations = max(array_column($this->originalClassesData, 'count'));
         $this->minAnnotations = min(array_column($this->originalClassesData, 'count'));
         $this->classesData = $this->originalClassesData;
@@ -268,10 +267,7 @@ class DownloadDataset extends Component
         array $classesData
     ): array
     {
-        $targetCounts = [];
-        foreach ($classesData as $classData) {
-            $targetCounts[$classData['name']] = $classData['count'];
-        }
+        $targetCounts = array_column($classesData, 'count', 'name');
 
         if (empty($targetCounts)) {
             return [];
@@ -411,19 +407,4 @@ class DownloadDataset extends Component
         $counts = array_column($this->classesData, 'count');
         return round(max($counts) / max(1, min($counts)), 1);
     }
-
-    private function findOutAnnotationTechnique(mixed $datasets)
-    {
-        $annotationTechniques = Dataset::whereIn('id', $datasets)
-            ->pluck('annotation_technique')
-            ->unique();
-
-        // If both bounding box and polygon are present, return bounding box
-        if ($annotationTechniques->count() === 2) {
-            return AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
-        } else {
-            return $annotationTechniques->first();
-        }
-    }
-
 }
