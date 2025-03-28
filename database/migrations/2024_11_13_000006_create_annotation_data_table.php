@@ -16,10 +16,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('image_id')->constrained()->onDelete('cascade');
             $table->foreignId('annotation_class_id')->constrained()->onDelete('cascade');
-            $table->float('x');
-            $table->float('y');
-            $table->float('width');
-            $table->float('height');
+            $table->float('x', 5);
+            $table->float('y', 5);
+            $table->float('width', 5);
+            $table->float('height', 5);
             $table->json('segmentation')->nullable();
         });
     }

@@ -56,14 +56,14 @@ class ExportService
         ImageQuery::forDatasets($payload['datasets'])
             ->excludeImages($payload['selectedImages'] ?? [])
             ->filterByClassIds($payload['classIds'] ?? [])
-            ->chunkByAnnotations(3, function ($imagesChunk) use ($mapper, $customDatasetFolder) {
+            ->chunkByAnnotations(3, $this->randomizeAnnotations, function ($imagesChunk) use ($mapper, $customDatasetFolder) {
                 $filteredChunk = $this->filterAnnotationsInChunk($imagesChunk);
 
                 if (!empty($filteredChunk)) {
                     $mapper->handle($filteredChunk, $customDatasetFolder, $this->annotationTechnique);
                 }
 
-                return !$this->isAnnotationTargetReached($this->currentCounts);
+                return !$this->isAnnotationTargetReached();
             });
     }
 
@@ -76,80 +76,30 @@ class ExportService
 
     public function filterAnnotationsInChunk(array $images): array
     {
-        return $this->randomizeAnnotations
-            ? $this->filterRandomizedAnnotations($images)
-            : $this->filterSequentialAnnotations($images);
-    }
-
-    private function filterRandomizedAnnotations(array $images): array
-    {
-        shuffle($images);
-        $annotationsByClass = [];
-
-        // Initialize the classes
-        foreach (array_keys($this->targetCounts) as $className) {
-            $annotationsByClass[$className] = [];
-        }
-
-        // Collect all annotations by class
-        foreach ($images as $imageIndex => $image) {
-            foreach ($image['annotations'] as $annotation) {
-                $className = $annotation['class']['name'];
-
-                if (isset($this->targetCounts[$className])) {
-                    $annotationsByClass[$className][] = [
-                        'image_index' => $imageIndex,
-                        'annotation' => $annotation
-                    ];
-                }
-            }
-        }
-
-        // Randomize annotations within each class and take only what we need
-        foreach ($annotationsByClass as $className => &$annotations) {
-            shuffle($annotations);
-            $annotations = array_slice($annotations, 0, $this->targetCounts[$className]);
-        }
-        unset($annotations);
-
-        // Clear all annotations from images first
-        foreach ($images as &$image) {
-            $image['annotations'] = [];
-        }
-        unset($image);
-
-        // Add selected annotations back to their respective images
-        foreach ($annotationsByClass as $classId => $annotations) {
-            foreach ($annotations as $item) {
-                $images[$item['image_index']]['annotations'][] = $item['annotation'];
-            }
-        }
-
-        // Remove images with no annotations
-        return array_values(array_filter($images, fn($image) => !empty($image['annotations'])));
-    }
-
-    private function filterSequentialAnnotations(array $images): array
-    {
+        // Iterate over every annotation in every image
         foreach ($images as &$image) {
             $filteredAnnotations = [];
 
             foreach ($image['annotations'] as $annotation) {
                 $className = $annotation['class']['name'];
 
+                // Skips if the target count for this class has been reached or the class is not in the target counts
                 if (!isset($this->targetCounts[$className]) || $this->currentCounts[$className] >= $this->targetCounts[$className]) {
                     continue;
                 }
+
+                // Add the annotation to the filtered list and increment the count for this class
                 $filteredAnnotations[] = $annotation;
                 $this->currentCounts[$className]++;
             }
 
+            // Update the image with only the filtered annotations
             $image['annotations'] = $filteredAnnotations;
         }
+
         unset($image);
 
-        // Remove images with no annotations
-        return array_values(array_filter($images, fn($image) => !empty($image['annotations'])));
+        return $this->removeImagesWithNoAnnotations($images);
     }
 
     private function findOutAnnotationTechnique(mixed $datasets)
@@ -166,9 +116,18 @@ class ExportService
         }
     }
 
-    private function isAnnotationTargetReached(array $currentCounts) {
-        return array_reduce($currentCounts, function($carry, $count) {
-            return $carry && $count > 0;
-        }, true);
+    private function isAnnotationTargetReached(): bool
+    {
+        foreach ($this->targetCounts as $class => $target) {
+            if ($this->currentCounts[$class] < $target) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function removeImagesWithNoAnnotations(array $images): array
+    {
+        return array_values(array_filter($images, fn($image) => !empty($image['annotations'])));
     }
 }
