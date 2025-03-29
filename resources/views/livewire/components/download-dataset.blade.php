@@ -287,27 +287,25 @@
                     </div>
 
                     <!-- Progress indicator (optional) -->
-                    <div x-show="processing || downloading" class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                        <div class="bg-blue-600 h-1.5 rounded-full" :style="`width: ${progress}%`"></div>
+                    <div class="w-full bg-gray-100 rounded-full h-4 dark:bg-gray-700 overflow-hidden">
+                        <div
+                            class="h-4 rounded-full transition-all duration-300 ease-in-out"
+                            :class="downloadCompleted ? 'bg-green-600' : 'bg-blue-600'"
+                            :style="{ width: progress + '%' }"
+                        ></div>
                     </div>
                 </div>
 
 
                 {{--Download Button - Always visible--}}
                 <x-misc.button @click="download" id="download-btn"
+                               x-bind:disabled="processing || downloading"
+                               x-bind:class="{'opacity-50 cursor-not-allowed': processing || downloading}"
                                class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                                :icon="@svg('eva-download')->toHtml()"
                 >
                     Download Dataset
                 </x-misc.button>
-
-
-                {{--Progress Indicator--}}
-                {{--@if($this->locked)
-                    <div wire:poll.1500ms="updateProgress" class="text-center text-sm text-gray-300">
-                        <span>{{ $this->progress ?? null }}</span>
-                    </div>
-                @endif--}}
             </div>
         @else
             @if($this->failedDownload)
@@ -343,6 +341,20 @@
         downloadInterval: null,
 
         download() {
+            // Prevent multiple clicks
+            if (this.processing || this.downloading) {
+                return;
+            }
+
+            this.processingCompleted = false;
+            this.downloadCompleted = false;
+            this.progress = 0;
+
+            if (this.downloadInterval) {
+                clearInterval(this.downloadInterval);
+                this.downloadInterval = null;
+            }
+
             // Trigger the download process
             this.processing = true;
             $wire.$call('download')
@@ -354,11 +366,12 @@
                 }
                 this.processing = newValue;
             });
-
         },
+
         startDownload() {
             console.log("Download started")
             this.downloading = true;
+            this.progress = 0; // Reset progress
 
             // Create and trigger download
             const downloadLink = document.createElement('a');
@@ -368,27 +381,39 @@
             document.body.removeChild(downloadLink);
 
             let progressCounter = 0;
+            if (this.downloadInterval) {
+                clearInterval(this.downloadInterval);
+            }
             this.downloadInterval = setInterval(() => {
                 fetch(`/download-progress?filename=${this.filename}`)
                     .then(response => response.json())
                     .then(data => {
-                        console.log("Progress data:", data);
-                        this.progress = data.progress;
+                        this.progress = data.progress || 0;
 
-                        // Check if the progress is 100, either due to session key being missing or download completion
                         if (this.progress >= 100) {
-                            clearInterval(this.downloadInterval);
-                            this.downloading = false;
-                            this.downloadCompleted = true;
+                            this.completeDownload();
                         }
                     })
                     .catch(error => {
                         console.error("Error fetching progress:", error);
-                        clearInterval(this.downloadInterval);
-                        this.downloading = false;
+                        progressCounter++;
+                        if (progressCounter > 1) {
+                            this.completeDownload();
+                        }
                     });
-            }, 1000);
+            }, 2000);
+        },
 
+        completeDownload() {
+            clearInterval(this.downloadInterval);
+            this.downloadInterval = null;
+            console.log("Download completed", this.downloadInterval);
+            this.downloading = false;
+            this.downloadCompleted = true;
+            this.processingCompleted = true;
+            this.processing = false;
+            this.progress = 100;
+            $wire.$set('locked', false);
         }
     }));
 </script>

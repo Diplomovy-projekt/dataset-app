@@ -34,7 +34,6 @@ class DownloadDataset extends Component
     public int $minAnnotations;
     public int $maxAnnotations;
     public bool $randomizeAnnotations = false;
-    #[Locked]
     public bool $locked = false;
     public bool $processing = false;
     protected $rules = [
@@ -90,11 +89,10 @@ class DownloadDataset extends Component
     }
     public function download()
     {
-
-        $this->validate();
-        if ($this->locked || ($this->minAnnotations > $this->maxAnnotations)) {
+        if (!$this->validateExport()) {
             return;
         }
+
         $this->failedDownload = null;
         $this->processing = true;
         $this->locked = true;
@@ -142,9 +140,22 @@ class DownloadDataset extends Component
 
         return true;
     }
-    public function updateProgress()
+
+    protected function validateExport()
     {
-        $progress = session()->get("download_progress_{$this->exportDataset}", 0);
+        $this->validate();
+
+        if ($this->locked) {
+            $this->addError('locked', 'The process is currently locked. Please wait.');
+            return false;
+        }
+
+        if ($this->minAnnotations > $this->maxAnnotations) {
+            $this->addError('annotations', 'Minimum annotations cannot be greater than maximum annotations.');
+            return false;
+        }
+
+        return true;
     }
 
     private function setClassesData(mixed $payload)
