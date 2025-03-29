@@ -75,12 +75,12 @@
         progress: 0,
         lock: $wire.entangle('lockUpload'),
         processing: false,
+        processingCompleted: false, // To track when processing is done
         get progressFormatted() {
             return this.progress.toFixed(2) + '%';
         },
 
         uploadChunks() {
-            // Prevent multiple uploads
             if (this.lock) {
                 return;
             }
@@ -89,6 +89,8 @@
             if (fileInput.files[0]) {
                 const file = fileInput.files[0];
                 this.progress = 0;
+                this.processing = false;
+                this.processingCompleted = false;
 
                 $wire.$set('fileSize', file.size);
                 $wire.$set('displayName', file.name);
@@ -96,7 +98,6 @@
                 $wire.$set('lockUpload', true);
 
                 this.livewireUploadChunk(file, 0).catch(() => {
-                    // Handle any errors that occur during upload
                     this.lock = false;
                     this.progress = 0;
                 });
@@ -114,8 +115,7 @@
                     $wire.$upload(
                         'fileChunk',
                         chunkFile,
-                        (resolve) => {
-                        },
+                        (resolve) => {},
                         (error) => {
                             $wire.$set('lockUpload', false);
                             reject(error);
@@ -128,7 +128,7 @@
 
                                 if (start < file.size) {
                                     this.livewireUploadChunk(file, start);
-                                }else {
+                                } else {
                                     this.processing = true;
                                     this.progress = 100;
                                 }

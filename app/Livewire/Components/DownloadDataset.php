@@ -36,6 +36,7 @@ class DownloadDataset extends Component
     public bool $randomizeAnnotations = false;
     #[Locked]
     public bool $locked = false;
+    public bool $processing = false;
     protected $rules = [
         'exportFormat' => 'required|string',
         'token' => 'required|string',
@@ -89,11 +90,13 @@ class DownloadDataset extends Component
     }
     public function download()
     {
+
         $this->validate();
         if ($this->locked || ($this->minAnnotations > $this->maxAnnotations)) {
             return;
         }
         $this->failedDownload = null;
+        $this->processing = true;
         $this->locked = true;
 
         $payload = $this->getFromCache();
@@ -106,8 +109,11 @@ class DownloadDataset extends Component
             return;
         }
 
-        return $this->streamDownload();
+        session(['download_file_path' => $this->filePath]);
+        $this->processing = false;
+        //$this->dispatch('download-file');
     }
+
     private function exportDataset(array $payload): bool
     {
         $targetCounts = array_column($this->classesData, 'count', 'name');
@@ -136,44 +142,6 @@ class DownloadDataset extends Component
 
         return true;
     }
-    public function streamDownload()
-    {
-        $fileSize = filesize($this->filePath);
-        $chunkSize = AppConfig::DOWNLOAD_CHUNK_SIZE;
-        $this->progress = 0; // Reset progress when starting the download
-
-        return response()->stream(function () use ($chunkSize, $fileSize) {
-            $handle = fopen($this->filePath, 'rb');
-            $bytesSent = 0;
-
-            while (!feof($handle)) {
-                $chunk = fread($handle, $chunkSize);
-                echo $chunk;
-                flush();
-
-                $bytesSent += strlen($chunk);
-                $this->progress = round(($bytesSent / $fileSize) * 100, 2);
-                session()->put("download_progress_{$this->exportDataset}", $this->progress);
-            }
-
-            fclose($handle);
-            session()->forget("download_progress_{$this->exportDataset}");
-            register_shutdown_function(function () {
-                if (file_exists($this->filePath)) {
-                    unlink($this->filePath);
-                }
-            });
-            $this->locked = false;
-            $this->failedDownload = null;
-        }, 200, [
-            "Content-Type" => "application/zip",
-            "Content-Length" => $fileSize,
-            "Content-Disposition" => "attachment; filename=\"{$this->exportDataset}\"",
-            "Cache-Control" => "no-cache",
-            "Connection" => "keep-alive",
-        ]);
-    }
-
     public function updateProgress()
     {
         $progress = session()->get("download_progress_{$this->exportDataset}", 0);

@@ -85,8 +85,6 @@ class DatasetShow extends Component
 
     public function render()
     {
-        Util::logStart("Livewire render");
-        Util::logEnd("Livewire render");
         return view('livewire.full-pages.dataset-show');
     }
     public function initProperties($dataset)

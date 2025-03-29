@@ -57,7 +57,7 @@ class ExportService
         ImageQuery::forDatasets($payload['datasets'])
             ->excludeImages($payload['selectedImages'] ?? [])
             ->filterByClassIds($payload['classIds'] ?? [])
-            ->chunkByAnnotations(3, $this->randomizeAnnotations, function ($imagesChunk) use ($mapper, $customDatasetFolder) {
+            ->chunkByAnnotations(3000, $this->randomizeAnnotations, function ($imagesChunk) use ($mapper, $customDatasetFolder) {
                 $filteredChunk = $this->filterAnnotationsInChunk($imagesChunk);
 
                 if (!empty($filteredChunk)) {

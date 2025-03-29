@@ -103,7 +103,7 @@ class ActionRequestService
     }
 
 
-    private function getHandler(ActionRequest $request): ActionRequestHandlerInterface
+    private function getHandler(ActionRequest $request)
     {
         return ActionRequestFactory::createHandler($request->type);
     }

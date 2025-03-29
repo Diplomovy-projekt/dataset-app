@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnnotationRendererController;
+use App\Http\Controllers\DownloadController;
 use App\Livewire\Forms\Register;
 use App\Livewire\FullPages\AdminDashboard;
 use App\Livewire\FullPages\AdminDatasets;
@@ -49,6 +50,11 @@ Route::get('/terms', function(){
 Route::get('/contact', function(){
     return view('contact');
 })->name('contact');
+
+Route::get('/download-file', [DownloadController::class, 'downloadFile'])->name('download.file');
+Route::get('/download-progress', [DownloadController::class, 'getDownloadProgress']);
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ///                     DATASET ROUTES
 ////////////////////////////////////////////////////////////////////////////////

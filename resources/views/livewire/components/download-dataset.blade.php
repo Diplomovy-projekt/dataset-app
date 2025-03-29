@@ -1,4 +1,4 @@
-<div>
+<div x-data="downloadDataset()">
     <x-modals.fixed-modal modalId="download-dataset" class="w-fit">
         @if(count($classesData) > 0)
             <div class="max-w-5xl mx-auto p-6 pt-0 bg-slate-800 rounded-lg space-y-4">
@@ -251,20 +251,63 @@
                     </x-dataset.dataset-errors>
                 @endif
 
+                <div x-show="processing || downloading || processingCompleted || downloadCompleted" class="flex flex-col space-y-3 p-4 rounded-lg shadow-sm ">
+                    <!-- Status indicators -->
+                    <div class="flex items-center space-x-2" :class="{'text-gray-500': !processing, 'text-blue-600': processing, 'text-green-500': processingCompleted}">
+                        <!-- Processing status with animated spinner or checkmark -->
+                        <div class="flex items-center">
+                            <!-- Show spinner while processing -->
+                            <svg x-show="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <!-- Show checkmark after processing is completed -->
+                            <svg x-show="processingCompleted && !processing" class="h-4 w-4 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="font-medium text-sm" x-text="processing ? 'Creating Dataset' : 'Dataset Created'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Download status -->
+                    <div class="flex items-center space-x-2" :class="{'text-gray-400': !downloading, 'text-blue-600': downloading, 'text-green-500': downloadCompleted}">
+                        <!-- Download status with animated spinner or checkmark -->
+                        <div class="flex items-center">
+                            <!-- Show spinner while downloading -->
+                            <svg x-show="downloading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <!-- Show checkmark after downloading is completed -->
+                            <svg x-show="downloadCompleted && !downloading" class="h-4 w-4 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="font-medium text-sm">Downloading dataset</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress indicator (optional) -->
+                    <div x-show="processing || downloading" class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                        <div class="bg-blue-600 h-1.5 rounded-full" :style="`width: ${progress}%`"></div>
+                    </div>
+                </div>
+
+
                 {{--Download Button - Always visible--}}
-                <x-misc.button wire:click="download" id="download-btn"
+                <x-misc.button @click="download" id="download-btn"
                                class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                                :icon="@svg('eva-download')->toHtml()"
                 >
                     Download Dataset
                 </x-misc.button>
 
+
                 {{--Progress Indicator--}}
-                @if($this->locked)
+                {{--@if($this->locked)
                     <div wire:poll.1500ms="updateProgress" class="text-center text-sm text-gray-300">
                         <span>{{ $this->progress ?? null }}</span>
                     </div>
-                @endif
+                @endif--}}
             </div>
         @else
             @if($this->failedDownload)
@@ -287,3 +330,66 @@
         @endif
     </x-modals.fixed-modal>
 </div>
+
+@script
+<script>
+    Alpine.data('downloadDataset', () => ({
+        processing: $wire.entangle('processing'),
+        processingCompleted: false,
+        downloading: false,
+        downloadCompleted: false,
+        progress: 0,
+        filename: $wire.entangle('exportDataset'),
+        downloadInterval: null,
+
+        download() {
+            // Trigger the download process
+            this.processing = true;
+            $wire.$call('download')
+            this.$watch('$wire.processing', (newValue, oldValue) => {
+                if (oldValue === true && newValue === false) { // Detect transition from true -> false
+                    console.log("Processing just completed");
+                    this.processingCompleted = true;
+                    this.startDownload();
+                }
+                this.processing = newValue;
+            });
+
+        },
+        startDownload() {
+            console.log("Download started")
+            this.downloading = true;
+
+            // Create and trigger download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = "{{ route('download.file') }}";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            let progressCounter = 0;
+            this.downloadInterval = setInterval(() => {
+                fetch(`/download-progress?filename=${this.filename}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Progress data:", data);
+                        this.progress = data.progress;
+
+                        // Check if the progress is 100, either due to session key being missing or download completion
+                        if (this.progress >= 100) {
+                            clearInterval(this.downloadInterval);
+                            this.downloading = false;
+                            this.downloadCompleted = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching progress:", error);
+                        clearInterval(this.downloadInterval);
+                        this.downloading = false;
+                    });
+            }, 1000);
+
+        }
+    }));
+</script>
+@endscript

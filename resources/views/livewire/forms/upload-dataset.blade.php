@@ -1,5 +1,5 @@
 <div x-data="chunkedUpload()">
-    <x-modals.fixed-modal modalId="uploadDataset" class="w-1/2">
+    <x-modals.fixed-modal modalId="uploadDataset" class="w-11/12 sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2">
          {{--Main Form Container using MaryUI's Form Component--}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
@@ -25,6 +25,10 @@
                     </x-dataset.dataset-errors>
                 @endif
 
+
+
+
+
                 <div class="space-y-4">
                     {{-- Progress Indicators --}}
                     <template x-if="lock">
@@ -33,17 +37,26 @@
                                 class="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-in-out"
                                 :style="{ width: progress + '%' }"
                                 :class="{
-                        'bg-blue-600': !processing,
-                        'bg-green-600': processing
-                    }"
+                    'bg-blue-600': !processing,
+                    'bg-green-600': processing
+                }"
                             ></div>
                         </div>
                     </template>
+
 
                     {{-- Status Text --}}
                     <div x-show="lock" class="flex items-center justify-between text-sm text-gray-400">
                         <span x-text="processing ? 'Processing Dataset...' : 'Uploading Dataset...'"></span>
                         <span x-text="progressFormatted"></span>
+                    </div>
+
+                    {{-- Uploaded Text and Checkmark --}}
+                    <div x-show="processing && progress === 100" class="flex items-center text-sm text-green-600">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Uploaded</span>
                     </div>
 
                     {{-- Action Buttons --}}
@@ -89,6 +102,8 @@
                         </template>
                     </div>
                 </div>
+
+
 
             </div>
         </div>
