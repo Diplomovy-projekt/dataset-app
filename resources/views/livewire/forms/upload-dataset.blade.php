@@ -25,88 +25,108 @@
                     </x-dataset.dataset-errors>
                 @endif
 
-
-
-
-
                 <div class="space-y-4">
-                    {{-- Progress Indicators --}}
+                    {{-- Progress Bar (only shown when locked) --}}
                     <template x-if="lock">
-                        <div class="w-full bg-gray-100 rounded-full h-4 dark:bg-gray-700 overflow-hidden">
+                        <div>
+                            {{-- Progress Bar --}}
+                            <div class="w-full bg-gray-100 rounded-full h-4 dark:bg-gray-700 overflow-hidden">
+                                <div
+                                    class="h-4 rounded-full transition-all duration-300 ease-in-out"
+                                    :class="processing ? 'bg-green-600' : 'bg-blue-600'"
+                                    :style="{ width: progress + '%' }"
+                                ></div>
+                            </div>
+
+                            {{-- Status Text - Modified to separate upload and processing states --}}
+                            <div class="flex items-center justify-between mt-2 text-sm text-gray-400">
+                                <span x-show="!processing">Uploading Dataset...</span>
+                                <span x-show="!processing" x-text="progressFormatted"></span>
+                            </div>
+
+                            {{-- Upload Complete Indicator --}}
                             <div
-                                class="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-in-out"
-                                :style="{ width: progress + '%' }"
-                                :class="{
-                    'bg-blue-600': !processing,
-                    'bg-green-600': processing
-                }"
-                            ></div>
+                                x-show="processing && progress === 100"
+                                class="space-y-2 mt-2"
+                            >
+                                <div class="flex items-center text-sm text-green-600">
+                                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Upload Complete</span>
+                                </div>
+
+                                {{-- Processing Indicator with Spinner --}}
+                                <div class="flex items-center text-sm text-blue-600">
+                                    <svg
+                                        class="animate-spin h-5 w-5 mr-2 text-blue-600"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            class="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            stroke-width="4"
+                                        ></circle>
+                                        <path
+                                            class="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0l3 3-3 3V4a6 6 0 00-6 6H4z"
+                                        ></path>
+                                    </svg>
+                                    <span>Processing Dataset...</span>
+                                </div>
+                            </div>
                         </div>
                     </template>
 
-
-                    {{-- Status Text --}}
-                    <div x-show="lock" class="flex items-center justify-between text-sm text-gray-400">
-                        <span x-text="processing ? 'Processing Dataset...' : 'Uploading Dataset...'"></span>
-                        <span x-text="progressFormatted"></span>
-                    </div>
-
-                    {{-- Uploaded Text and Checkmark --}}
-                    <div x-show="processing && progress === 100" class="flex items-center text-sm text-green-600">
-                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Uploaded</span>
-                    </div>
-
                     {{-- Action Buttons --}}
-                    <div class="flex gap-4 items-center">
+                    <div class="flex items-center gap-4">
                         {{-- Upload Button --}}
                         <x-misc.button
                             type="submit"
                             variant="primary"
                             size="lg"
                             x-bind:disabled="lock"
-                            x-bind:class="lock ? 'opacity-50 cursor-not-allowed' : ''"
-                            @click="uploadChunks">
+                            x-bind:class="{'opacity-50 cursor-not-allowed': lock}"
+                            @click="uploadChunks"
+                        >
                             <x-slot:icon>
-                                <x-eva-upload class="w-5 h-5"></x-eva-upload>
+                                <x-eva-upload class="w-5 h-5" />
                             </x-slot:icon>
                             Upload Dataset
                         </x-misc.button>
 
-                        {{-- Spinner --}}
-                        <template x-if="lock">
-                            <div class="flex items-center space-x-2">
-                                <svg
-                                    class="animate-spin h-5 w-5 text-gray-500"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        class="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                    ></circle>
-                                    <path
-                                        class="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0l3 3-3 3V4a6 6 0 00-6 6H4zm2 5a8 8 0 008 8v4l3-3-3-3v4a6 6 0 006-6h4a8 8 0 01-8 8v4l-3-3 3-3v-4a8 8 0 01-8-8H2z"
-                                    ></path>
-                                </svg>
-                            </div>
-                        </template>
+                        {{-- Loading Spinner (only shown when uploading) --}}
+                        <div x-show="lock && !processing" class="flex items-center">
+                            <svg
+                                class="animate-spin h-5 w-5 text-gray-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    class="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    stroke-width="4"
+                                ></circle>
+                                <path
+                                    class="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0l3 3-3 3V4a6 6 0 00-6 6H4zm2 5a8 8 0 008 8v4l3-3-3-3v4a6 6 0 006-6h4a8 8 0 01-8 8v4l-3-3 3-3v-4a8 8 0 01-8-8H2z"
+                                ></path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
-
-
-
             </div>
         </div>
-
     </x-modals.fixed-modal>
 </div>
