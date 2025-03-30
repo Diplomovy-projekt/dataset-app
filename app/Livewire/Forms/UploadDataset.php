@@ -99,10 +99,16 @@ class UploadDataset extends Component
 
     public function updatedFileChunk()
     {
-        $this->validateDataset();
-        $this->lockUpload = true;
-        $this->chunkUpload();
+        try {
+            $this->validateDataset();
+            $this->lockUpload = true;
+            $this->chunkUpload();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->lockUpload = false;
+            throw $e;
+        }
     }
+
     private function validateDataset()
     {
         if (!$this->validated) {
@@ -118,5 +124,6 @@ class UploadDataset extends Component
             $this->validated = true;
         }
     }
+
 
 }

@@ -34,7 +34,7 @@ class ToYolo extends BaseToMapper
             }
 
             File::ensureDirectoryExists($annotationPath);
-            if (!Storage::put($annotationPath, implode("\n", $annotations))) {
+            if (!Storage::append($annotationPath, implode("\n", $annotations))) {
                 throw new \Exception("Failed to write annotations to file");
             }
         }

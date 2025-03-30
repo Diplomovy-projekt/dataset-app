@@ -44,7 +44,7 @@ class NewDatasetHandler extends BaseHandler
     {
         return ['route' => 'dataset.show', 'params' => ['uniqueName' => $request->dataset->unique_name]];
     }
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
         return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }

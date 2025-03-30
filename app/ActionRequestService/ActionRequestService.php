@@ -49,7 +49,10 @@ class ActionRequestService
 
             // TODO change back to auto-approve
             if ($user->isAdmin()) {
-                $this->resolveRequest($request, 'approve', 'Auto-approved by system');
+                $resolveResponse = $this->resolveRequest($request, 'approve', 'Auto-approved by system');
+                if (is_array($resolveResponse) && isset($resolveResponse['type']) && $resolveResponse['type'] === 'error') {
+                    return $resolveResponse;
+                }
             }
 
             if ($user->isAdmin()) {
@@ -89,7 +92,7 @@ class ActionRequestService
 
             return $handler->resolveResponse($request);
         } catch (\Exception $e) {
-            return $handler->errorResponse($e->getMessage());
+            return $handler->errorResponse($e->getMessage(), $request);
         }
     }
 
@@ -100,7 +103,7 @@ class ActionRequestService
     }
 
 
-    private function getHandler(ActionRequest $request): ActionRequestHandlerInterface
+    private function getHandler(ActionRequest $request)
     {
         return ActionRequestFactory::createHandler($request->type);
     }

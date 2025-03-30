@@ -16,15 +16,19 @@ class ToLabelme extends BaseToMapper
     {
         foreach ($images as $image) {
             $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
-            $labelmeJson = [
-                'version' => "5.5.0",
-                'flags' => [],
-                'shapes' => [],
-                'imagePath' => '../' . $this->getImageFolder() . '/' . $image['filename'],
-                'imageData' => null,
-                'imageHeight' => $image['height'],
-                'imageWidth' => $image['width'],
-            ];
+            if(!Storage::exists($annotationPath)) {
+                $labelmeJson = [
+                    'version' => "5.5.0",
+                    'flags' => [],
+                    'shapes' => [],
+                    'imagePath' => '../' . LabelmeConfig::IMAGE_FOLDER . '/' . $image['filename'],
+                    'imageData' => null,
+                    'imageHeight' => $image['height'],
+                    'imageWidth' => $image['width'],
+                ];
+            } else {
+                $labelmeJson = json_decode(Storage::get($annotationPath), true);
+            }
 
             foreach ($image['annotations'] as $annotation) {
                 $this->mapClass($annotation['class']['name']);

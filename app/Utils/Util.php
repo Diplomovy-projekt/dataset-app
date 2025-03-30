@@ -4,12 +4,14 @@ namespace App\Utils;
 
 use App\Configs\AppConfig;
 use App\Models\Dataset;
+use App\Traits\CoordsTransformer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Util
 {
+    use CoordsTransformer;
     public static function isJson($data) {
 
         if (!is_string($data)) {
@@ -164,6 +166,36 @@ class Util
         return ($count % 2)
             ? $values[$middle]
             : (int) (($values[$middle - 1] + $values[$middle]) / 2);
+    }
+
+    public static function generateSvgPath(array $annotation, int $imageWidth, int $imageHeight): string
+    {
+        if (!empty($annotation['segmentation'])) {
+            $segmentation = self::pixelizePolygon($annotation['segmentation'], $imageWidth, $imageHeight);
+            $pathData = 'M' . $segmentation[0]['x'] . ',' . $segmentation[0]['y'];
+
+            $prevX = $segmentation[0]['x'];
+            $prevY = $segmentation[0]['y'];
+
+            for ($i = 1; $i < count($segmentation); $i++) {
+                $dx = $segmentation[$i]['x'] - $prevX;
+                $dy = $segmentation[$i]['y'] - $prevY;
+                $pathData .= 'l' . $dx . ',' . $dy;
+
+                $prevX = $segmentation[$i]['x'];
+                $prevY = $segmentation[$i]['y'];
+            }
+
+            return $pathData . 'z';
+        }
+
+        $pixelizedBbox = self::pixelizeBbox($annotation, $imageWidth, $imageHeight);
+        $x = $pixelizedBbox['x'];
+        $y = $pixelizedBbox['y'];
+        $w = $pixelizedBbox['width'];
+        $h = $pixelizedBbox['height'];
+
+        return "M{$x},{$y}l{$w},0l0,{$h}l-{$w},0z";
     }
 
 }

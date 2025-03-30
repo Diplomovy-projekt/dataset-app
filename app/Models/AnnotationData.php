@@ -19,7 +19,8 @@ class AnnotationData extends Model
         'y',
         'width',
         'height',
-        'segmentation'
+        'segmentation',
+        'svg_path',
     ];
 
     protected $casts = [

@@ -3,6 +3,7 @@
 namespace App\ActionRequestService\Handlers;
 
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
+use App\Models\ActionRequest;
 use App\Models\Dataset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,7 @@ class EditDatasetHandler extends BaseHandler
         }
         return ['action' => 'refresh'];
     }
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
         return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
     }

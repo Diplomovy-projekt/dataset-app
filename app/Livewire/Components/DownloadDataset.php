@@ -34,8 +34,8 @@ class DownloadDataset extends Component
     public int $minAnnotations;
     public int $maxAnnotations;
     public bool $randomizeAnnotations = false;
-    #[Locked]
     public bool $locked = false;
+    public bool $processing = false;
     protected $rules = [
         'exportFormat' => 'required|string',
         'token' => 'required|string',
@@ -89,35 +89,38 @@ class DownloadDataset extends Component
     }
     public function download()
     {
-        $this->validate();
-        if ($this->locked || ($this->minAnnotations > $this->maxAnnotations)) {
+        if (!$this->validateExport()) {
             return;
         }
+
         $this->failedDownload = null;
+        $this->processing = true;
         $this->locked = true;
 
         $payload = $this->getFromCache();
         if(empty($payload)) {
             return;
         }
-        $images = ImageQuery::forDatasets($payload['datasets'])
-            ->excludeImages($payload['selectedImages'] ?? [])
-            ->filterByClassIds($payload['classIds'] ?? [])
-            ->get()
-            ->toArray();
-        $images = $this->filterAnnotationsByThreshold($images, $this->classesData);
-        $annotationTechnique = $this->findOutAnnotationTechnique($payload['datasets']);
 
-        $response = $this->exportDataset($images, $annotationTechnique);
+        $response = $this->exportDataset($payload);
         if (!$response) {
             return;
         }
 
-        return $this->streamDownload();
+        session(['download_file_path' => $this->filePath]);
+        $this->processing = false;
+        //$this->dispatch('download-file');
     }
-    private function exportDataset(array $images, string $annotationTechnique): bool
+
+    private function exportDataset(array $payload): bool
     {
-        $response = ExportService::handleExport($images, $this->exportFormat, $annotationTechnique);
+        $targetCounts = array_column($this->classesData, 'count', 'name');
+        $payload['targetCounts'] = $targetCounts;
+        $payload['randomizeAnnotations'] = $this->randomizeAnnotations;
+        $payload['format'] = $this->exportFormat;
+
+        $exportService = app(ExportService::class);
+        $response = $exportService->handleExport($payload);
 
         if (!$response->isSuccessful()) {
             $this->failedDownload = [
@@ -137,47 +140,22 @@ class DownloadDataset extends Component
 
         return true;
     }
-    public function streamDownload()
+
+    protected function validateExport()
     {
-        $fileSize = filesize($this->filePath);
-        $chunkSize = AppConfig::DOWNLOAD_CHUNK_SIZE;
-        $this->progress = 0; // Reset progress when starting the download
+        $this->validate();
 
-        return response()->stream(function () use ($chunkSize, $fileSize) {
-            $handle = fopen($this->filePath, 'rb');
-            $bytesSent = 0;
+        if ($this->locked) {
+            $this->addError('locked', 'The process is currently locked. Please wait.');
+            return false;
+        }
 
-            while (!feof($handle)) {
-                $chunk = fread($handle, $chunkSize);
-                echo $chunk;
-                flush();
+        if ($this->minAnnotations > $this->maxAnnotations) {
+            $this->addError('annotations', 'Minimum annotations cannot be greater than maximum annotations.');
+            return false;
+        }
 
-                $bytesSent += strlen($chunk);
-                $this->progress = round(($bytesSent / $fileSize) * 100, 2);
-                session()->put("download_progress_{$this->exportDataset}", $this->progress);
-            }
-
-            fclose($handle);
-            session()->forget("download_progress_{$this->exportDataset}");
-            register_shutdown_function(function () {
-                if (file_exists($this->filePath)) {
-                    unlink($this->filePath);
-                }
-            });
-            $this->locked = false;
-            $this->failedDownload = null;
-        }, 200, [
-            "Content-Type" => "application/zip",
-            "Content-Length" => $fileSize,
-            "Content-Disposition" => "attachment; filename=\"{$this->exportDataset}\"",
-            "Cache-Control" => "no-cache",
-            "Connection" => "keep-alive",
-        ]);
-    }
-
-    public function updateProgress()
-    {
-        $progress = session()->get("download_progress_{$this->exportDataset}", 0);
+        return true;
     }
 
     private function setClassesData(mixed $payload)
@@ -225,7 +203,7 @@ class DownloadDataset extends Component
                 'folder' => AppConfig::CLASS_IMG_FOLDER . $class['id'],
             ];
         }
-        unset($class); // Unset reference to avoid unexpected behavior
+        unset($class);
         $this->maxAnnotations = max(array_column($this->originalClassesData, 'count'));
         $this->minAnnotations = min(array_column($this->originalClassesData, 'count'));
         $this->classesData = $this->originalClassesData;
@@ -252,101 +230,6 @@ class DownloadDataset extends Component
     {
         $this->adjustClassesDataForThresholds();
         $this->calculateStats($this->classesData);
-    }
-
-    /**
-     * Filter images with annotations based on pre-filtered class data with randomization
-     *
-     * @param array $images Array of images with annotations from the query
-     * @param array $classesData Array of already filtered classes with final counts
-     * @param bool $randomizeImages Whether to randomize the images order
-     * @param bool $randomizeAnnotations Whether to randomize annotations within each class
-     * @return array Filtered images with annotations
-     */
-    function filterAnnotationsByThreshold(
-        array $images,
-        array $classesData
-    ): array
-    {
-        $targetCounts = [];
-        foreach ($classesData as $classData) {
-            $targetCounts[$classData['name']] = $classData['count'];
-        }
-
-        if (empty($targetCounts)) {
-            return [];
-        }
-
-        // Group annotations by class for randomized selection
-        if ($this->randomizeAnnotations) {
-            shuffle($images);
-            $annotationsByClass = [];
-
-            // Initialize the classes
-            foreach (array_keys($targetCounts) as $className) {
-                $annotationsByClass[$className] = [];
-            }
-
-            // Collect all annotations by class
-            foreach ($images as $imageIndex => $image) {
-                foreach ($image['annotations'] as $annotationIndex => $annotation) {
-                    $className = $annotation['class']['name'];
-
-                    if (isset($targetCounts[$className])) {
-                        $annotationsByClass[$className][] = [
-                            'image_index' => $imageIndex,
-                            'annotation' => $annotation
-                        ];
-                    }
-                }
-            }
-
-            // Randomize annotations within each class and take only what we need
-            foreach ($annotationsByClass as $className => &$annotations) {
-                shuffle($annotations);
-                $annotations = array_slice($annotations, 0, $targetCounts[$className]);
-            }
-            unset($annotations);
-
-            // Clear all annotations from images first
-            foreach ($images as &$image) {
-                $image['annotations'] = [];
-            }
-            unset($image);
-
-            // Add selected annotations back to their respective images
-            foreach ($annotationsByClass as $classId => $annotations) {
-                foreach ($annotations as $item) {
-                    $images[$item['image_index']]['annotations'][] = $item['annotation'];
-                }
-            }
-        } else {
-            $currentCounts = array_fill_keys(array_keys($targetCounts), 0);
-
-            foreach ($images as &$image) {
-                $filteredAnnotations = [];
-
-                foreach ($image['annotations'] as $annotation) {
-                    $className = $annotation['class']['name'];
-
-                    if (!isset($targetCounts[$className]) || $currentCounts[$className] >= $targetCounts[$className]) {
-                        continue;
-                    }
-                    $filteredAnnotations[] = $annotation;
-                    $currentCounts[$className]++;
-                }
-
-                $image['annotations'] = $filteredAnnotations;
-            }
-            unset($image);
-        }
-
-        // Remove images with no annotations
-        $result = array_values(array_filter($images, function($image) {
-            return !empty($image['annotations']);
-        }));
-
-        return $result;
     }
 
     private function calculateStats(array $classesData): void
@@ -411,19 +294,4 @@ class DownloadDataset extends Component
         $counts = array_column($this->classesData, 'count');
         return round(max($counts) / max(1, min($counts)), 1);
     }
-
-    private function findOutAnnotationTechnique(mixed $datasets)
-    {
-        $annotationTechniques = Dataset::whereIn('id', $datasets)
-            ->pluck('annotation_technique')
-            ->unique();
-
-        // If both bounding box and polygon are present, return bounding box
-        if ($annotationTechniques->count() === 2) {
-            return AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'];
-        } else {
-            return $annotationTechniques->first();
-        }
-    }
-
 }

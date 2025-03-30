@@ -4,6 +4,7 @@ namespace App\ActionRequestService\Handlers;
 
 use App\Configs\AppConfig;
 use App\ImageService\ImageProcessor;
+use App\Models\ActionRequest;
 use App\Models\AnnotationClass;
 use App\Models\AnnotationData;
 use App\Models\Dataset;
@@ -55,8 +56,6 @@ class ExtendDatasetHandler extends BaseHandler
                 $childClass = $childClasses[$annotation->annotation_class_id] ?? null;
                 // If class exists in parent, update annotation to parent class
                 if ($childClass && isset($parentClasses[$childClass->name])) {
-                    $annotation->created_at = null;
-                    $annotation->updated_at = null;
                     $annotation->annotation_class_id = $parentClasses[$childClass->name]->id;
                     $annotationsClassesToUpdate[] = $annotation->toArray();
                     continue;
@@ -97,24 +96,27 @@ class ExtendDatasetHandler extends BaseHandler
             $parent->updateSize($childImages->pluck('size')->sum());
         } catch (\Exception $e) {
             DB::rollBack();
+
             foreach ($childImages as $image) {
                 $fullImg = $parentPath . AppConfig::FULL_IMG_FOLDER . $image['filename'];
                 $thumbnail = $parentPath . AppConfig::IMG_THUMB_FOLDER . $image['filename'];
-                if(Storage::exists($fullImg)){
+
+                if (Storage::exists($fullImg)) {
                     Storage::delete($fullImg);
                 }
-                if(Storage::exists($thumbnail)){
+                if (Storage::exists($thumbnail)) {
                     Storage::delete($thumbnail);
                 }
             }
+
             throw new \Exception('Failed to extend dataset');
-        } finally {
-            $child->delete();
-            if(!Storage::deleteDirectory($childPath)) {
-                throw new \Exception("Failed to delete child dataset folder");
-            }
-            DB::commit();
         }
+
+        $child->delete();
+        if (!Storage::deleteDirectory($childPath)) {
+            throw new \Exception("Failed to delete child dataset folder");
+        }
+        DB::commit();
     }
 
     public function reject(array $payload): void
@@ -138,8 +140,9 @@ class ExtendDatasetHandler extends BaseHandler
         }
         return ['route' => 'dataset.show', 'params' => ['uniqueName' => $request->dataset->unique_name]];
     }
-    public function errorResponse(string $errorMessage): mixed
+    public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
-        return ['type' => 'error', 'message' => 'Failed to submit request: ' . $errorMessage];
+        $request->delete();
+        return ['type' => 'error', 'message' => $errorMessage];
     }
 }

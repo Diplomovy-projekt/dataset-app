@@ -16,29 +16,30 @@ class ToPascalvoc extends BaseToMapper
     {
         foreach ($images as $image) {
             $annotationPath = $this->getAnnotationDestinationPath($datasetFolder, $image);
-
-            // Create XML DOM document
             $doc = new \DOMDocument('1.0', 'UTF-8');
             $doc->formatOutput = true;
 
-            // Root element
-            $annotation = $doc->createElement('annotation');
-            $doc->appendChild($annotation);
+            if (Storage::exists($annotationPath)) {
+                $content = Storage::get($annotationPath);
+                $doc->loadXML($content);
+                $annotation = $doc->documentElement;
+            } else {
+                // Create new annotation structure
+                $annotation = $doc->createElement('annotation');
+                $doc->appendChild($annotation);
 
-            // Add basic image information
-            $this->addElement($doc, $annotation, 'folder', null);
-            $this->addElement($doc, $annotation, 'filename', $image['filename']);
-            $this->addElement($doc, $annotation, 'path',  $image['filename']);
+                $this->addElement($doc, $annotation, 'folder', null);
+                $this->addElement($doc, $annotation, 'filename', $image['filename']);
+                $this->addElement($doc, $annotation, 'path', $image['filename']);
 
-            // Add size information
-            $size = $doc->createElement('size');
-            $annotation->appendChild($size);
-            $this->addElement($doc, $size, 'width', $image['width']);
-            $this->addElement($doc, $size, 'height', $image['height']);
-            $this->addElement($doc, $size, 'depth', 3); // Assuming RGB images
+                $size = $doc->createElement('size');
+                $annotation->appendChild($size);
+                $this->addElement($doc, $size, 'width', $image['width']);
+                $this->addElement($doc, $size, 'height', $image['height']);
+                $this->addElement($doc, $size, 'depth', 3);
 
-            // Add segmented flag
-            $this->addElement($doc, $annotation, 'segmented', $annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'] ? 1 : 0);
+                $this->addElement($doc, $annotation, 'segmented', $annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON'] ? 1 : 0);
+            }
 
             // Add each object (annotation)
             foreach ($image['annotations'] as $annotation_data) {

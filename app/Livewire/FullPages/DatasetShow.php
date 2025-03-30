@@ -45,13 +45,15 @@ class DatasetShow extends Component
     #[Computed]
     public function paginatedImages()
     {
-        Util::logStart("paginatedImages");
+        Util::logStart("ImageQuery");
         $images = ImageQuery::forDatasets([$this->dataset['id']])
             ->search($this->searchTerm)
             ->perPage($this->perPage)
             ->get();
+        Util::logEnd("ImageQuery");
+        Util::logStart("prepareImagesForSvgRendering");
         $images = $this->prepareImagesForSvgRendering($images);
-        Util::logEnd("paginatedImages");
+        Util::logEnd("prepareImagesForSvgRendering");
         return $images;
     }
 
@@ -83,8 +85,6 @@ class DatasetShow extends Component
 
     public function render()
     {
-        Util::logStart("Livewire render");
-        Util::logEnd("Livewire render");
         return view('livewire.full-pages.dataset-show');
     }
     public function initProperties($dataset)

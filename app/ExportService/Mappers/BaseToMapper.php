@@ -38,12 +38,11 @@ abstract class BaseToMapper implements ToMapperInterface
         $env = App::environment();
         $datasets = Dataset::whereIn('id', array_column($images, 'dataset_id'))->get()->keyBy('id');
         $destinationDir = $this->getImageDestinationDir($datasetFolder);
+        File::ensureDirectoryExists($destinationDir);
 
         foreach ($images as $image) {
             $dataset = $datasets[$image['dataset_id']];
             $source = Util::getDatasetPath($dataset, true) . 'full-images/' . $image['filename'];
-
-            File::ensureDirectoryExists($destinationDir);
 
             // Create symbolic link
             if (File::exists($source)) {

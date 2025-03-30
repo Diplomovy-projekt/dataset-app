@@ -4,6 +4,9 @@ namespace App\Livewire\FullPages;
 
 use App\ImageService\ImageRendering;
 use App\Models\Dataset;
+use App\Utils\ImageQuery;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;

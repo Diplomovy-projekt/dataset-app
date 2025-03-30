@@ -25,10 +25,6 @@ class AppConfig
             'name' => 'PascalVOC',
             'extension' => 'xml',
             ],
-        'paligemma' => [
-            'name' => 'PaliGemma',
-            'extension' => 'jsonl',
-            ],
     ];
 
     public const LIVEWIRE_TMP_PATH = 'app/private/livewire-tmp/';
@@ -38,6 +34,7 @@ class AppConfig
     ];
     public const LINK_DATASETS_PATH = 'storage/datasets/';
     public const MAX_THUMB_DIM = 256;
+    public const DEFAULT_CHUNK_FETCH = 1000;
     public const FULL_IMG_FOLDER = 'full-images/';
     public const IMG_THUMB_FOLDER = 'thumbnails/';
     public const CLASS_IMG_FOLDER = 'class-images/';
@@ -52,8 +49,8 @@ class AppConfig
         '100MB' => 100000000,
         '200MB' => 200000000,
     ];
-    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['20MB'];
-    public const int DOWNLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['100MB'];
+    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['2MB'];
+    public const int DOWNLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['20MB'];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
     public const PER_PAGE_OPTIONS = [
         "10" => 10,
