@@ -118,9 +118,13 @@
                         (resolve) => {},
                         (error) => {
                             $wire.$set('lockUpload', false);
+                            this.processing = false;
+                            this.progress = 0;
                             reject(error);
                         },
                         (event) => {
+                            if (!this.lock) return;
+
                             this.progress = ((start + event.detail.progress) / file.size) * 100;
 
                             if (event.detail.progress == 100) {

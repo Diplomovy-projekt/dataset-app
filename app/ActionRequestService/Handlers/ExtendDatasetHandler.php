@@ -57,7 +57,11 @@ class ExtendDatasetHandler extends BaseHandler
                 // If class exists in parent, update annotation to parent class
                 if ($childClass && isset($parentClasses[$childClass->name])) {
                     $annotation->annotation_class_id = $parentClasses[$childClass->name]->id;
-                    $annotationsClassesToUpdate[] = $annotation->toArray();
+                    $annotationArray = $annotation->toArray();
+                    if (isset($annotationArray['segmentation']) && is_array($annotationArray['segmentation'])) {
+                        $annotationArray['segmentation'] = json_encode($annotationArray['segmentation']);
+                    }
+                    $annotationsClassesToUpdate[] = $annotationArray;
                     continue;
                 }
                 // If new class, add to parent dataset

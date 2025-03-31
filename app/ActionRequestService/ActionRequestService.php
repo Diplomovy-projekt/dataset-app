@@ -4,8 +4,10 @@ namespace App\ActionRequestService;
 
 use App\ActionRequestService\Factory\ActionRequestFactory;
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
+use App\Jobs\RecalculateDatasetStats;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
+use App\Models\DatasetStatistics;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -89,6 +91,11 @@ class ActionRequestService
             $request->reviewed_by = $user->id;
             $request->comment = $comment;
             $request->save();
+
+            if($request != 'edit'){
+                DatasetStatistics::recalculateAllStatistics();
+                //RecalculateDatasetStats::dispatch()->onQueue('statistics')->delay(now()->addMinutes(1));
+            }
 
             return $handler->resolveResponse($request);
         } catch (\Exception $e) {

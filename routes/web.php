@@ -14,6 +14,7 @@ use App\Livewire\FullPages\MyRequests;
 use App\Livewire\FullPages\Profile;
 use App\Livewire\FullPages\ReviewEditDataset;
 use App\Livewire\FullPages\ReviewReduceDataset;
+use App\Models\DatasetStatistics;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -37,7 +38,12 @@ Route::get('/register/{token}', Register::class)->name('register');
 ///                     MISC ROUTES
 ////////////////////////////////////////////////////////////////////////////////
 Route::get('/', function () {
-    $statistics = \App\Utils\QueryUtil::getDatasetCounts();
+    $statistics = DatasetStatistics::selectRaw(
+        'SUM(dataset_count) as numDatasets,
+         SUM(image_count) as numImages,
+         SUM(annotation_count) as numAnnotations,
+         SUM(class_count) as numClasses'
+    )->first();
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
 Route::get('/zip-format-info', function(){
@@ -111,12 +117,11 @@ Route::get('/private-image/{dataset}/{filename}', function ($dataset, $filename)
         ->first();
 
     if (!auth()->check() || auth()->user()->isAdmin()) {
-        //abort(403);
+        abort(403);
     }
-    // Define image path
+
     $path = storage_path("app/private/datasets/{$datasetRecord->unique_name}/{$filename}");
 
-    // Check if the file exists
     if (!file_exists($path)) {
         abort(404);
     }

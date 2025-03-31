@@ -49,7 +49,7 @@ class AppConfig
         '100MB' => 100000000,
         '200MB' => 200000000,
     ];
-    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['2MB'];
+    public const int UPLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['20MB'];
     public const int DOWNLOAD_CHUNK_SIZE = self::MB_SIZE_LOOKUP['20MB'];
     public const PLACEHOLDER_IMG = 'placeholder-image.png';
     public const PER_PAGE_OPTIONS = [
@@ -64,7 +64,7 @@ class AppConfig
 
     // TODO increase expiration date for url invite
     public const EXPIRATION = [
-        'URL' => ['value' => 5, 'unit' => 'seconds'],
+        'URL' => ['value' => 1, 'unit' => 'week'],
         'TMP_FILE' => ['value' => 6, 'unit' => 'hours'],
     ];
 }

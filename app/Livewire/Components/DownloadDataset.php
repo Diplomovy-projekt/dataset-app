@@ -36,6 +36,8 @@ class DownloadDataset extends Component
     public bool $randomizeAnnotations = false;
     public bool $locked = false;
     public bool $processing = false;
+    public bool $processingCompleted = false;
+    public bool $resetTrigger = false;
     protected $rules = [
         'exportFormat' => 'required|string',
         'token' => 'required|string',
@@ -50,6 +52,8 @@ class DownloadDataset extends Component
     #[On('store-download-token')]
     public function storeDownloadToken($token)
     {
+        $this->resetState();
+        $this->failedDownload = null;
         $this->token = $token;
         $this->setClassesData($this->getFromCache());
         if($this->classesData) {
@@ -90,26 +94,30 @@ class DownloadDataset extends Component
     public function download()
     {
         if (!$this->validateExport()) {
+            $this->resetState();
             return;
         }
 
         $this->failedDownload = null;
         $this->processing = true;
-        $this->locked = true;
+        $this->dispatch('processing-updated', true);
 
         $payload = $this->getFromCache();
-        if(empty($payload)) {
+        if (empty($payload)) {
+            $this->resetState();
             return;
         }
 
         $response = $this->exportDataset($payload);
         if (!$response) {
+            $this->resetState();
             return;
         }
 
         session(['download_file_path' => $this->filePath]);
-        $this->processing = false;
-        //$this->dispatch('download-file');
+
+        // Reset processing state after completing export
+        $this->processingCompleted = true;
     }
 
     private function exportDataset(array $payload): bool
@@ -127,7 +135,7 @@ class DownloadDataset extends Component
                 'message' => $response->message,
                 'data' => $response->data
             ];
-            $this->locked = false;
+            $this->resetState();
             return false;
         }
 
@@ -140,23 +148,37 @@ class DownloadDataset extends Component
 
         return true;
     }
-
-    protected function validateExport()
+    private function resetState()
     {
-        $this->validate();
+        $this->resetTrigger = !$this->resetTrigger;
+        $this->processing = false;
+        $this->processingCompleted = false;
+        $this->locked = false;
+    }
+    public function validateExport()
+    {
+        try {
+            $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->resetState();
+            throw $e;
+        }
 
         if ($this->locked) {
+            $this->resetState();
             $this->addError('locked', 'The process is currently locked. Please wait.');
             return false;
         }
 
         if ($this->minAnnotations > $this->maxAnnotations) {
+            $this->resetState();
             $this->addError('annotations', 'Minimum annotations cannot be greater than maximum annotations.');
             return false;
         }
 
         return true;
     }
+
 
     private function setClassesData(mixed $payload)
     {

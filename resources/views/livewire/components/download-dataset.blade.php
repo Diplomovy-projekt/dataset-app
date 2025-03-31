@@ -286,7 +286,7 @@
                         </div>
                     </div>
 
-                    <!-- Progress indicator (optional) -->
+                    <!-- Progress indicator -->
                     <div class="w-full bg-gray-100 rounded-full h-4 dark:bg-gray-700 overflow-hidden">
                         <div
                             class="h-4 rounded-full transition-all duration-300 ease-in-out"
@@ -333,15 +333,28 @@
 <script>
     Alpine.data('downloadDataset', () => ({
         processing: $wire.entangle('processing'),
-        processingCompleted: false,
+        processingCompleted:  $wire.entangle('processingCompleted'),
         downloading: false,
         downloadCompleted: false,
         progress: 0,
         filename: $wire.entangle('exportDataset'),
         downloadInterval: null,
+        resetTrigger: $wire.entangle('resetTrigger'),
+
+        init() {
+            this.$watch('resetTrigger', () => {
+                this.resetState();
+            });
+        },
+        resetState() {
+            this.processing = false;
+            this.processingCompleted = false;
+            this.downloading = false;
+            this.downloadCompleted = false;
+            this.progress = 0;
+        },
 
         download() {
-            // Prevent multiple clicks
             if (this.processing || this.downloading) {
                 return;
             }
@@ -356,22 +369,34 @@
             }
 
             // Trigger the download process
-            this.processing = true;
-            $wire.$call('download')
-            this.$watch('$wire.processing', (newValue, oldValue) => {
-                if (oldValue === true && newValue === false) { // Detect transition from true -> false
+            //this.processing = true;
+
+            this.$wire.validateExport().then((isValid) => {
+                if (isValid) {
+                    // Continue with the download process
+                    console.log("Validation passed, starting download...");
+                    this.processing = true;
+                    $wire.$call('download')
+                } else {
+                    console.log("Validation failed.");
+                }
+            }).catch((error) => {
+                console.log("Validation failed with error:", error);
+                // Handle any additional logic for failed validation if necessary
+            });
+            this.$watch('processingCompleted', (newValue, oldValue) => {
+                console.log("Processing changed", newValue, oldValue);
+                if (newValue === true) {
                     console.log("Processing just completed");
-                    this.processingCompleted = true;
                     this.startDownload();
                 }
-                this.processing = newValue;
             });
         },
 
         startDownload() {
             console.log("Download started")
             this.downloading = true;
-            this.progress = 0; // Reset progress
+            this.progress = 0;
 
             // Create and trigger download
             const downloadLink = document.createElement('a');

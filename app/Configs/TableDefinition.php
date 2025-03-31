@@ -35,7 +35,6 @@ class TableDefinition
                 ['label' => 'Annotation Technique', 'field' => 'annotation_technique', 'sortable' => true, 'width' => 'w-18'],
                 ['label' => 'Owner', 'field' => 'user.email', 'sortable' => true, 'width' => 'w-18'],
                 ['label' => 'Visibility', 'field' => 'is_public', 'sortable' => true, 'width' => 'w-16'],
-                ['label' => 'Pending Changes', 'field' => 'pending_changes', 'sortable' => false, 'width' => 'w-14'],
                 ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-14'],
             ],
             'sortColumn' => 'display_name',

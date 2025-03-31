@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
+use App\Models\DatasetStatistics;
 use App\Models\Image;
 use App\Models\MetadataValue;
 use App\Utils\ImageQuery;
@@ -116,9 +117,9 @@ class DatasetBuilder extends Component
                 'metadataValues',
                 'categories',
                 'images' => fn($query) => $query->limit(1)->select(['id', 'filename', 'dataset_folder', 'dataset_id', 'width', 'height'])->with([
-                    'annotations' => fn($q) => $q->select(['id', 'image_id', 'x', 'y', 'width', 'height', 'annotation_class_id', 'segmentation'])
+                    'annotations' => fn($q) => $q->select(['id', 'image_id', 'annotation_class_id', 'svg_path'])
                         ->with([
-                            'class' => fn($q) => $q->select(['id', 'name', 'rgb'])->get()->map(fn($c) => $c->toArray()) // Convert to array
+                            'class' => fn($q) => $q->select(['id', 'name', 'rgb'])->get()->map(fn($c) => $c->toArray())
                         ])
                 ]),
             ])
@@ -209,15 +210,21 @@ class DatasetBuilder extends Component
 
     public function annotationTechniqueStage()
     {
-        // Get ids of datasets that have the selected annotation technique polygon
-        $polygonDatasetIds = Dataset::approved()->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])
-            ->pluck('id')
-            ->all();
-        $this->polygonDatasetsStats = QueryUtil::getDatasetCounts($polygonDatasetIds);
+        $this->polygonDatasetsStats = DatasetStatistics::selectRaw(
+            'dataset_count as numDatasets,
+         image_count as numImages,
+         annotation_count as numAnnotations,
+         class_count as numClasses'
+        )->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])->first()->toArray();
 
-        $this->allDatasetsStats = QueryUtil::getDatasetCounts();
-
+        $this->allDatasetsStats = DatasetStatistics::selectRaw(
+            'SUM(dataset_count) as numDatasets,
+             SUM(image_count) as numImages,
+             SUM(annotation_count) as numAnnotations,
+             SUM(class_count) as numClasses'
+        )->first()->toArray();
     }
+
     private function categoriesStage()
     {
         $this->categories = DatasetCategory::getAllUniqueCategories();

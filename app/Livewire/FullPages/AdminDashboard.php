@@ -60,7 +60,7 @@ class AdminDashboard extends Component
         try {
             $type = MetadataType::find($id);
 
-            if (!$type || $type->name !== $name || $type->description !== $description) {
+            if (!$type || $type->name !== $name) {
                 MetadataType::updateOrCreate(
                     ['id' => $id],
                     ['name' => $name, 'description' => $description]
@@ -80,7 +80,7 @@ class AdminDashboard extends Component
             $metadataValue = MetadataValue::find($valueId);
 
             if (!$metadataValue || $metadataValue->metadata_type_id !== $typeId ||
-                $metadataValue->value !== $value || $metadataValue->description !== $description) {
+                $metadataValue->value !== $value) {
 
                 MetadataValue::updateOrCreate(
                     ['id' => $valueId],
