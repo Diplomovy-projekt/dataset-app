@@ -91,16 +91,9 @@ class DownloadDataset extends Component
         }
         return $payload;
     }
-    public function download()
+    public function startProcessing()
     {
-        if (!$this->validateExport()) {
-            $this->resetState();
-            return;
-        }
-
-        $this->failedDownload = null;
         $this->processing = true;
-        $this->dispatch('processing-updated', true);
 
         $payload = $this->getFromCache();
         if (empty($payload)) {
@@ -108,16 +101,10 @@ class DownloadDataset extends Component
             return;
         }
 
-        $response = $this->exportDataset($payload);
-        if (!$response) {
-            $this->resetState();
-            return;
+        if ($this->exportDataset($payload)) {
+            session(['download_file_path' => $this->filePath]);
+            $this->processingCompleted = true;
         }
-
-        session(['download_file_path' => $this->filePath]);
-
-        // Reset processing state after completing export
-        $this->processingCompleted = true;
     }
 
     private function exportDataset(array $payload): bool
@@ -157,6 +144,7 @@ class DownloadDataset extends Component
     }
     public function validateExport()
     {
+        $this->failedDownload = null;
         try {
             $this->validate();
         } catch (\Illuminate\Validation\ValidationException $e) {
