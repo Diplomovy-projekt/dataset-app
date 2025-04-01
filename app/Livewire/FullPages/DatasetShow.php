@@ -135,6 +135,7 @@ class DatasetShow extends Component
             'dataset_id' => Dataset::where('unique_name', $this->uniqueName)->first()->id,
             'image_ids' => $this->selectedImages
         ];
+        $this->selectedImages = [];
         $result = app(ActionRequestService::class)->createRequest('reduce', $payload);
         $this->handleResponse($result);
     }

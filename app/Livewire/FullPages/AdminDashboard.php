@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\Models\Category;
 use App\Models\Dataset;
+use App\Models\DatasetStatistics;
 use App\Models\MetadataType;
 use App\Models\MetadataValue;
 use App\Models\User;
@@ -60,7 +61,7 @@ class AdminDashboard extends Component
         try {
             $type = MetadataType::find($id);
 
-            if (!$type || $type->name !== $name || $type->description !== $description) {
+            if (!$type || $type->name !== $name) {
                 MetadataType::updateOrCreate(
                     ['id' => $id],
                     ['name' => $name, 'description' => $description]
@@ -80,7 +81,7 @@ class AdminDashboard extends Component
             $metadataValue = MetadataValue::find($valueId);
 
             if (!$metadataValue || $metadataValue->metadata_type_id !== $typeId ||
-                $metadataValue->value !== $value || $metadataValue->description !== $description) {
+                $metadataValue->value !== $value) {
 
                 MetadataValue::updateOrCreate(
                     ['id' => $valueId],
@@ -138,7 +139,6 @@ class AdminDashboard extends Component
         }
     }
 
-
     public function deleteCategory($id): void
     {
         try {
@@ -147,6 +147,15 @@ class AdminDashboard extends Component
             $this->dispatch('flash-msg', type: 'success', message: 'Category deleted successfully');
         } catch (\Exception $e) {
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete category');
+        }
+    }
+    public function recalculateStats(): void
+    {
+        try {
+            DatasetStatistics::recalculateAllStatistics();
+            $this->dispatch('flash-msg', type: 'success', message: 'Statistics recalculated successfully');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to recalculate statistics');
         }
     }
 }

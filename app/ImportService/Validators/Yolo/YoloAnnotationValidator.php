@@ -51,7 +51,7 @@ class YoloAnnotationValidator extends BaseAnnotationValidator
                     } elseif ($annotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
                         // Polygon must have odd number of parts (class_id + coordinate pairs)
                         if (count($parts) < 7 || (count($parts) - 1) % 2 !== 0) {
-                            $errors[$prettyLabelFile][] = "Line {$lineNumber}: Polygon format requires uneven number of numbers(including class_id) and at least 3 coordinates. Got " . count($parts) . " values";
+                            $errors[$prettyLabelFile][] = "Line {$lineNumber}: Polygon format requires uneven number of numbers(including class_id) and at least 3 coordinates. Got " . (count($parts) - 1) . " values";
                             continue;
                         }
                     }

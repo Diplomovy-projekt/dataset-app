@@ -53,9 +53,9 @@
         init() {
             this.selected = this.$wire.get('selectedAnnotationTechnique');
 
-            this.$watch('selected', value => {
+            this.$watch('selected', Alpine.debounce(value => {
                 this.$wire.set('selectedAnnotationTechnique', value);
-            });
+            }, 300));
         }
     }));
 </script>

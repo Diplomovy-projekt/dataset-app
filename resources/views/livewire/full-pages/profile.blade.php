@@ -8,7 +8,8 @@
                 </div>
                 <h2 class="text-xl font-bold text-gray-200">My Datasets</h2>
             </div>
-            <button @click.prevent="open = 'uploadDataset'"
+            <button  @click="$dispatch('new-upload');
+                                open = 'datasetUpload'"
                     class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                 <div class="flex items-center gap-2">
                     <x-icon name="o-plus" class="w-4 h-4" />
@@ -17,8 +18,8 @@
             </button>
         </div>
     </div>
+    <livewire:forms.dataset-upload :mode="'new'" :editingDataset="'0195ee1c9d9f-0073-7328-bada-e7c938f0e20816ed20be'" {{--lazy="on-load"--}}/>
 
-    <livewire:forms.upload-dataset :modalId="'uploadDataset'" :modalStyle="'new-upload'"/>
     <div class="relative flex flex-wrap sm:gap-5 pt-5">
         <x-misc.pagination-loading/>
 

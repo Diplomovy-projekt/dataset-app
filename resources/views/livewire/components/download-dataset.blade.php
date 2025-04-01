@@ -251,57 +251,44 @@
                     </x-dataset.dataset-errors>
                 @endif
 
-                <div x-show="processing || downloading || processingCompleted || downloadCompleted" class="flex flex-col space-y-3 p-4 rounded-lg shadow-sm ">
-                    <!-- Status indicators -->
-                    <div class="flex items-center space-x-2" :class="{'text-gray-500': !processing, 'text-blue-600': processing, 'text-green-500': processingCompleted}">
-                        <!-- Processing status with animated spinner or checkmark -->
-                        <div class="flex items-center">
-                            <!-- Show spinner while processing -->
-                            <svg x-show="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <!-- Show checkmark after processing is completed -->
-                            <svg x-show="processingCompleted && !processing" class="h-4 w-4 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span class="font-medium text-sm" x-text="processing ? 'Creating Dataset' : 'Dataset Created'"></span>
-                        </div>
-                    </div>
-
-                    <!-- Download status -->
-                    <div class="flex items-center space-x-2" :class="{'text-gray-400': !downloading, 'text-blue-600': downloading, 'text-green-500': downloadCompleted}">
-                        <!-- Download status with animated spinner or checkmark -->
-                        <div class="flex items-center">
-                            <!-- Show spinner while downloading -->
-                            <svg x-show="downloading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <!-- Show checkmark after downloading is completed -->
-                            <svg x-show="downloadCompleted && !downloading" class="h-4 w-4 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span class="font-medium text-sm">Downloading dataset</span>
-                        </div>
-                    </div>
-
-                    <!-- Progress indicator (optional) -->
-                    <div class="w-full bg-gray-100 rounded-full h-4 dark:bg-gray-700 overflow-hidden">
-                        <div
-                            class="h-4 rounded-full transition-all duration-300 ease-in-out"
-                            :class="downloadCompleted ? 'bg-green-600' : 'bg-blue-600'"
-                            :style="{ width: progress + '%' }"
-                        ></div>
+                <div x-show="processing"
+                     class="flex items-center space-x-2" :class="{'text-gray-500': !processing, 'text-blue-600': processing, 'text-green-500': processingCompleted}">
+                    <!-- Processing status with animated spinner or checkmark -->
+                    <div class="flex items-center">
+                        <!-- Show spinner while processing -->
+                        <svg x-show="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <!-- Show checkmark after processing is completed -->
+                        <svg x-show="processingCompleted && !processing" class="h-4 w-4 text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="font-medium text-sm" x-text="processing ? 'Creating Dataset' : 'Dataset Created'"></span>
                     </div>
                 </div>
 
+                <div x-show="processingCompleted"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-500"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="flex flex-col space-y-3 p-4 rounded-lg shadow-sm bg-green-900/40 border border-green-600 text-green-300">
+                    <div class="flex items-center space-x-2 text-green-600">
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="font-medium text-sm">Dataset created. Download should begin automatically!</span>
+                    </div>
+                </div>
 
                 {{--Download Button - Always visible--}}
-                <x-misc.button @click="download" id="download-btn"
-                               x-bind:disabled="processing || downloading"
-                               x-bind:class="{'opacity-50 cursor-not-allowed': processing || downloading}"
-                               class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                <x-misc.button @click="startProcess" id="download-btn"
+                               x-bind:disabled="processing"
+                               x-bind:class="{'opacity-50 cursor-not-allowed': processing}"
+                               class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors"
                                :icon="@svg('eva-download')->toHtml()"
                 >
                     Download Dataset
@@ -310,7 +297,7 @@
         @else
             @if($this->failedDownload)
                 <x-dataset.dataset-errors
-                    :errorMessage="$this->failedDownload['message']"
+                    :errorMessage="$this->failedDownload['message'] ?? []"
                     :errorData="$this->failedDownload['data']">
                 </x-dataset.dataset-errors>
             @else
@@ -333,45 +320,55 @@
 <script>
     Alpine.data('downloadDataset', () => ({
         processing: $wire.entangle('processing'),
-        processingCompleted: false,
-        downloading: false,
-        downloadCompleted: false,
+        processingCompleted:  $wire.entangle('processingCompleted'),
         progress: 0,
         filename: $wire.entangle('exportDataset'),
-        downloadInterval: null,
+        resetTrigger: $wire.entangle('resetTrigger'),
+        error: null,
 
-        download() {
-            // Prevent multiple clicks
-            if (this.processing || this.downloading) {
-                return;
-            }
-
-            this.processingCompleted = false;
-            this.downloadCompleted = false;
-            this.progress = 0;
-
-            if (this.downloadInterval) {
-                clearInterval(this.downloadInterval);
-                this.downloadInterval = null;
-            }
-
-            // Trigger the download process
-            this.processing = true;
-            $wire.$call('download')
-            this.$watch('$wire.processing', (newValue, oldValue) => {
-                if (oldValue === true && newValue === false) { // Detect transition from true -> false
-                    console.log("Processing just completed");
-                    this.processingCompleted = true;
+        init() {
+            this.$watch('resetTrigger', () => {
+                this.resetState();
+            });
+            this.$watch('processingCompleted', (newValue) => {
+                if (newValue === true) {
                     this.startDownload();
                 }
-                this.processing = newValue;
             });
+        },
+        resetState() {
+            this.processing = false;
+            this.processingCompleted = false;
+        },
+
+        startProcess() {
+            if (this.processing) {
+                return;
+            }
+            this.resetState();
+
+            this.$wire.validateExport()
+                .then((isValid) => {
+                    if (isValid) {
+                        this.processing = true;
+                        return this.$wire.startProcessing();
+                    } else {
+                        return false;
+                    }
+                })
+                .catch((error) => {
+                    console.error("Validation failed with error:", error);
+                    this.resetState();
+                });
         },
 
         startDownload() {
-            console.log("Download started")
-            this.downloading = true;
-            this.progress = 0; // Reset progress
+            if (!this.processingCompleted) {
+                this.resetState();
+                return;
+            }
+
+            this.processing = false;
 
             // Create and trigger download
             const downloadLink = document.createElement('a');
@@ -380,36 +377,25 @@
             downloadLink.click();
             document.body.removeChild(downloadLink);
 
-            let progressCounter = 0;
-            if (this.downloadInterval) {
-                clearInterval(this.downloadInterval);
+            try {
+                // Create and trigger download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = "{{ route('download.file') }}";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            } catch (e) {
+                console.error("Error starting download:", e);
+                this.error = "Failed to start download. Please try again.";
+                this.resetState();
             }
-            this.downloadInterval = setInterval(() => {
-                fetch(`/download-progress?filename=${this.filename}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.progress = data.progress || 0;
 
-                        if (this.progress >= 100) {
-                            this.completeDownload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching progress:", error);
-                        progressCounter++;
-                        if (progressCounter > 1) {
-                            this.completeDownload();
-                        }
-                    });
-            }, 2000);
         },
 
         completeDownload() {
             clearInterval(this.downloadInterval);
             this.downloadInterval = null;
             console.log("Download completed", this.downloadInterval);
-            this.downloading = false;
-            this.downloadCompleted = true;
             this.processingCompleted = true;
             this.processing = false;
             this.progress = 100;

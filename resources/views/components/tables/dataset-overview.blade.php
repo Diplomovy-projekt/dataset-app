@@ -50,22 +50,12 @@
                     </button>
                 </div>
             </x-tables.table-cell>
-            {{-- Pending changes --}}
-            <x-tables.table-cell>
-                @if(($dataset['pending_changes'] ?? 0) > 0)
-                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-500/10 text-yellow-400">
-                                            {{ $dataset['pending_changes'] }} changes
-                                        </span>
-                @else
-                    <span class="text-gray-500">-</span>
-                @endif
-            </x-tables.table-cell>
             {{-- Actions --}}
             <x-tables.table-cell>
                 <x-dropdown-menu direction="left" class="w-50">
                     <x-dropdown-menu-item
-                        @click="$dispatch('extend-selected',{uniqueName: '{{ $dataset['unique_name'] }}'});
-                                open = 'extend-dataset'"
+                        @click="$dispatch('extend-selected',{mode: 'extend', uniqueName: '{{ $dataset['unique_name'] }}'});
+                                open = 'datasetUpload'"
                         :icon="@svg('eva-upload')->toHtml()">
                         Extend Dataset
                     </x-dropdown-menu-item>
@@ -75,12 +65,6 @@
                                 open = 'edit-dataset'"
                         :icon="@svg('eos-edit')->toHtml()">
                         Edit Dataset info
-                    </x-dropdown-menu-item>
-
-                    <x-dropdown-menu-item
-                        @click.prevent="open = 'display-classes'"
-                        :icon="@svg('o-tag')->toHtml()">
-                        Preview Classes
                     </x-dropdown-menu-item>
 
                     <x-dropdown-menu-item

@@ -4,7 +4,6 @@
         'techniques' => [],
         'selectedFormat' => '',
         'selectedTechnique' => '',
-        'modalStyle' => ''
     ]
 )
 <div>
@@ -35,9 +34,9 @@
             >
 
             <p class="text-[#6B7280] text-xs mt-1.5">
-                @if($modalStyle == 'new-upload')
+                @if($this->mode == 'new')
                     Upload your dataset containing images and annotations
-                @elseif($modalStyle == 'extend-dataset')
+                @elseif($this->mode == 'extend')
                     Upload additional images corresponding to your annotation technique
                     <br>
                     These will be added to the existing dataset
@@ -59,12 +58,12 @@
             placeholder="Select format"/>
         {{-- TECHNIQUE SELECT --}}
         <x-mary-radio
-            label="{{$modalStyle == 'new-upload' ? 'Select used annotation technique' : 'Annotation technique has to be same as the existing dataset'}}"
+            label="{{$this->mode == 'new' ? 'Select used annotation technique' : 'Annotation technique has to be same as the existing dataset'}}"
             :options="$this->techniques"
             option-value="key"
             option-label="value"
             wire:model="selectedTechnique"
-            :disabled="$modalStyle != 'new-upload'"
+            :disabled="$this->mode != 'new'"
         />
     </div>
 </div>
@@ -79,7 +78,15 @@
         get progressFormatted() {
             return this.progress.toFixed(2) + '%';
         },
-
+        init() {
+            this.$watch('lock', (value) => {
+                if (value === false) {
+                    this.progress = 0;
+                    this.processing = false;
+                    this.processingCompleted = false;
+                }
+            });
+        },
         uploadChunks() {
             if (this.lock) {
                 return;
@@ -118,9 +125,13 @@
                         (resolve) => {},
                         (error) => {
                             $wire.$set('lockUpload', false);
+                            this.processing = false;
+                            this.progress = 0;
                             reject(error);
                         },
                         (event) => {
+                            if (!this.lock) return;
+
                             this.progress = ((start + event.detail.progress) / file.size) * 100;
 
                             if (event.detail.progress == 100) {

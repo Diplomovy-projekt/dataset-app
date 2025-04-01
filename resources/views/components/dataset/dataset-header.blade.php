@@ -28,7 +28,9 @@
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-slate-400">Categories:</span>
                     @foreach($this->categories as $category)
-                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium">{{$category['name']}}</span>
+                        <div class="flex-shrink-0 bg-blue-600 bg-opacity-80  px-3 py-1.5 rounded-full text-sm font-medium text-white whitespace-nowrap">
+                            {{ $category['name'] }}
+                        </div>
                     @endforeach
                 </div>
                 {{-- Metadata --}}
@@ -36,7 +38,9 @@
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-slate-400">{{$metadata['name']}}:</span>
                         @foreach($metadata['metadataValues'] as $metadataValue)
-                            <span class="text-sm text-slate-300">{{$metadataValue['value']}}</span>
+                            <div class="flex-shrink-0 bg-slate-700  px-3 py-1.5 rounded-full text-sm text-gray-200 whitespace-nowrap ">
+                                {{ $metadataValue['value'] }}
+                            </div>
                         @endforeach
                     </div>
                 @endforeach

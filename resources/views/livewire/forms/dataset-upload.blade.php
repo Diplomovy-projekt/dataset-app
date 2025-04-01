@@ -1,5 +1,5 @@
 <div x-data="chunkedUpload()">
-    <x-modals.fixed-modal modalId="extend-dataset" class="w-11/12 sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2">
+    <x-modals.fixed-modal modalId="datasetUpload" class="w-11/12 sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2">
         {{--Main Form Container using MaryUI's Form Component--}}
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
@@ -7,14 +7,19 @@
                 {{-- Header Section--}}
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
-                        Extend Dataset
+                        Dataset upload
                     </h2>
                 </div>
 
                 {{-- Upload File Section--}}
-                <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="extend-dataset" />
+                <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="new-upload" />
 
-                {{-- Erorrs--}}
+                {{-- Format Select--}}
+
+                @if($mode == 'new')
+                    <x-forms.dataset-info-upload :categories="$categories" :metadataTypes="$metadataTypes"/>
+                @endif
+
                 @if($errors)
                     <x-dataset.dataset-errors
                         :errorMessage="$this->errors['message']"
@@ -127,4 +132,3 @@
         </div>
     </x-modals.fixed-modal>
 </div>
-

@@ -24,12 +24,24 @@ class DatasetActions
     public function deleteDataset($unique_name): void
     {
         Gate::authorize('delete-dataset', $unique_name);
+
         $dataset = Dataset::where('unique_name', $unique_name)->first();
-        $datasetPath = Util::getDatasetPath($dataset);
-        $dataset->delete();
-        if (Storage::exists($datasetPath)) {
-            Storage::delete($datasetPath);
+        if (!$dataset) {
+            throw new \Exception('Dataset not found.');
         }
+
+        $datasetPath = rtrim(Util::getDatasetPath($dataset), '/\\');
+
+        DB::beginTransaction();
+        $dataset->delete();
+
+        if (Storage::exists($datasetPath)) {
+            if (!Storage::deleteDirectory($datasetPath)) {
+                DB::rollBack();
+                throw new \Exception('Failed to delete the dataset file.');
+            }
+        }
+        DB::commit();
     }
 
     public function deleteImages($uniqueName, $ids): Response

@@ -43,10 +43,14 @@ abstract class BaseToMapper implements ToMapperInterface
         foreach ($images as $image) {
             $dataset = $datasets[$image['dataset_id']];
             $source = Util::getDatasetPath($dataset, true) . 'full-images/' . $image['filename'];
+            $destination = $destinationDir . '/' . $image['filename'];
 
-            // Create symbolic link
+            if (is_link($destination) || File::exists($destination)) {
+                continue;
+            }
+
+            // Create symbolic link. On local windows, we need to copy the file instead of linking.
             if (File::exists($source)) {
-                $destination = $destinationDir . '/' . $image['filename'];
                 if ($env == 'local') {
                     if (File::link($source, $destination)) {
                         throw new Exception("Failed to symlink image... \nFrom: $source \nTo: $destination");

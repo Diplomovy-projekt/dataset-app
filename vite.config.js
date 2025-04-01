@@ -16,7 +16,7 @@ export default defineConfig({
     },*/
     server: {
         watch: {
-            ignored: ['**/storage/**'] // Ignore the entire storage folder
+            ignored: ['**/storage/**', '**/app/**']
         }
     },
     plugins: [
