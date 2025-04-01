@@ -4,6 +4,7 @@ namespace App\Livewire\FullPages;
 
 use App\Configs\AppConfig;
 use App\Configs\TableDefinition;
+use App\DatasetActions\DatasetActions;
 use App\Models\ActionRequest;
 use App\Models\Scopes\DatasetVisibilityScope;
 use Illuminate\Support\Facades\Gate;
@@ -59,6 +60,12 @@ class MyRequests extends Component
             $request = ActionRequest::findOrFail($id);
             if($request->status === 'pending')
             {
+                $datasetActions = new DatasetActions();
+                if($request->type === 'new') {
+                    $datasetActions->deleteDataset($request->dataset->unique_name);
+                } elseif($request->type === 'extend') {
+                    $datasetActions->deleteDataset($request->payload['child_unique_name']);
+                }
                 $request->delete();
                 $this->dispatch('flash-msg', type: 'success', message: 'Request has been cancelled.');
             } else {
