@@ -55,17 +55,24 @@
 
     @if ($this->paginatedImages instanceof \Illuminate\Pagination\Paginator || $this->paginatedImages instanceof \Illuminate\Pagination\LengthAwarePaginator)
         <div class="flex items-center justify-between my-4 gap-3">
-            <div class="flex items-center space-x-2">
-                <label for="per-page" class="text-sm text-gray-600">Per page:</label>
-                <select
-                    id="per-page"
-                    wire:model.live="perPage"
-                    class="border border-gray-300 rounded-md text-sm py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                    @foreach(App\Configs\AppConfig::PER_PAGE_OPTIONS as $key => $option)
-                        <option value="{{ $key }}">{{ $option }}</option>
-                    @endforeach
-                </select>
+            <div class="flex items-center space-x-3">
+                <label for="per-page" class="text-sm font-medium text-slate-400">Per page:</label>
+                <div class="relative">
+                    <select
+                        id="per-page"
+                        wire:model.live="perPage"
+                        class="appearance-none bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-sm py-2 pl-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-600 transition-colors duration-200"
+                    >
+                        @foreach(App\Configs\AppConfig::PER_PAGE_OPTIONS as $key => $option)
+                            <option value="{{ $key }}">{{ $option }}</option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
             </div>
             <div class="flex-1 mt-3 overflow-x-auto">
                 <div class="inline-block min-w-full">

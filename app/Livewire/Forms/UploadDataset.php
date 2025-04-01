@@ -112,6 +112,7 @@ class UploadDataset extends Component
     private function validateDataset()
     {
         if (!$this->validated) {
+            $this->errors = null;
             Gate::authorize('post-dataset');
             $rules = [
                 'fileChunk' => 'required',
