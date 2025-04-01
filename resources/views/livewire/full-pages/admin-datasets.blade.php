@@ -2,8 +2,10 @@
 
     {{-- Livewire component modals --}}
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
-    <livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
-    <livewire:forms.upload-dataset :key="'admin-datasets-upload-new-dataset'"/>
+    {{--<livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
+    <livewire:forms.upload-dataset :key="'admin-datasets-upload-new-dataset'"/>--}}
+    <livewire:forms.dataset-upload {{--lazy="on-load"--}}/>
+
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
     <livewire:components.resolve-request :key="'resolve-request-component'" />
 
@@ -21,13 +23,16 @@
                     </div>
                     <h2 class="text-xl font-bold text-gray-200">Datasets</h2>
                 </div>
-                <button @click.prevent="open = 'uploadDataset'"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-fit">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="o-plus" class="w-4 h-4" />
-                        <span>New Dataset</span>
-                    </div>
-                </button>
+                <div>
+                    <x-misc.button type="submit"
+                                   variant="primary"
+                                   @click="$dispatch('new-upload');
+                                            open = 'datasetUpload'"
+                                   :icon="@svg('o-plus')->toHtml()"
+                    >
+                        New Dataset
+                    </x-misc.button>
+                </div>
             </div>
         </div>
     </div>

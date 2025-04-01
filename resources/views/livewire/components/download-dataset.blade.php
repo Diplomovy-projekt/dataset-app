@@ -286,8 +286,8 @@
 
                 {{--Download Button - Always visible--}}
                 <x-misc.button @click="startProcess" id="download-btn"
-                               x-bind:disabled="processing || downloading"
-                               x-bind:class="{'opacity-50 cursor-not-allowed': processing || downloading}"
+                               x-bind:disabled="processing"
+                               x-bind:class="{'opacity-50 cursor-not-allowed': processing}"
                                class="mt-2 w-48 mx-auto flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors"
                                :icon="@svg('eva-download')->toHtml()"
                 >

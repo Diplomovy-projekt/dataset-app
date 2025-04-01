@@ -1,9 +1,8 @@
 <div x-data="datasetShow(@this)">
 
     <x-dataset.wrapper-highlight-card :name="$this->request['route']"/>
-
     <livewire:forms.edit-dataset :key="'dataset-show-edit-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
-    <livewire:forms.extend-dataset :key="'dataset-show-extend-dataset'" :editingDataset="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
+    <livewire:forms.dataset-upload :mode="'extend'" :editingDataset="$dataset['unique_name']" {{--lazy="on-load"--}}/>
     <livewire:components.classes-sample :key="'dataset-show-clases-sample'" :uniqueName="$dataset['unique_name']"  />
     <livewire:components.download-dataset :key="'dataset-show-download-dataset'" :datasetId="$dataset['unique_name']"  {{--lazy="on-load"--}}/>
     <livewire:components.resolve-request :key="'resolve-request-component'" lazy/>
@@ -19,7 +18,7 @@
                         @auth
                             @if(auth()->user()->role === 'admin' || auth()->id() === $dataset['user_id'])
                                 <x-dropdown-menu-item
-                                    @click.prevent="open = 'extend-dataset'"
+                                    @click.prevent="open = 'datasetUpload'"
                                     :icon="@svg('eva-upload')->toHtml()">
                                     Extend Dataset
                                 </x-dropdown-menu-item>

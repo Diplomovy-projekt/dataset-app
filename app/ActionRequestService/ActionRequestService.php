@@ -49,7 +49,6 @@ class ActionRequestService
                 'payload' => $payload,
             ]);
 
-            // TODO change back to auto-approve
             if ($user->isAdmin()) {
                 $resolveResponse = $this->resolveRequest($request, 'approve', 'Auto-approved by system');
                 if (is_array($resolveResponse) && isset($resolveResponse['type']) && $resolveResponse['type'] === 'error') {
@@ -93,8 +92,7 @@ class ActionRequestService
             $request->save();
 
             if($request != 'edit'){
-                DatasetStatistics::recalculateAllStatistics();
-                //RecalculateDatasetStats::dispatch()->onQueue('statistics')->delay(now()->addMinutes(1));
+                RecalculateDatasetStats::dispatch()->onQueue('statistics')->delay(now()->addMinutes(5));
             }
 
             return $handler->resolveResponse($request);

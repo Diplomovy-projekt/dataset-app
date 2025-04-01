@@ -54,8 +54,8 @@
             <x-tables.table-cell>
                 <x-dropdown-menu direction="left" class="w-50">
                     <x-dropdown-menu-item
-                        @click="$dispatch('extend-selected',{uniqueName: '{{ $dataset['unique_name'] }}'});
-                                open = 'extend-dataset'"
+                        @click="$dispatch('extend-selected',{mode: 'extend', uniqueName: '{{ $dataset['unique_name'] }}'});
+                                open = 'datasetUpload'"
                         :icon="@svg('eva-upload')->toHtml()">
                         Extend Dataset
                     </x-dropdown-menu-item>

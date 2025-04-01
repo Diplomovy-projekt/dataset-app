@@ -81,5 +81,4 @@
             </div>
         </div>
     @endif
-    {{--<x-images.full-screen-image/>--}}
 </div>

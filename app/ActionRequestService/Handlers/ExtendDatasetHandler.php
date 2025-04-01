@@ -146,7 +146,9 @@ class ExtendDatasetHandler extends BaseHandler
     }
     public function errorResponse(string $errorMessage, ActionRequest $request = null): mixed
     {
-        $request->delete();
+        if($request){
+            $request->delete();
+        }
         return ['type' => 'error', 'message' => $errorMessage];
     }
 }

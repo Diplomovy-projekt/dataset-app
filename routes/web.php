@@ -116,7 +116,7 @@ Route::get('/private-image/{dataset}/{filename}', function ($dataset, $filename)
         ->orWhere('unique_name', $dataset)
         ->first();
 
-    if (!auth()->check() || auth()->user()->isAdmin()) {
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
         abort(403);
     }
 
