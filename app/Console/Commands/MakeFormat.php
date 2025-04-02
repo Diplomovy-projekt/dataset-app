@@ -28,22 +28,21 @@ class MakeFormat extends Command
         }
 
         $name = ucfirst(strtolower($this->argument('name')));
-
+        $bladeName = strtolower($this->argument('name'));
         $filesToGenerate = [
-            "Configs/Annotations/{$name}Config.php" => $this->getConfigTemplate($name),
-            "ExportService/Mappers/To{$name}.php"   => $this->getMapperTemplate($name, 'To', 'App\\ExportService\\Mappers\\BaseToMapper'),
-            "ImportService/Mappers/From{$name}.php" => $this->getMapperTemplate($name, 'From', 'App\\ImportService\\Mappers\\BaseFromMapper'),
-            "ImportService/Validators/{$name}/{$name}AnnotationValidator.php" => $this->getAnnotationValidatorTemplate($name),
-            "ImportService/Validators/{$name}/{$name}ZipValidator.php"        => $this->getZipValidatorTemplate($name),
+            app_path("Configs/Annotations/{$name}Config.php") => $this->getConfigTemplate($name),
+            app_path("ExportService/Mappers/To{$name}.php")   => $this->getMapperTemplate($name, 'To', 'App\\ExportService\\Mappers\\BaseToMapper'),
+            app_path("ImportService/Mappers/From{$name}.php") => $this->getMapperTemplate($name, 'From', 'App\\ImportService\\Mappers\\BaseFromMapper'),
+            app_path("ImportService/Validators/{$name}/{$name}AnnotationValidator.php") => $this->getAnnotationValidatorTemplate($name),
+            app_path("ImportService/Validators/{$name}/{$name}ZipValidator.php")        => $this->getZipValidatorTemplate($name),
+            resource_path("views/components/zip-format-info/{$bladeName}.blade.php")    => $this->getBladeTemplate($bladeName),
         ];
 
         $formatExists = false;
         foreach ($filesToGenerate as $path => $content) {
-            $fullPath = app_path($path);
-
-            if (!$this->files->exists($fullPath)) {
-                $this->files->ensureDirectoryExists(dirname($fullPath));
-                $this->files->put($fullPath, $content);
+            if (!$this->files->exists($path)) {
+                $this->files->ensureDirectoryExists(dirname($path));
+                $this->files->put($path, $content);
                 $this->info("Created: {$path}");
             } else {
                 $this->warn("Skipped (already exists): {$path}");
@@ -58,8 +57,29 @@ class MakeFormat extends Command
             $this->line(" - BaseToMapper: Methods for mapping to the {$name} format");
             $this->line(" - BaseFromMapper: Methods for mapping from the {$name} format");
             $this->line(" - Base validators: Methods for validating {$name} annotation files");
+            $this->line(" - View for zip structure info: Implement details about the {$name} annotation format structure");
         }
     }
+
+    private function getBladeTemplate($name)
+    {
+        return "<div x-show=\"activeTab === '{$name}'\" x-transition:enter=\"transition ease-out duration-300\" x-transition:enter-start=\"opacity-0\" x-transition:enter-end=\"opacity-100\">
+    <div class=\"rounded-xl p-6 border border-slate-700\">
+        <div class=\"flex items-center gap-3 mb-6\">
+            <div class=\"bg-blue-500 p-2 rounded-lg\">
+                <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-5 h-5 text-gray-200\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">
+                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z\" />
+                </svg>
+            </div>
+            <h2 class=\"text-xl font-bold\">{$name} Format Structure</h2>
+        </div>
+
+        <!-- Content for guide -->
+        <p>Details about the {$name} annotation format structure will go here.</p>
+    </div>
+</div>";
+    }
+
 
     private function getConfigTemplate($name) {
         return "<?php
@@ -219,19 +239,20 @@ class {$name}ZipValidator
     private function deleteFormat(): void
     {
         $name = ucfirst(strtolower($this->argument('name')));
+        $bladeName = strtolower($name); // Assuming the Blade file follows the same naming convention
 
         $filesToDelete = [
-            "Configs/Annotations/{$name}Config.php",
-            "ExportService/Mappers/To{$name}.php",
-            "ImportService/Mappers/From{$name}.php",
-            "ImportService/Validators/{$name}/{$name}AnnotationValidator.php",
-            "ImportService/Validators/{$name}/{$name}ZipValidator.php",
+            app_path("Configs/Annotations/{$name}Config.php"),
+            app_path("ExportService/Mappers/To{$name}.php"),
+            app_path("ImportService/Mappers/From{$name}.php"),
+            app_path("ImportService/Validators/{$name}/{$name}AnnotationValidator.php"),
+            app_path("ImportService/Validators/{$name}/{$name}ZipValidator.php"),
+            resource_path("views/components/zip-format-info/{$bladeName}.blade.php"), // Corrected path for Blade view
         ];
 
         foreach ($filesToDelete as $path) {
-            $fullPath = app_path($path);
-            if ($this->files->exists($fullPath)) {
-                $this->files->delete($fullPath);
+            if ($this->files->exists($path)) {
+                $this->files->delete($path);
                 $this->info("Deleted: {$path}");
             }
         }
@@ -241,4 +262,5 @@ class {$name}ZipValidator
 
         $this->info("Format {$name} deleted successfully.");
     }
+
 }

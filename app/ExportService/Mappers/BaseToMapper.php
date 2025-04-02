@@ -131,14 +131,59 @@ abstract class BaseToMapper
     }
 
     /**
-     * This is the main method in the child classes that will be responsible for creating and saving the annotations.
-     * Parse image(if format needs it) and annotation data to map them to the selected format and save them in the dataset folder.
+     * This is the main method in the child classes that will be responsible for creating and saving the annotations to file.
+     * Parse image (if format needs it) and annotation data to map them to the selected format and save them in the dataset folder.
+     *
+     * This function receives the images in chunks. Each chunk should be processed, saved, and then the next chunk should be handled.
+     * It's important to note that the same image may appear in multiple chunks with different annotation data,
+     * so the function should be able to handle this and ensure that annotations are correctly applied for each image.
      *
      * @param array $images The images to be processed. This is a chunk of images with annotations and classes.
+     * Each image is an associative array with the following structure:
+     * [
+     *     0 => [
+     *         "id" => int,               // Image identifier (e.g., 5069)
+     *         "filename" => string,      // The filename of the image (e.g., "DSC_0930_JPG.rf.542c66d30983c627322c4764a8710b9c_da_67deb2873ed47_da_67eb0962e8762.jpg")
+     *         "dataset_folder" => string, // Identifier for the dataset folder (e.g., "0195ee1c9d9f-0073-7328-bada-e7c938f0e20816ed20be")
+     *         "dataset_id" => int,       // ID of the dataset (e.g., 109)
+     *         "width" => int,            // Image width in pixels (e.g., 4928)
+     *         "height" => int,           // Image height in pixels (e.g., 3264)
+     *         "annotations" => [         // Annotations for the image
+     *             0 => [
+     *                 "id" => int,                      // Annotation ID (e.g., 244646)
+     *                 "image_id" => int,                // Associated image ID (e.g., 5069)
+     *                 "x" => float,                     // X coordinate of the annotation (e.g., 0.15422077922078)
+     *                 "y" => float,                     // Y coordinate of the annotation (e.g., 0.3921568627451)
+     *                 "width" => float,                 // Width of the annotation (e.g., 0.44237012987013)
+     *                 "height" => float,                // Height of the annotation (e.g., 0.57138480392157)
+     *                 "annotation_class_id" => int,     // ID of the annotation class (e.g., 506)
+     *                 "segmentation" => [               // Segmentation points (if applicable)
+     *                     0 => ["x" => float, "y" => float], // Example: ["x" => 0.5671672077922078, "y" => 0.39215686274509803]
+     *                     1 => ["x" => float, "y" => float], // Additional points may follow
+     *                 ],
+     *                 "class" => [                      // Class details
+     *                     "id" => int,                   // Class ID (e.g., 506)
+     *                     "name" => string,               // Class name (e.g., "dog")
+     *                     "rgb" => string,                // RGB color representation (e.g., "rgb(236, 54, 1)")
+     *                 ]
+     *             ],
+     *             1 => [
+     *                 // Another annotation data
+     *             ],
+     *         ],
+     *     ],
+     *     1 => [
+     *         // Another image data
+     *     ],
+     *     2 => [
+     *         // Another image data
+     *     ],
+     * ]
      * @param string $datasetFolder The folder of the dataset.
      * @param string $annotationTechnique The technique used for annotation.
      * @throws Exception If an error occurs during the annotation creation process.
      */
+
     abstract public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void;
 
     /**
