@@ -1,6 +1,6 @@
 <div>
     {{--Search Bar--}}
-    <div id="searchBar" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
+    <div id="searchBar" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700 rounded-lg">
         <div class="flex flex-col sm:flex-row  sm:items-center gap-3 ">
             <div class="flex items-center gap-3 ">
                 <div class="bg-blue-500 p-2 rounded-lg">

@@ -1,6 +1,6 @@
 <div x-data="{ open: '' }">
 
-    <div id="my-dataset-header" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700">
+    <div id="my-dataset-header" class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 border-b border-slate-700 rounded-lg">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-500 p-2 rounded-lg">

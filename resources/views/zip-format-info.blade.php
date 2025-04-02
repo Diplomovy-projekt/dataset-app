@@ -1,10 +1,10 @@
 <x-app-layout>
-    <div class="min-h-screen text-gray-200 p-6">
+    <div class="text-gray-200 p-6">
         <div class="max-w-6xl mx-auto">
             {{--Page Header--}}
-            <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 mb-8">
-                <h1 class="text-3xl font-bold mb-2">Dataset Upload Guidelines</h1>
-                <p class="text-slate-400">Learn how to structure your ZIP files for different annotation formats</p>
+
+            <div class="text-center mb-8">
+                <x-misc.header title="Dataset Upload Guidelines" align="center" font="text-3xl" info="Learn how to structure your ZIP files for different annotation formats"></x-misc.header>
             </div>
 
             {{--Format Selection Tabs--}}
@@ -28,7 +28,7 @@
                         @if(view()->exists('components.zip-format-info.' . $format))
                             <x-dynamic-component :component="'zip-format-info.' . $format" />
                         @else
-                            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                            <div class=" rounded-xl p-6 border border-slate-700">
                                 <div class="flex items-center gap-3 mb-6">
                                     <div class="bg-amber-500 p-2 rounded-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">

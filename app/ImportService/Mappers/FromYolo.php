@@ -4,11 +4,8 @@ namespace App\ImportService\Mappers;
 
 use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
-use App\Utils\FileUtil;
 use App\Utils\Response;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Image;
 use Symfony\Component\Yaml\Yaml;
 
 class FromYolo extends BaseFromMapper

@@ -27,7 +27,7 @@ class MakeFormat extends Command
             return;
         }
 
-        $name = ucfirst(strtolower($this->argument('name'))); // Normalize format name
+        $name = ucfirst(strtolower($this->argument('name')));
 
         $filesToGenerate = [
             "Configs/Annotations/{$name}Config.php" => $this->getConfigTemplate($name),

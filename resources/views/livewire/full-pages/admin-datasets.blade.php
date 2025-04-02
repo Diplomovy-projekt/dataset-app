@@ -2,10 +2,7 @@
 
     {{-- Livewire component modals --}}
     <livewire:forms.edit-dataset :key="'admin-datasets-edit-dataset'" />
-    {{--<livewire:forms.extend-dataset :key="'admin-datasets-extend-dataset'" />
-    <livewire:forms.upload-dataset :key="'admin-datasets-upload-new-dataset'"/>--}}
-    <livewire:forms.dataset-upload {{--lazy="on-load"--}}/>
-
+    <livewire:forms.dataset-upload/>
     <livewire:components.download-dataset :key="'admin-datasets-download-dataset'" />
     <livewire:components.resolve-request :key="'resolve-request-component'" />
 

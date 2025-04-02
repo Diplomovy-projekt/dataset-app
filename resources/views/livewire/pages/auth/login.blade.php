@@ -27,12 +27,9 @@ new #[Layout('layouts.app')] class extends Component
 ?>
 
 <div class="w-full max-w-md mx-auto p-6">
-    <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-slate-700 p-8">
+    <div class="rounded-xl border border-slate-700 p-8">
         {{--Header--}}
-        <div class="flex items-center justify-between mb-8">
-            <h1 class="text-2xl font-bold text-gray-200">Log in</h1>
-            <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent ml-6"></div>
-        </div>
+        <x-misc.header title="Log in" align="left" font="text-2xl"></x-misc.header>
 
         {{--Form--}}
         <form wire:submit="login">

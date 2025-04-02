@@ -27,11 +27,11 @@
                  class="border md:border-0 border-gray-800 rounded-md mx-4 -mt-4 md:m-0 w-fit md:flex md:w-auto absolute md:relative top-[105px] right-0 md:top-0 md:left-auto bg-hcportal-primary md:bg-transparent p-4 md:p-0">
                 <ul class="items-start divide-y md:divide-y-0 flex flex-col md:flex-row md:space-x-8 md:items-center text-lg font-medium">
 
-                    <li class="w-full"><a wire:navigate href="{{route('builder')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">BUILDER</a></li>
-                    <li class="w-full"><a wire:navigate href="{{route('dataset.index')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">DATASETS</a></li>
+                    <li class="w-full"><a wire:navigate href="{{route('builder')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500 transition duration-200 ease-in-out ">BUILDER</a></li>
+                    <li class="w-full"><a wire:navigate href="{{route('dataset.index')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500 transition duration-200 ease-in-out">DATASETS</a></li>
 
                     @guest
-                        <li class="w-full"><a wire:navigate href="{{route('login')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500">LOGIN</a></li>
+                        <li class="w-full"><a wire:navigate href="{{route('login')}}" class="block py-2 pl-3 pr-4 text-white rounded md:p-0 hover:text-blue-500 transition duration-200 ease-in-out">LOGIN</a></li>
                     @endguest
                     @auth
                         <div x-cloak x-data="{ userSubMenu: false }" class="relative">

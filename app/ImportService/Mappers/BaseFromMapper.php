@@ -2,11 +2,7 @@
 
 namespace App\ImportService\Mappers;
 
-use App\ImportService\Interfaces\FromMapperInterface;
-use App\Utils\FileUtil;
 use App\Utils\Response;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
 abstract class BaseFromMapper
 {
@@ -15,29 +11,48 @@ abstract class BaseFromMapper
      *
      * Parse the annotations for the given folder and technique.
      *
-     * Expected structure of the returned array:
+     * Response Structure:
+     * The method returns a Response object with the following data structure:
+     *
+     * On Success: Response::success() with data parameter containing:
      * [
-     *    [
-     *        'filename' => 'image1.jpg',
-     *        'width' => 1920,
-     *        'height' => 1080,
-     *        'size' => 345678,
-     *        'annotations' => [
-     *            [
-     *                 'class_id' => 1,
-     *                 'x' => 0.1,
-     *                 'y' => 0.2,
-     *                 'width' => 0.4,
-     *                 'height' => 0.3,
-     *                 'segmentation' => [[0.1, 0.2], [0.4, 0.2], [0.4, 0.5], [0.1, 0.5]]
-     *             ],
-     *        ],
-     *    ],
+     *   'images' => [
+     *     [
+     *       'filename' => string,      // The image filename (e.g., 'image1.jpg')
+     *       'width' => int,            // Original image width in pixels
+     *       'height' => int,           // Original image height in pixels
+     *       'size' => int,             // File size in bytes
+     *       'annotations' => [
+     *         [
+     *           'class_id' => int,     // ID of the class
+     *           'x' => float,          // Normalized bounding box top-left X coordinate (0-1)
+     *           'y' => float,          // Normalized bounding box top-left Y coordinate (0-1)
+     *           'width' => float,      // Normalized bounding box width (0-1)
+     *           'height' => float,     // Normalized bounding box height (0-1)
+     *           'segmentation' => [    // Optional polygon points for segmentation masks
+     *             [float, float],      // Each point as [x, y] normalized coordinates (0-1)
+     *             // ...
+     *           ]
+     *         ],
+     *         // More annotation entries...
+     *       ]
+     *     ],
+     *     // More image entries...
+     *   ],
+     *   'classes' => [
+     *     [
+     *       'name' => string,          // Class name (e.g., 'person', 'car')
+     *       'supercategory' => string|null  // Optional parent category
+     *     ],
+     *     // More class entries...
+     *   ]
      * ]
+     *
+     * On Error: Response::error("Failed to map annotations")
      *
      * @param string $folderName The name of the folder containing the dataset.
      * @param mixed $annotationTechnique The technique used for annotation.
-     * @return Response which contains $iamges array and $classes array
+     * @return Response which contains $images array and $classes array
      */
     abstract function parse(string $folderName, $annotationTechnique): Response;
 

@@ -3,7 +3,6 @@
 namespace App\ImportService\Mappers;
 
 use App\Configs\Annotations\CocoConfig;
-use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
 use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;

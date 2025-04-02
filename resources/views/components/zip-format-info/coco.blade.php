@@ -1,6 +1,6 @@
 {{--COCO Format Content--}}
 <div x-show="activeTab === 'coco'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+    <div class=" rounded-xl p-6 border border-slate-700">
         <div class="flex items-center gap-3 mb-6">
             <div class="bg-blue-500 p-2 rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
