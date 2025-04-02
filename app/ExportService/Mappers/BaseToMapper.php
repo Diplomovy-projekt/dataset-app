@@ -14,11 +14,21 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-abstract class BaseToMapper implements ToMapperInterface
+abstract class BaseToMapper
 {
     protected static string $configClass = BaseAnnotationConfig::class;
     protected array $classMap = [];
 
+    /**
+     * Entrypoint of Export process. This method will call the necessary methods to handle the export process.
+     * If a derived class needs to perform additional operations, it can override the customHandle method.
+     * This method is called for every chunk of images.
+     *
+     * @param array $images The images to be processed. This is a chunk of images with annotations and classes.
+     * @param string $datasetFolder The folder of the dataset.
+     * @param string $annotationTechnique The technique used for annotation.
+     * @throws Exception If an error occurs during the handling process.
+     */
     public function handle(array $images, string $datasetFolder, string $annotationTechnique): void
     {
         $this->linkImages($images, $datasetFolder);
@@ -31,6 +41,10 @@ abstract class BaseToMapper implements ToMapperInterface
         // No-op, only overridden when needed
     }
     /**
+     * Create symbolic links for images to folder that will be later zipped and downloaded.
+     * The images will be linked to the folder that is defined in the format config. IMAGE_FOLDER.
+     *
+     * @param array $images The images to be processed.
      * @throws Exception
      */
     public function linkImages($images, $datasetFolder): void
@@ -98,6 +112,12 @@ abstract class BaseToMapper implements ToMapperInterface
         };
     }
 
+    /**
+     * Get absolute path where to symlink Image, (absolute because uses File facade)
+     *
+     * @param string $datasetFolder The folder of the dataset.
+     * @return string The destination path for the image.
+     */
     public function getImageDestinationDir($datasetFolder): string
     {
         $imageFolder = static::$configClass::IMAGE_FOLDER;
@@ -110,5 +130,41 @@ abstract class BaseToMapper implements ToMapperInterface
         return Storage::path($path);
     }
 
+    /**
+     * This is the main method in the child classes that will be responsible for creating and saving the annotations.
+     * Parse image(if format needs it) and annotation data to map them to the selected format and save them in the dataset folder.
+     *
+     * @param array $images The images to be processed. This is a chunk of images with annotations and classes.
+     * @param string $datasetFolder The folder of the dataset.
+     * @param string $annotationTechnique The technique used for annotation.
+     * @throws Exception If an error occurs during the annotation creation process.
+     */
+    abstract public function createAnnotations(array $images, string $datasetFolder, string $annotationTechnique): void;
 
+    /**
+     * Get relative path to folder where annotation will be created, (relative to the storage folder, because uses Storage facade)
+     *
+     * @param string $datasetFolder The folder of the dataset.
+     * @param array|null $image The image data.
+     * @return string The destination path for the image.
+     */
+    abstract public function getAnnotationDestinationPath(string $datasetFolder, array $image = null): string;
+
+    /**
+     * Maps a polygon annotation from internal format to selected format.
+     *
+     * @param mixed $annotation The annotation data.
+     * @param array|null $imgDims The image dimensions.
+     * @return mixed The mapped polygon annotation.
+     */
+    abstract public function mapPolygon(mixed $annotation, array $imgDims = null): mixed;
+
+    /**
+     * Maps a bounding box annotation from internal format to selected format.
+     *
+     * @param mixed $annotation The annotation data.
+     * @param array|null $imgDims The image dimensions.
+     * @return mixed The mapped bounding box annotation.
+     */
+    abstract public function mapBbox(mixed $annotation, array $imgDims = null): mixed;
 }

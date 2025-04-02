@@ -3,12 +3,8 @@
 namespace App\ImportService\Validators\BaseValidator;
 
 use App\Configs\Annotations\BaseAnnotationConfig;
-use App\Configs\Annotations\LabelmeConfig;
-use App\Configs\Annotations\YoloConfig;
 use App\Configs\AppConfig;
 use App\Exceptions\DataException;
-use App\ImportService\Interfaces\ZipValidatorInterface;
-use App\Utils\Response;
 use Illuminate\Support\Facades\Storage;
 
 abstract class BaseZipValidator
@@ -32,7 +28,8 @@ abstract class BaseZipValidator
     }
 
     /**
-     * Validates the contents of a folder by ensuring all files have allowed extensions.
+     * Helper method that can be used for validating the content of a folder (e.g. images or annotations).
+     * It checks if the folder exists and if it contains only files with allowed extensions.
      *
      * @param string       $folderPath       The path to the folder to validate.
      * @param array|string $allowedExtensions A list of allowed file extensions.
