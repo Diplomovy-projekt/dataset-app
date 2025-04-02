@@ -107,6 +107,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin-dashboard', AdminDashboard::class)->name('admin.dashboard');
     Route::get('/admin/users', AdminUsers::class)->name('admin.users');
     Route::get('/admin/datasets', AdminDatasets::class)->name('admin.datasets');
+    Route::get('/new-annotation-format', function(){
+        return view('how-to-extend-new-annotation-format');
+    })->name('new.annotation.format');
 });
 
 Route::get('/private-image/{dataset}/{filename}', function ($dataset, $filename) {
