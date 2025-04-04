@@ -149,13 +149,4 @@ class AdminDashboard extends Component
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to delete category');
         }
     }
-    public function recalculateStats(): void
-    {
-        try {
-            DatasetStatistics::recalculateAllStatistics();
-            $this->dispatch('flash-msg', type: 'success', message: 'Statistics recalculated successfully');
-        } catch (\Exception $e) {
-            $this->dispatch('flash-msg', type: 'error', message: 'Failed to recalculate statistics');
-        }
-    }
 }

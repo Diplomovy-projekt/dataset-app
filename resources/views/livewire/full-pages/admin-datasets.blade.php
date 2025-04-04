@@ -29,6 +29,14 @@
                     >
                         New Dataset
                     </x-misc.button>
+                    <x-misc.button type="submit"
+                                   tooltip="Refresh global dataset statistics"
+                                   variant="secondary"
+                                   wire:click="recalculateStats"
+                                   wire:confirm="This action can take several seconds, based on the number of datasets. Are you sure you want to proceed?"
+                                   :icon="@svg('tni-refresh')->toHtml()"
+                    >
+                    </x-misc.button>
                 </div>
             </div>
         </div>

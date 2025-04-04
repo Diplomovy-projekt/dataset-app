@@ -4,7 +4,8 @@
     'type' => 'button',
     'full' => false,
     'variant' => 'secondary',
-    'icon' => null
+    'icon' => null,
+    'tooltip' => null,
 ])
 
 @php
@@ -65,6 +66,9 @@
 <button
     x-data="{ loading: false }"
     {{ $attributes->merge(['type' => $type, 'class' => $classes]) }}
+    @if($tooltip)
+        title="{{$tooltip}}"
+    @endif
     @if($hasLivewireAction)
         wire:loading.attr="disabled"
     wire:target="{{ $hasLivewireAction }}"
@@ -83,16 +87,16 @@
         wire:loading.class="opacity-0"
     wire:target="{{ $hasLivewireAction }}"
     @endif
-    x-bind:class="{ 'opacity-0': loading }"
+    x-bind:class="{ 'opacity-0': loading, 'justify-center': '{{ trim($slot) === '' }}' }"
 >
-        @if ($icon)
-        <span class="w-5 h-5 mr-2">
-                {!! $icon !!}
-            </span>
+    @if ($icon)
+        <span class="w-5 h-5" x-bind:class="{ 'mr-2': '{{ trim($slot) !== '' }}' }">
+            {!! $icon !!}
+        </span>
     @endif
 
     {{ $slot }}
-    </span>
+</span>
 
 <span
     class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"

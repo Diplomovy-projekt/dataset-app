@@ -3,14 +3,10 @@
 namespace App\ActionRequestService;
 
 use App\ActionRequestService\Factory\ActionRequestFactory;
-use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
 use App\Jobs\RecalculateDatasetStats;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
-use App\Models\DatasetStatistics;
-use App\Utils\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class ActionRequestService
 {

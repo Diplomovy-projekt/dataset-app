@@ -8,6 +8,7 @@ use App\Configs\TableDefinition;
 use App\DatasetActions\DatasetActions;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
+use App\Models\DatasetStatistics;
 use App\Models\Image;
 use App\Models\Scopes\DatasetVisibilityScope;
 use App\Models\User;
@@ -136,6 +137,16 @@ class AdminDatasets extends Component
         Cache::put("download_query_{$token}", $payload, now()->addMinutes(30));
 
         $this->dispatch('store-download-token', token: $token);
+    }
+
+    public function recalculateStats(): void
+    {
+        try {
+            DatasetStatistics::recalculateAllStatistics();
+            $this->dispatch('flash-msg', type: 'success', message: 'Statistics recalculated successfully');
+        } catch (\Exception $e) {
+            $this->dispatch('flash-msg', type: 'error', message: 'Failed to recalculate statistics');
+        }
     }
 
     private function requestsQuery($status, $tableName)
