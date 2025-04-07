@@ -64,6 +64,6 @@ class AppConfig
 
     public const EXPIRATION = [
         'URL' => ['value' => 1, 'unit' => 'week'],
-        'TMP_FILE' => ['value' => 6, 'unit' => 'hours'],
+        'TMP_FILE' => ['value' => 1, 'unit' => 'hours'],
     ];
 }

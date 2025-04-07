@@ -88,7 +88,7 @@ class ActionRequestService
             $request->save();
 
             if($request != 'edit'){
-                RecalculateDatasetStats::dispatch()->onQueue('statistics')->delay(now()->addMinutes(5));
+                RecalculateDatasetStats::dispatch()->onQueue('statistics');
             }
 
             return $handler->resolveResponse($request);
