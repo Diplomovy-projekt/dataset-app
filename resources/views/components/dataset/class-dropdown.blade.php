@@ -67,7 +67,6 @@
                                           filename="{{ $classItem['image']['filename'] }}"
                                           id="{{ $classItem['image']['filename'] }}"
                                           fetchpriority="high"
-                                          @load="console.log('Toggle image loaded')"
                                           class="object-cover w-full h-full cursor-pointer"
                                           @click="const imgSrc = $event.target.src.replace('/thumbnails/', '/full-images/');
                                       $dispatch('open-full-screen-image', { src: imgSrc, overlayId: null })">

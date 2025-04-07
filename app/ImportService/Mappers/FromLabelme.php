@@ -180,7 +180,7 @@ class FromLabelme extends BaseFromMapper
             }
 
             foreach ($data['shapes'] as $shape) {
-                if (!empty($shape['label']) && !in_array($shape['label'], $classNames)) {
+                if (isset($shape['label']) && $shape['label'] !== '' && !in_array($shape['label'], $classNames)) {
                     $classNames[$shape['label']] = [
                         'name' => $shape['label'],
                     ];

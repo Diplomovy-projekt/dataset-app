@@ -39,14 +39,14 @@ abstract class BaseZipValidator
     protected function validateFolderContent(string $folderPath, array|string $allowedExtensions): void
     {
         if (!Storage::exists($folderPath)) {
-            throw new DataException("Folder not found: $folderPath");
+            throw new DataException("Folder not found: " . basename($folderPath));
         }
 
         $files = Storage::files($folderPath);
         $invalidFiles = array_filter($files, fn($file) => !in_array(pathinfo($file, PATHINFO_EXTENSION), (array) $allowedExtensions));
 
         if (!empty($invalidFiles)) {
-            throw new DataException("Invalid files found in $folderPath", $invalidFiles);
+            throw new DataException("Invalid files found in " . basename($folderPath) . ": " . implode(', ', $invalidFiles));
         }
     }
 

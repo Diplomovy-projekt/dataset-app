@@ -12,11 +12,11 @@ use App\Models\Dataset;
 use App\Models\DatasetCategory;
 use App\Models\DatasetMetadata;
 use App\Models\Image;
-use App\Services\ActionRequestService;
 use App\Utils\Response;
 use App\Utils\Util;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ImportService
@@ -33,6 +33,7 @@ class ImportService
     /**
      * @throws Exception
      */
+
     public function handleImport(array $requestData): Response
     {
         DB::beginTransaction();
@@ -49,13 +50,37 @@ class ImportService
         } catch (DataException $e) {
             DB::rollBack();
             $this->cleanupDataset($requestData['unique_name']);
+
+            Log::error('Dataset import failed due to data error', [
+                'message' => $e->getMessage(),
+                'data' => $e->getData(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'request' => $requestData,
+                'previous_message' => $e->getPrevious()?->getMessage(),
+                'previous_trace' => $e->getPrevious()?->getTraceAsString(),
+                'previous_file' => $e->getPrevious()?->getFile(),
+                'previous_line' => $e->getPrevious()?->getLine(),
+            ]);
+
             return Response::error($e->getMessage(), $e->getData());
         } catch (Exception $e) {
             DB::rollBack();
             $this->cleanupDataset($requestData['unique_name']);
+
+            Log::error('Unexpected error during dataset import', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'request' => $requestData,
+            ]);
+
             return Response::error("An error occurred while importing the dataset: " . $e->getMessage());
         }
     }
+
 
     private function saveDataset($mappedData, $requestData)
     {
@@ -124,7 +149,6 @@ class ImportService
             }
             $this->datasetActions->assignColorsToClasses($classIds);
 
-
             // 3. Save Images and Annotations
             foreach ($imageData as $img) {
                 $image = Image::create([
@@ -173,7 +197,12 @@ class ImportService
                 'dataset_id' => $dataset->id,
             ]);
         } catch (Exception $e) {
-            throw new DataException($e->getMessage());
+            throw new DataException(
+                $e->getMessage(),
+                ['context' => 'Import dataset failure'],
+                $e->getCode(),
+                $e
+            );
         }
     }
 

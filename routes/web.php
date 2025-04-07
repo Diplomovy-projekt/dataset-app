@@ -49,7 +49,6 @@ Route::get('/', function () {
 Route::get('/zip-format-info', function(){
     return view('zip-format-info');
 })->name('zip.format.info');
-Route::post('/api/annotations', [AnnotationRendererController::class, 'getAnnotations']);
 Route::get('/terms', function(){
     return view('terms');
 })->name('terms');

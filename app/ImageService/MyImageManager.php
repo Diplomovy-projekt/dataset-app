@@ -46,7 +46,6 @@ class MyImageManager
     private static function createVipsManager(): ?ImageManager
     {
         if (extension_loaded('vips')) {
-            Log::channel('info_channel')->info("Using VipsDriver");
             return ImageManager::withDriver(VipsDriver::class);
         }
         return null;
@@ -55,7 +54,6 @@ class MyImageManager
     private static function createImagickManager(): ?ImageManager
     {
         if (extension_loaded('imagick')) {
-            Log::channel('info_channel')->info("Using ImagickDriver");
             return ImageManager::imagick();
         }
         return null;
@@ -64,7 +62,6 @@ class MyImageManager
     private static function createGdManager(): ?ImageManager
     {
         if (extension_loaded('gd')) {
-            Log::channel('info_channel')->info("Using GdDriver");
             return ImageManager::gd();
         }
         return null;

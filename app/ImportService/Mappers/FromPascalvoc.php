@@ -186,7 +186,7 @@ class FromPascalvoc extends BaseFromMapper
 
             foreach ($xml->object as $object) {
                 $className = (string)$object->name;
-                if (!empty($className) && !isset($classNames[$className])) {
+                if ($className !== '' && !isset($classNames[$className])) {
                     $classNames[$className] = [
                         'name' => $className,
                     ];
