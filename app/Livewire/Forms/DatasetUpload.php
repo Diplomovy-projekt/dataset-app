@@ -23,7 +23,8 @@ class DatasetUpload extends Component
     public $mode = 'new'; // 'new' or 'extend'
     public $errors, $lockUpload = false;
     public $annotationFormats, $techniques, $metadataTypes, $categories;
-    public $selectedFormat, $selectedTechnique, $selectedMetadata = [], $selectedCategories = [], $description;
+    public $selectedFormat, $selectedTechnique, $selectedMetadata = [], $description;
+    public $selectedCategories = [];
 
     # Chunked upload
     public $chunkSize = AppConfig::UPLOAD_CHUNK_SIZE;
@@ -53,7 +54,9 @@ class DatasetUpload extends Component
         $this->annotationFormats = AppConfig::ANNOTATION_FORMATS_INFO;
         $this->techniques = array_map(fn($tech) => ['key' => $tech, 'value' => $tech], AppConfig::ANNOTATION_TECHNIQUES);
         $this->metadataTypes = MetadataType::with('metadataValues')->get();
-        $this->selectedMetadata = collect($this->metadataTypes)->map(fn() => ['metadataValues' => []])->toArray();
+        $this->selectedMetadata = $this->metadataTypes->pluck('metadataValues', 'id')->map(function () {
+            return ['metadataValues' => []];
+        })->toArray();
         $this->categories = Category::all()->toArray();
 
         if ($mode === 'extend' && $editingDataset) {
