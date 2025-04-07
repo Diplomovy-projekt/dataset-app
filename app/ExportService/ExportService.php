@@ -73,6 +73,9 @@ class ExportService
         $absolutePath = Storage::path($customDatasetPath);
         ZipManager::createZipFromFolder($absolutePath);
         Storage::deleteDirectory($customDatasetPath);
+        DeleteTempFile::dispatch($customDatasetPath . '.zip')
+            ->delay(now()->add(AppConfig::EXPIRATION['TMP_FILE']['value'], AppConfig::EXPIRATION['TMP_FILE']['unit']))
+            ->onQueue('temp-files');
     }
 
     public function filterAnnotationsInChunk(array $images): array
