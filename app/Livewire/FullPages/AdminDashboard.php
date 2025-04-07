@@ -36,16 +36,22 @@ class AdminDashboard extends Component
 
     public function getTotalDatasetSize(): float
     {
-        $folder = storage_path('app/public/datasets');
-        $size = 0;
+        $paths = [
+            base_path('storage/app/public/datasets'),
+            base_path('storage/app/private/datasets'),
+        ];
 
-        if (is_dir($folder)) {
-            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
-                $size += $file->getSize();
+        $totalSize = 0;
+
+        foreach ($paths as $path) {
+            if (is_dir($path)) {
+                foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
+                    $totalSize += $file->getSize();
+                }
             }
         }
 
-        return round($size / 1024 / 1024 / 1024, 2); // GB
+        return round($totalSize / 1024 / 1024 / 1024, 2); // GB
     }
 
     public function setMetadata(): void
