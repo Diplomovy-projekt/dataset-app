@@ -15,6 +15,14 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
+            'name' => 'HcPortal',
+            'email' => 'admin@hcportal.eu',
+            'role' => 'admin',
+            'is_active' => true,
+            'password' => Hash::make('hcportal'),
+        ]);
+
+        User::create([
             'name' => 'Mizu',
             'email' => 'mvrbovsky0@gmail.com',
             'role' => 'admin',
