@@ -20,7 +20,7 @@ class DatasetStatistics extends Model
 
     public static function recalculateAllStatistics()
     {
-        $annotationTechniques = Dataset::distinct('annotation_technique')
+        $annotationTechniques = Dataset::approved()->distinct('annotation_technique')
             ->pluck('annotation_technique')
             ->toArray();
 
@@ -39,7 +39,7 @@ class DatasetStatistics extends Model
         foreach ($annotationTechniques as $technique) {
             $stats = self::firstOrCreate(['annotation_technique' => $technique]);
 
-            $datasetCount = Dataset::where('annotation_technique', $technique)->count();
+            $datasetCount = Dataset::approved()->where('annotation_technique', $technique)->count();
 
             $imageCount = Image::whereHas('dataset', function ($query) use ($technique) {
                 $query->where('annotation_technique', $technique);
