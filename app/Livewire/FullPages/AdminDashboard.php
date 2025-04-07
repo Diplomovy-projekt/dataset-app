@@ -23,7 +23,7 @@ class AdminDashboard extends Component
     public function mount()
     {
         $this->userCount = User::count();
-        $this->datasetCount = Dataset::count();
+        $this->datasetCount = Dataset::approved()->count();
         $this->totalStorage = $this->getTotalDatasetSize();
         $this->categories = Category::get()->toArray();
         $this->setMetadata();
