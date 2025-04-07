@@ -4,6 +4,7 @@ namespace App\FileManagement;
 
 use App\Configs\AppConfig;
 use App\Utils\Response;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Storage;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -25,6 +26,7 @@ class ZipManager
 
             return Response::success();
         } catch (\Exception $e) {
+            Util::logException($e, 'ZipProcessFile');
             return Response::error('An unexpected error occurred during zip extraction: ' . $e->getMessage());
         }
     }

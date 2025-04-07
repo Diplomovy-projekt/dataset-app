@@ -8,6 +8,7 @@ use App\Traits\CoordsTransformer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class Util
 {
@@ -196,6 +197,16 @@ class Util
         $h = $pixelizedBbox['height'];
 
         return "M{$x},{$y}l{$w},0l0,{$h}l-{$w},0z";
+    }
+
+    public static function logException(Throwable $e, string $context = ''): void
+    {
+        Log::error('Exception caught' . ($context ? " in $context" : ''), [
+            'message' => $e->getMessage(),
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine(),
+            'trace'   => $e->getTraceAsString(),
+        ]);
     }
 
 }

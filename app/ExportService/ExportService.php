@@ -9,6 +9,7 @@ use App\Jobs\DeleteTempFile;
 use App\Models\Dataset;
 use App\Utils\ImageQuery;
 use App\Utils\Response;
+use App\Utils\Util;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,6 +34,7 @@ class ExportService
 
             return Response::success(data: ['datasetFolder' => $customDatasetFolder.'.zip']);
         }catch (Exception $e) {
+            Util::logException($e, 'ExportService, handleExport');
             if(Storage::exists($customDatasetPath)) {
                 Storage::deleteDirectory($customDatasetPath);
             }

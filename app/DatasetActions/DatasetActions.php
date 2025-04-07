@@ -75,6 +75,7 @@ class DatasetActions
 
             return Response::success();
         } catch (\Exception $e) {
+            Util::logException($e, 'deleteImages in DatasetActions');
             return Response::error($e->getMessage());
         }
     }
@@ -102,6 +103,7 @@ class DatasetActions
                 if ($this->allClassesSampled($classCounts, $classesToSample)) break;
             }
         } catch (DataException $e) {
+            Util::logException($e, 'createSamplesForClases in datasetActions');
             return Response::error($e->getMessage(), $e->getData());
         }
 

@@ -99,6 +99,7 @@ class ExtendDatasetHandler extends BaseHandler
             $parent->updateImageCount(count($child->images));
             $parent->updateSize($childImages->pluck('size')->sum());
         } catch (\Exception $e) {
+            Util::logException($e, 'approve Extend datasetHandler');
             DB::rollBack();
 
             foreach ($childImages as $image) {

@@ -5,6 +5,7 @@ namespace App\Livewire\Components;
 use App\ActionRequestService\ActionRequestService;
 use App\Models\ActionRequest;
 use App\Traits\LivewireActions;
+use App\Utils\Util;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Redirect;
@@ -38,6 +39,7 @@ class ResolveRequest extends Component
             $result = $requestService->resolveRequest($request, $status, $this->comment);
             $this->handleResponse($result);
         } catch (ModelNotFoundException $e) {
+            Util::logException($e, 'resolveRequest in AdminDatasets');
             $this->dispatch('flash-msg', type: 'error', message: 'Request not found');
         }
     }

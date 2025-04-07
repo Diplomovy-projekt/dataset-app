@@ -6,6 +6,7 @@ use App\ActionRequestService\Factory\ActionRequestFactory;
 use App\Jobs\RecalculateDatasetStats;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
+use App\Utils\Util;
 use Illuminate\Support\Facades\Auth;
 
 class ActionRequestService
@@ -58,6 +59,7 @@ class ActionRequestService
                 return $handler->userResponse($request);
             }
         } catch (\Exception $e) {
+            Util::logException($e, 'createRequest');
             return $handler->errorResponse($e->getMessage());
         }
     }
@@ -93,6 +95,7 @@ class ActionRequestService
 
             return $handler->resolveResponse($request);
         } catch (\Exception $e) {
+            Util::logException($e, 'resolveRequest');
             return $handler->errorResponse($e->getMessage(), $request);
         }
     }

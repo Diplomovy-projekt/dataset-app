@@ -5,6 +5,7 @@ namespace App\ActionRequestService\Handlers;
 use App\ActionRequestService\Interfaces\ActionRequestHandlerInterface;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
+use App\Utils\Util;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -41,6 +42,7 @@ class EditDatasetHandler extends BaseHandler
                 $dataset->categories()->sync($payload['categories']);
             });
         } catch (\Exception $e) {
+            Util::logException($e, 'approveEditDatasetHandler');
             throw new \Exception($e->getMessage());
         }
     }

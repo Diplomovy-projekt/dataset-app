@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Configs\AppConfig;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Utils\Util;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -70,6 +71,7 @@ class Register extends Component
             $this->dispatch('flash-msg', type: 'success', message: 'Registered successfully');
             return redirect()->route('profile');
         } catch (\Exception $e) {
+            Util::logException($e, 'register in Register form');
             DB::rollBack();
             $this->dispatch('flash-msg', type: 'error', message: 'Failed to register');
         }
