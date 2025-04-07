@@ -14,14 +14,14 @@ return new class extends Migration
     {
         Schema::create('dataset_statistics', function (Blueprint $table) {
             $table->id();
-            $table->string('annotation_type'); // 'Polygon' or 'BoundingBox'
+            $table->string('annotation_technique');
             $table->integer('dataset_count')->default(0);
             $table->integer('image_count')->default(0);
             $table->integer('annotation_count')->default(0);
             $table->integer('class_count')->default(0);
             $table->timestamp('last_updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
 
-            $table->index('annotation_type');
+            $table->index('annotation_technique');
         });
     }
 
