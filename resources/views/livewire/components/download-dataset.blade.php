@@ -52,7 +52,7 @@
                                 <span class="ml-1 text-xs text-gray-400">items</span>
                             </div>
                             <div class="text-xs text-gray-500 mt-1 truncate" title="{{ $stats['minClass']['name'] }}">
-                                Class: <span style="color: {{ $stats['minClass']['name'] }}">{{ $stats['minClass']['name'] }}</span>
+                                Class: <span style="color: {{ $stats['minClass']['rgb'] }}">{{ $stats['minClass']['name'] }}</span>
                             </div>
                         </div>
 
