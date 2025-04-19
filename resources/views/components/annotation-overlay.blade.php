@@ -21,7 +21,7 @@
 
                 @foreach($image['annotations'] as $index => $group)
                     <use
-                        xlink:href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
+                        href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
                         annotation-class="{{$group['classId']}}"
                         fill="black"
                     />
@@ -39,7 +39,7 @@
 
         @foreach($image['annotations'] as $index => $group)
             <use
-                xlink:href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
+                href="#path-{{$loop->parent->index ?? 0}}-{{$index}}"
                 stroke="{{$group['rgb']}}"
                 stroke-width="{{$image['strokeWidth']}}"
                 fill="transparent"

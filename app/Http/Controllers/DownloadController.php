@@ -1,6 +1,5 @@
 <?php
 
-// DownloadController.php
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -47,7 +46,7 @@ class DownloadController extends Controller
 
         fclose($handle);
 
-        session()->forget("download_progress_{$filename}");
+        session()->forget("download_file_path");
 
         register_shutdown_function(function () use ($filepath) {
             if (file_exists($filepath)) {
@@ -57,19 +56,5 @@ class DownloadController extends Controller
         });
 
         exit;
-    }
-
-// Helper function to format bytes
-    private function formatBytes($bytes, $precision = 2)
-    {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-
-        $bytes /= (1 << (10 * $pow));
-
-        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }
