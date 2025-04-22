@@ -10,6 +10,8 @@ use ReflectionMethod;
 
 class MakeFormat extends Command
 {
+    // php artisan make:format yolo
+    // php artisan make:format yolo --delete
     protected $signature = 'make:format {name} {--delete}';
     protected $description = 'Generate files for a new annotation format';
     protected Filesystem $files;
