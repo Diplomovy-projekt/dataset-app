@@ -48,13 +48,12 @@ class DownloadController extends Controller
 
         session()->forget("download_file_path");
 
-        register_shutdown_function(function () use ($filepath) {
-            if (file_exists($filepath)) {
-                unlink($filepath);
-                Log::info("File deleted after download: " . $filepath);
-            }
-        });
+        if (file_exists($filepath)) {
+            unlink($filepath);
+            Log::info("File deleted after download: " . $filepath);
+        }
 
-        exit;
+        //exit;
+        return response()->json([], 200);
     }
 }

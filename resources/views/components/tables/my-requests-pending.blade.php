@@ -11,10 +11,15 @@
                     <div class="bg-blue-500/10 p-2 rounded-lg">
                         <x-icon name="o-folder" class="w-5 h-5 text-blue-400" />
                     </div>
-                    <a href="{{ route('dataset.show', ['uniqueName' => $request['dataset']['unique_name']])}}"
-                       wire:navigate
-                       class="text-gray-200">
-                        {{ $request['dataset']['display_name'] }}</a>
+                    @if ($request['dataset'])
+                        <a href="{{ route('dataset.show', ['uniqueName' => $request['dataset']['unique_name']])}}"
+                           wire:navigate
+                           class="text-gray-200">
+                            {{ $request['dataset']['display_name'] }}
+                        </a>
+                    @else
+                        <span class="text-gray-500">Dataset not available</span> <!-- Fallback text -->
+                    @endif
                 </div>
             </x-tables.table-cell>
 

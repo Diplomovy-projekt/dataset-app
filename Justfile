@@ -21,3 +21,6 @@ nginx-sh:
 
 mysql-sh:
     docker compose exec -it mysql sh
+
+test:
+    php artisan test --env=testing

@@ -127,7 +127,7 @@ class DownloadDataset extends Component
         }
 
         $this->exportDataset = $response->data['datasetFolder'];
-        $this->filePath = storage_path("app/public/datasets/{$this->exportDataset}");
+        $this->filePath = Storage::path("app/public/datasets/{$this->exportDataset}");
 
         if (!file_exists($this->filePath)) {
             abort(404, "File not found.");

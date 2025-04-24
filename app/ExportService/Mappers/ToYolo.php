@@ -92,8 +92,8 @@ class ToYolo extends BaseToMapper
             'names' => array_column($this->classMap, 'name'),
         ];
 
-        File::ensureDirectoryExists(Storage::disk('datasets')->path($datasetFolder));
-        if(!Storage::disk('datasets')->put($datasetFolder . '/data.yaml', Yaml::dump($yamlData, 2, 4))) {
+        File::ensureDirectoryExists(Storage::path(AppConfig::DATASETS_PATH['public'] . $datasetFolder));
+        if(!Storage::put(AppConfig::DATASETS_PATH['public'] . $datasetFolder . '/data.yaml', Yaml::dump($yamlData, 2, 4))) {
             throw new \Exception("Failed to write data file");
         }
     }

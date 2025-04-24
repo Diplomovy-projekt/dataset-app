@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('action_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('dataset_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('dataset_id')->nullable()->constrained()->onDelete('set null');
             $table->enum('type', ['new', 'extend', 'edit', 'reduce', 'delete']);
             $table->json('payload');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');

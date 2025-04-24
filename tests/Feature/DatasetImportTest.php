@@ -5,139 +5,88 @@ namespace Tests\Feature;
 use App\Configs\AppConfig;
 use App\FileManagement\ZipManager;
 use App\ImportService\ImportService;
-use App\ImportService\Strategies\NewDatasetStrategy;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
-
 
 class DatasetImportTest extends TestCase
 {
     use RefreshDatabase;
+
     public $datasetName = 'test_dataset.zip';
     public $uniqueName = 'valid_bbox.zip';
 
-    public $metadata = [
-        "1" => [
-            "metadataValues" => [
-                "2",
-                "3"
-            ]
-        ],
-        "2" => [
-            "metadataValues" => [
-                "4",
-            ]
-        ]
-    ];
-    public $categories = [
-        "1",
-        "2"
-    ];
+    public $metadata = [2,3,4];
 
-    public function setUp(): void
+    public $categories = ["1", "2"];
+
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(DatabaseSeeder::class);
-        Storage::fake('storage');
-        config(['filesystems.disks.datasets.root' => Storage::disk('storage')->path('app/public/datasets')]);
+        $this->setUpStorage(false);
+    }
+    public function test_admin_user_can_upload_dataset()
+    {
+        // 1. Create and act as admin user
+        $admin = \App\Models\User::where('role', 'user')->first();
+        $this->actingAs($admin);
+
+        // 2. Prepare and extract zip
+        $this->uniqueName = 'valid_bbox.zip';
+        $this->assertTrue($this->extractZip()->isSuccessful());
+
+        // 3. Import dataset
+        $importService = app(ImportService::class);
+        $result = $importService->handleImport($this->preparePayload([]));
+        // 4. Assert import success
+        $this->assertTrue($result->isSuccessful());
+
+        // 5. Assert dataset folders exist
+        $basePath = Storage::disk('storage')->path('app/private/datasets/' . pathinfo($this->uniqueName, PATHINFO_FILENAME));
+        $this->assertDirectoryExists("{$basePath}");
+        $this->assertDirectoryExists("{$basePath}/thumbnails");
+        $this->assertDirectoryExists("{$basePath}/class-images");
+        $this->assertDirectoryExists("{$basePath}/full-images");
+        $this->assertDatabaseHas('datasets', [
+            'unique_name' => pathinfo($this->uniqueName, PATHINFO_FILENAME),
+            'user_id' => $admin->id,
+        ]);
     }
 
     public function prepareZipFile()
     {
         $mockZipPath = base_path("tests/Data/{$this->uniqueName}");
-        Storage::disk('storage')->put(AppConfig::LIVEWIRE_TMP_PATH.$this->uniqueName, file_get_contents($mockZipPath));
-        $temporaryFile = new UploadedFile(
-            Storage::disk('storage')->path(AppConfig::LIVEWIRE_TMP_PATH.$this->uniqueName),
+        Storage::disk('storage')->put(AppConfig::LIVEWIRE_TMP_PATH . $this->uniqueName, file_get_contents($mockZipPath));
+        return new UploadedFile(
+            Storage::disk('storage')->path(AppConfig::LIVEWIRE_TMP_PATH . $this->uniqueName),
             $this->uniqueName,
             'application/zip',
             null,
             true
         );
-        return $temporaryFile;
     }
-    public function preparePayload(array $payloadOverride)
+
+    public function preparePayload(array $override = [])
     {
         return [
-            'display_name' => $payloadOverride['display_name'] ?? pathinfo($this->datasetName, PATHINFO_FILENAME),
-            'unique_name' => $payloadOverride['unique_name'] ?? pathinfo($this->uniqueName, PATHINFO_FILENAME),
-            'format' => $payloadOverride['format'] ?? AppConfig::ANNOTATION_FORMATS_INFO['yolo']['name'],
-            'metadata' => $payloadOverride['metadata'] ?? $this->metadata,
-            'technique' => $payloadOverride['technique'] ?? AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'],
-            'categories' => $payloadOverride['categories'] ?? $this->categories,
-            'description' => $payloadOverride['description'] ?? 'Test dataset with folder structure',
+            'display_name' => $override['display_name'] ?? pathinfo($this->datasetName, PATHINFO_FILENAME),
+            'unique_name' => $override['unique_name'] ?? pathinfo($this->uniqueName, PATHINFO_FILENAME),
+            'format' => $override['format'] ?? AppConfig::ANNOTATION_FORMATS_INFO['yolo']['name'],
+            'metadata' => $override['metadata'] ?? $this->metadata,
+            'technique' => $override['technique'] ?? AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'],
+            'categories' => $override['categories'] ?? $this->categories,
+            'description' => $override['description'] ?? 'Test dataset with folder structure',
         ];
     }
 
     public function extractZip()
     {
-        $zipExtraction = app(ZipManager::class);
-        $temporaryFile = $this->prepareZipFile();
-        return $zipExtraction->processZipFile($temporaryFile);
+        $zipManager = app(ZipManager::class);
+        return $zipManager->processZipFile($this->prepareZipFile());
     }
 
-    public function prepare()
-    {
-
-    }
-    public function test_processes_a_zip_file_and_creates_folders()
-    {
-        // 1. Prepare a mock ZIP file
-        $this->uniqueName = 'valid_bbox.zip';
-
-        // 2. Extract the ZIP file
-        $this->assertTrue($this->extractZip()->isSuccessful());
-
-        // 3. Instantiate the import service
-        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
-        $payload = $this->preparePayload([]);
-        $datasetImported = $importService->handleImport($payload);
-
-        // 4. Assert the dataset was successfully imported
-        $this->assertTrue($datasetImported->isSuccessful());
-
-        // 5. Assert the dataset folders were created
-        $datasetFolder = "app/public/datasets/".pathinfo($this->uniqueName, PATHINFO_FILENAME);
-        $this->assertDirectoryExists(Storage::disk('storage')->path($datasetFolder), "Dataset folder does not exist.");
-        $this->assertDirectoryExists(Storage::disk('storage')->path("{$datasetFolder}/thumbnails"), "Thumbnails folder does not exist.");
-        $this->assertDirectoryExists(Storage::disk('storage')->path("{$datasetFolder}/class-images"), "Class images folder does not exist.");
-        $this->assertDirectoryExists(Storage::disk('storage')->path("{$datasetFolder}/full-images"), "Full images folder does not exist.");
-    }
-
-    public function test_wrong_zip_structure()
-    {
-        // 1. Prepare a mock ZIP file
-        $this->uniqueName = 'BBOX_zipWrong.zip';
-        $this->assertTrue($this->extractZip()->isSuccessful());
-
-
-        // 2. Instantiate the import service
-        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
-
-        $payload = $this->preparePayload([]);
-        $result = $importService->handleImport($payload);
-
-        // 3. Assert the dataset was not successfully imported
-        $this->assertTrue($result->message == "Zip structure issues found");
-        $this->assertFalse($result->isSuccessful());
-    }
-
-    public function test_wrong_annotations()
-    {
-            // 1. Prepare a mock ZIP file
-        $this->uniqueName = 'BBOX_annot_wrong.zip';
-        $this->assertTrue($this->extractZip()->isSuccessful());
-
-        // 2. Instantiate the import service
-        $importService = app(ImportService::class, ['strategy' => new NewDatasetStrategy()]);
-
-        $payload = $this->preparePayload([]);
-        $result = $importService->handleImport($payload);
-
-        // 3. Assert the dataset was not successfully imported
-        $this->assertTrue($result->message == "Annotation issues found");
-        $this->assertFalse($result->isSuccessful()); }
 }

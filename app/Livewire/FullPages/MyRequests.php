@@ -85,7 +85,8 @@ class MyRequests extends Component
             ->with([
                 'dataset' => function ($query) {
                     $query->withoutGlobalScope(DatasetVisibilityScope::class)
-                        ->select('id', 'display_name', 'unique_name');
+                        ->select('id', 'display_name', 'unique_name')
+                        ->whereNotNull('id');
                 },
                 'user:id,email',
                 'reviewer:id,email'

@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         URL::macro('livewireCurrent', function ($absolute = false) {
             if($absolute) {
-                if (request()->route()->named('livewire.update')) {
+                if (request()->route()?->named('livewire.update')) {
                     return url()->previous();
                 } else {
                     return url()->current();

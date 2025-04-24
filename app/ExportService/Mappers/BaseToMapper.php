@@ -64,7 +64,7 @@ abstract class BaseToMapper
 
             // Create symbolic link. On local windows, we need to copy the file instead of linking.
             if (File::exists($source)) {
-                if ($env == 'local') {
+                if ($env == 'local' or $env == 'testing') {
                     if (File::link($source, $destination)) {
                         throw new Exception("Failed to symlink image... \nFrom: $source \nTo: $destination");
                     }
