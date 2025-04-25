@@ -144,6 +144,14 @@ class Util
 
         $sizes = $query->get();
 
+        if ($sizes->isEmpty()) {
+            return [
+                'median' => '0x0',
+                'min' => '0x0',
+                'max' => '0x0',
+            ];
+        }
+
         $widths = $sizes->pluck('width')->sort()->values()->all();
         $heights = $sizes->pluck('height')->sort()->values()->all();
 

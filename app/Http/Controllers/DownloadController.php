@@ -53,7 +53,6 @@ class DownloadController extends Controller
             Log::info("File deleted after download: " . $filepath);
         }
 
-        //exit;
         return response()->json([], 200);
     }
 }

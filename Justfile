@@ -24,3 +24,6 @@ mysql-sh:
 
 test:
     php artisan test --env=testing
+
+test-coverage:
+    vendor\bin\phpunit --coverage-html tests/coverage

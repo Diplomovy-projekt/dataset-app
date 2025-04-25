@@ -46,7 +46,7 @@ class DatasetImportTest extends TestCase
         $this->assertTrue($result->isSuccessful());
 
         // 5. Assert dataset folders exist
-        $basePath = Storage::disk('storage')->path('app/private/datasets/' . pathinfo($this->uniqueName, PATHINFO_FILENAME));
+        $basePath = Storage::path('app/private/datasets/' . pathinfo($this->uniqueName, PATHINFO_FILENAME));
         $this->assertDirectoryExists("{$basePath}");
         $this->assertDirectoryExists("{$basePath}/thumbnails");
         $this->assertDirectoryExists("{$basePath}/class-images");
@@ -76,12 +76,13 @@ class DatasetImportTest extends TestCase
             'display_name' => $override['display_name'] ?? pathinfo($this->datasetName, PATHINFO_FILENAME),
             'unique_name' => $override['unique_name'] ?? pathinfo($this->uniqueName, PATHINFO_FILENAME),
             'format' => $override['format'] ?? AppConfig::ANNOTATION_FORMATS_INFO['yolo']['name'],
-            'metadata' => $override['metadata'] ?? $this->metadata,
+            'metadata' => $override['metadata'] ?? \App\Models\MetadataValue::pluck('id')->skip(1)->take(3)->toArray(),
             'technique' => $override['technique'] ?? AppConfig::ANNOTATION_TECHNIQUES['BOUNDING_BOX'],
-            'categories' => $override['categories'] ?? $this->categories,
+            'categories' => $override['categories'] ?? \App\Models\Category::pluck('id')->take(2)->toArray(),
             'description' => $override['description'] ?? 'Test dataset with folder structure',
         ];
     }
+
 
     public function extractZip()
     {

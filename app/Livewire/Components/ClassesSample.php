@@ -51,7 +51,6 @@ class ClassesSample extends Component
 
     public function render()
     {
-        $idk = $this->dataset;
         return view('livewire.components.classes-sample');
     }
 }

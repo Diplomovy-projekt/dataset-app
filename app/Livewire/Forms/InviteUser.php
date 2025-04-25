@@ -63,6 +63,13 @@ class InviteUser extends Component
             if ($existingInvitation) {
                 $existingInvitation->update(['token' => $token]);
             } else {
+                // Check if email and role are set
+                if (is_null($this->email) || is_null($this->role)) {
+                    // This will help debug if the values are null
+                    dd($this->email, $this->role);
+                }
+                $idk = $this->email;
+                $idk2 = $this->role;
                 $existingInvitation = Invitation::create([
                     'email' => $this->email,
                     'role' => $this->role,

@@ -28,7 +28,7 @@ use Livewire\WithPagination;
 class DatasetBuilder extends Component
 {
     use ImageRendering, WithPagination, WithoutUrlPagination;
-    #[Locked]
+    //#[Locked]
     public $currentStage = 0;
     #[Locked]
     public $completedStages = [];
@@ -209,20 +209,41 @@ class DatasetBuilder extends Component
 
     public function annotationTechniqueStage()
     {
-        $this->polygonDatasetsStats = DatasetStatistics::selectRaw(
+        $polygonStats = DatasetStatistics::selectRaw(
             'dataset_count as numDatasets,
          image_count as numImages,
          annotation_count as numAnnotations,
          class_count as numClasses'
-        )->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])->first()->toArray();
+        )->where('annotation_technique', AppConfig::ANNOTATION_TECHNIQUES['POLYGON'])->first();
 
-        $this->allDatasetsStats = DatasetStatistics::selectRaw(
+        $this->polygonDatasetsStats = $polygonStats ? $polygonStats->toArray() : [
+            'numDatasets' => 0,
+            'numImages' => 0,
+            'numAnnotations' => 0,
+            'numClasses' => 0,
+        ];
+
+        $allStats = DatasetStatistics::selectRaw(
             'SUM(dataset_count) as numDatasets,
-             SUM(image_count) as numImages,
-             SUM(annotation_count) as numAnnotations,
-             SUM(class_count) as numClasses'
-        )->first()->toArray();
+         SUM(image_count) as numImages,
+         SUM(annotation_count) as numAnnotations,
+         SUM(class_count) as numClasses'
+        )->first();
+
+        $this->allDatasetsStats = $allStats ? [
+            'numDatasets' => $allStats->numDatasets ?? 0,
+            'numImages' => $allStats->numImages ?? 0,
+            'numAnnotations' => $allStats->numAnnotations ?? 0,
+            'numClasses' => $allStats->numClasses ?? 0,
+        ] : [
+            'numDatasets' => 0,
+            'numImages' => 0,
+            'numAnnotations' => 0,
+            'numClasses' => 0,
+        ];
     }
+
+
 
     private function categoriesStage()
     {
@@ -237,7 +258,7 @@ class DatasetBuilder extends Component
         }
         $this->categories = $this->categories->map(function ($category) {
             $datasetUniqueName = Dataset::approved()->whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
-            $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0];
+            $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0] ?? null;
             return [
                 'id' => $category->id,
                 'name' => $category->name,
@@ -262,7 +283,6 @@ class DatasetBuilder extends Component
     }
     private function datasetsStage()
     {
-        Util::logStart('datasets_stage');
         $this->datasetIds = [];
         // Get all explicitly selected metadata values
         $explicitlyIncluded = array_keys(array_filter($this->selectedMetadataValues));
@@ -295,7 +315,6 @@ class DatasetBuilder extends Component
         $this->datasetIds = $datasetMetadataIds->merge($datasetsWithoutMetadata)->unique()->toArray();
 
         $this->selectedImages = [];
-        Util::logEnd('datasets_stage');
     }
 
     private function finalStage()

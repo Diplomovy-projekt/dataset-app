@@ -13,7 +13,12 @@
                     accent-blue-400 bg-gray-700 border-gray-600">
 
                 {{--Image--}}
-                <x-images.annotated-image :image="$category['image']"/>
+                @if(empty($category['image']))
+                    <img src="{{ asset('placeholder-image.jpg') }}" alt="Placeholder Image"/>
+                @else
+                    <x-images.annotated-image :image="$category['image']"/>
+                @endif
+
 
                 {{--Category name--}}
                 <div class="absolute bottom-0 left-0 right-0 p-2 bg-slate-800 bg-opacity-50">

@@ -94,8 +94,13 @@ class AdminUsers extends Component
 
     public function toggleActiveUser($id)
     {
+        if (auth()->id() == $id) {
+            $this->dispatch('flash-msg', type: 'error', message: 'You cannot deactivate yourself!');
+            return;
+        }
         try {
             $user = User::find($id);
+
             $user->update(['is_active' => !$user->is_active]);
             $this->dispatch('flash-msg', type: 'success', message: 'Action completed successfully!');
         } catch (\Exception $e) {
