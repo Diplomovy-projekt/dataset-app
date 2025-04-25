@@ -70,7 +70,7 @@ Názov databázy sa musí zhodovat s hodnotou v `DB_DATABASE`
 
 
 ## Nastavenie emailov
-
+Tento krok je potrebný len na spojazdnenie posielanie emailov pre pozvanie nových použivateľov.  
 1. Vytvorte si účet na [Mailtrap](https://mailtrap.io/).  
 2. Po prihlásení choďte na **Email testing** -> **Inboxes** -> **My inbox** -> **Integration** -> **Smtp**.  
 3. Skopírujte nastavenia pre SMTP (MAIL_USERNAME a MAIL_PASSWORD).
