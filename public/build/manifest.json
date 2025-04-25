@@ -1,0 +1,19 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-BkJRawzr.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-96MLPMfB.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/chunkedUpload.js": {
+    "file": "assets/chunkedUpload-l0sNRNKZ.js",
+    "name": "chunkedUpload",
+    "src": "resources/js/chunkedUpload.js",
+    "isEntry": true
+  }
+}
