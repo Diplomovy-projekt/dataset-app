@@ -4,8 +4,8 @@ Aplikácia je dostupná na adrese:
 `https://builder.dev-dataset.online/`
 
 **Prihlasovacie údaje:**
-- Email: `admin@hcportal.eu`
-- Heslo: `hcportal`
+- Email: `test@example.com`
+- Heslo: `password`
 # Príručka na lokálne spustenie
 V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukcií nižšie.
 ## Požiadavky
