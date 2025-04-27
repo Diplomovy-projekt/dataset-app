@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,28 +14,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            // Seed Metadata Types and Values first (independent)
+        /*$this->call([
             MetadataTypeSeeder::class,
             MetadataValueSeeder::class,
-
-            // Seed Categories and Formats (dependent on Metadata Values if needed)
-            //AnnotationClassSeeder::class, // Seed categories (Language, Century, etc.)
-
-            // Seed Datasets (depends on Metadata Values and Categories)
-            //DatasetSeeder::class,
-
-            // Seed Annotation Data (depends on Categories and Formats)
-            //AnnotationDataSeeder::class,
-
-            // Seed Images (depends on Datasets and Annotations)
-            //ImageSeeder::class,
-
-            // Seed Users last (can depend on other data)
             UserSeeder::class,
-
             CategorySeeder::class,
-        ]);
+        ]);*/
+
+        if (App::environment() !== 'prod') {
+            $this->call([
+                InvitationSeeder::class,
+                //ActionRequestSeeder::class,
+            ]);
+        }
     }
 
 }

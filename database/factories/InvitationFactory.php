@@ -18,10 +18,33 @@ class InvitationFactory extends Factory
     {
         return [
             'email' => $this->faker->unique()->safeEmail,
-            'role' => 'user', // Default value from your schema
-            'invited_by' => $this->faker->name, // Assuming invited_by is a name or user identifier
-            'token' => $this->faker->uuid, // Generate a unique token
-            'used' => false, // Default value from your schema
+            'role' => 'user',
+            'invited_by' => $this->faker->name,
+            'token' => $this->faker->uuid,
+            'used' => false,
+            'created_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
         ];
+    }
+
+    public function used(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'used' => true,
+        ]);
+    }
+
+    public function expired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'created_at' => $this->faker->dateTimeBetween('-2 months', '-1 month'), // Random date in the past
+        ]);
+    }
+
+    public function notExpired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'created_at' => $this->faker->dateTimeBetween('now', '+1 month'), // Future date
+        ]);
     }
 }
