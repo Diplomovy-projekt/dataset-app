@@ -10,7 +10,8 @@ Aplikácia je dostupná na adrese:
 V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukcií nižšie.
 ## Požiadavky
 
-- PHP 8.3  
+- PHP 8.3
+    - odkomentovať/povoliť `extension=zip` v súbore php.ini   
 - MySQL 8  
 - Composer
 
@@ -65,8 +66,8 @@ Názov databázy sa musí zhodovat s hodnotou v `DB_DATABASE`
    http://localhost:8000
 ```
 3. Prihlasovacie údaje do aplikácie
-- Email: `admin@hcportal.eu`
-- Heslo: `hcportal`
+- Email: `test@example.com`
+- Heslo: `password`
 
 
 ## Nastavenie emailov
