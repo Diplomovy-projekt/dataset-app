@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\MetadataType;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MetadataTypeSeeder extends Seeder
@@ -25,7 +24,10 @@ class MetadataTypeSeeder extends Seeder
         ];
 
         foreach ($metadataTypes as $type) {
-            MetadataType::create($type);
+            MetadataType::firstOrCreate(
+                ['name' => $type['name']],
+                ['description' => $type['description']]
+            );
         }
     }
 }

@@ -14,17 +14,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        /*$this->call([
+        $this->call([
             MetadataTypeSeeder::class,
             MetadataValueSeeder::class,
             UserSeeder::class,
             CategorySeeder::class,
-        ]);*/
+        ]);
 
         if (App::environment() !== 'prod') {
             $this->call([
                 InvitationSeeder::class,
-                //ActionRequestSeeder::class,
+                ActionRequestSeeder::class,
             ]);
         }
     }

@@ -23,7 +23,6 @@
         "dmeys/htmlmin": "^1.0",
         "hasnayeen/blade-eva-icons": "^2.0",
         "intervention/image": "^3.11.1",
-        "intervention/image-driver-vips": "^1.0",
         "khatabwedaa/blade-css-icons": "^1.4",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
