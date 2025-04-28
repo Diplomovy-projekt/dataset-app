@@ -26,45 +26,45 @@ Táto časť je nepovinná. V prípade, že máte potrebné požiadavky spomenut
 Všetky príkazy nižšie je nutné vykonať v koreňovom adresári projektu.  
 1. Skopírujte projekt do ľubovoľného priečinka.  
 2. Otvorte terminál a prejdite do priečinka:
-```bash
+    ```bash
     cd C:\cesta\k\projektu
-```
+    ```
 3. Skopírujte .env súbor:
-```bash
-   copy .env.example .env
-```
+    ```bash
+    copy .env.example .env
+    ```
 4. Nainštalujte závislosti:
-```bash
-   composer install --optimize-autoloader --no-dev
-```
+    ```bash
+    composer install --optimize-autoloader --no-dev
+    ```
 6. Vygenerujte aplikačný kľúč:
-```bash
-   php artisan key:generate
-```
+    ```bash
+    php artisan key:generate
+    ```
 7. Upraviť .env (príklad):
 Názov databázy sa musí zhodovat s hodnotou v `DB_DATABASE`
-```bash
+    ```bash
     DB_DATABASE=nazov_db
     DB_USERNAME=root
     DB_PASSWORD=
-```
+    ```
 8. Spustite migrácie a seedery:
-```bash
-   php artisan migrate:fresh --seed --force
-```
+    ```bash
+    php artisan migrate:fresh --seed --force
+    ```
 9. Optimalizácia
-```bash
-   php artisan optimize:clear && php artisan optimize && php artisan config:clear
-```
+    ```bash
+    php artisan optimize:clear && php artisan optimize && php artisan config:clear
+    ```
 ## Spustenie aplikácie
 1. Spustite server:
-```bash
-   php artisan serve
-```
+    ```bash
+    php artisan serve
+    ```
 2. Otvorte aplikáciu:
-```bash
-   http://localhost:8000
-```
+    ```bash
+    http://localhost:8000
+    ```
 3. Prihlasovacie údaje do aplikácie
 - Email: `test@example.com`
 - Heslo: `password`
