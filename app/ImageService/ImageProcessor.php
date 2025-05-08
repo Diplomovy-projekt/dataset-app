@@ -44,9 +44,8 @@ trait ImageProcessor
         }
     }
 
-    public function createClassCrops(string $datasetFolder, Collection $images): array
+    public function createClassCrops(string $datasetFolder, Collection $images, array &$classCounts): void
     {
-        $classCounts = [];
         $datasetPath = Util::getDatasetPath($datasetFolder);
         foreach ($images as $image) {
             $imagePath = Storage::path($datasetPath . AppConfig::FULL_IMG_FOLDER.$image->filename);
@@ -59,7 +58,6 @@ trait ImageProcessor
                     $classCounts[$classId] = count(Storage::files($directoryPath));
                 }
                 if ($classCounts[$classId] < AppConfig::SAMPLES_COUNT) {
-
                     $savePath = Storage::path($datasetPath . AppConfig::CLASS_IMG_FOLDER.$classId.'/'.$annotation->id . "_" . $image->filename);
                     FileUtil::ensureFolderExists($savePath);
 
@@ -71,7 +69,6 @@ trait ImageProcessor
                 }
             }
         }
-        return $classCounts;
     }
 
     /**

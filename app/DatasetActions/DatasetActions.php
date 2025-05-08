@@ -98,7 +98,8 @@ class DatasetActions
                     ->with(['annotations' => fn($q) => $q->whereIn('annotation_class_id', $classesToSample)])
                     ->get();
 
-                $classCounts = array_merge($classCounts, $this->createClassCrops($datasetFolder, $images));
+                //$classCounts = array_merge($classCounts, $this->createClassCrops($datasetFolder, $images));
+                $this->createClassCrops($datasetFolder, $images, $classCounts);
 
                 if ($this->allClassesSampled($classCounts, $classesToSample)) break;
             }
