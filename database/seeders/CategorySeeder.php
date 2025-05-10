@@ -9,7 +9,7 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Digits', 'Letters', 'Words', 'Sentences', 'Glyphs', 'Cipher keys'];
+        $categories = ['Digits', 'Letters', 'Words', 'Sentences', 'Glyphs', 'Cipher key parts'];
 
         foreach ($categories as $category) {
             Category::firstOrCreate([

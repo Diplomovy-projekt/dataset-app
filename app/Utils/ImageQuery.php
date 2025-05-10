@@ -133,6 +133,10 @@ class ImageQuery
         $imageIds = $collection->pluck('id')->toArray();
 
         if (empty($imageIds)) {
+            // Check if images are collection, if yes, transform them to array
+            if ($images instanceof \Illuminate\Support\Collection) {
+                return $images->toArray();
+            }
             return $images;
         }
 

@@ -11,7 +11,12 @@
 @endphp
 
 <img src="{{ $publicPath }}"
-     onerror="window.tryPrivateImage(this)"
+     onerror="
+        if (!this.dataset.failed) {
+            this.dataset.failed = true;
+            this.src = this.dataset.privateSrc;
+        }
+     "
      data-private-src="{{ $privatePath }}"
      alt="{{ $filename ?? basename($src) }}"
      {{ $attributes->except('@click') }}

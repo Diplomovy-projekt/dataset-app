@@ -247,7 +247,11 @@ class DatasetBuilder extends Component
 
     private function categoriesStage()
     {
-        $this->categories = DatasetCategory::getAllUniqueCategories();
+        $this->categories = DatasetCategory::getAllUniqueCategories()->filter(function ($category) {
+            return Dataset::approved()
+                ->whereRelation('categories', 'category_id', $category->id)
+                ->exists();
+        });
         // If selectedAnnotationTechnique is set to polygon, remove the categories  that are linked to datasets with no polygon annotations
         if ($this->selectedAnnotationTechnique === AppConfig::ANNOTATION_TECHNIQUES['POLYGON']) {
             $this->categories = $this->categories->filter(function ($category) {
@@ -258,7 +262,10 @@ class DatasetBuilder extends Component
         }
         $this->categories = $this->categories->map(function ($category) {
             $datasetUniqueName = Dataset::approved()->whereRelation('categories', 'category_id', $category->id)->pluck('unique_name')->first();
-            $image = $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0] ?? null;
+            $image = $datasetUniqueName
+                ? $this->prepareImagesForSvgRendering(QueryUtil::getFirstImage($datasetUniqueName))[0] ?? null
+                : null;
+
             return [
                 'id' => $category->id,
                 'name' => $category->name,
@@ -281,6 +288,7 @@ class DatasetBuilder extends Component
     {
         $this->datasetsStage();
     }
+
     private function datasetsStage()
     {
         $this->datasetIds = [];
