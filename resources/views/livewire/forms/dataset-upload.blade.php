@@ -4,13 +4,7 @@
         <div  class=" mx-auto">
             <div class="space-y-4 relative">
 
-                {{-- Header Section--}}
-                <div class="text-center space-y-2">
-                    <h2 class="text-4xl font-bold bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent">
-                        Dataset upload
-                    </h2>
-                </div>
-
+                <x-misc.header title="Dataset Upload" align="center" font="text-3xl" color="default"></x-misc.header>
                 {{-- Upload File Section--}}
                 <x-forms.dataset-file-upload :annotationFormats="$annotationFormats" modalStyle="new-upload" />
 

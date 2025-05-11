@@ -4,13 +4,24 @@
             {{--Category Card--}}
             <label class="relative block bg-gray-700 w-full h-40 rounded-t-lg overflow-hidden shadow-md
                       cursor-pointer group">
-                {{--Checkbox that covers entire label--}}
-                <input
-                    type="checkbox"
-                    value="{{$category['id']}}"
-                    wire:model="selectedCategories"
-                    class="absolute z-20 top-2 right-2 h-5 w-5
-                    accent-blue-400 bg-gray-700 border-gray-600">
+                <div class="absolute z-20 top-2 right-2 h-5 w-5">
+                    <input type="checkbox"
+                           value="{{$category['id']}}"
+                           wire:model="selectedCategories"
+                           class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border border-blue-500 checked:bg-blue-500 checked:border-blue-600" />
+
+                    <!-- Fade-in SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="absolute h-3.5 w-3.5 text-white left-1/2 top-1/2 opacity-0 transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out peer-checked:opacity-100"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="3"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <polyline points="4 12 10 18 20 6" />
+                    </svg>
+                </div>
 
                 {{--Image--}}
                 @if(empty($category['image']))

@@ -3,6 +3,7 @@
     <div id="paginatedDatasets" class="relative space-y-3">
         <x-misc.pagination-loading/>
         @forelse($this->paginatedDatasets as $index => $dataset)
+            <label class="flex items-center cursor-pointer space-x-2">
             <div wire:key="datasets-stage-{{ $dataset['id'] }}"
                 x-data="{ checked: false }"
                  class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 hover:bg-slate-750 transition-all duration-200 cursor-pointer"
@@ -11,13 +12,24 @@
                      class="p-4 flex flex-col sm:flex-row gap-4">
                     {{--Left section--}}
                     <div class="flex gap-4">
-                        <div class="" @click.stop>
+                        <div class="relative h-5 w-5">
                             <input type="checkbox"
                                    value="{{ $dataset['id'] }}"
                                    wire:model="selectedDatasets.{{$dataset['id']}}"
-                                   class="w-5 h-5 text-blue-500 bg-slate-700 rounded border-slate-600 focus:ring-blue-500 focus:ring-offset-slate-800">
-                        </div>
+                                   class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border border-blue-500 checked:bg-blue-500 checked:border-blue-600" />
 
+                            <!-- Fade-in SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="absolute h-3.5 w-3.5 text-white left-1/2 top-1/2 opacity-0 transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out peer-checked:opacity-100"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="3"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <polyline points="4 12 10 18 20 6" />
+                            </svg>
+                        </div>
                         <div class="flex-shrink-0 w-20 h-20">
                             <x-images.annotated-image :image="$dataset->images->first()"></x-images.annotated-image>
                         </div>
@@ -78,14 +90,12 @@
                             {{--Dataset Properties--}}
                             <div class="flex items-center gap-2 overflow-x-auto w-full max-w-full scrollbar-thin scrollbar-thumb-slate-600">
                                 @foreach($dataset['categories'] as $category)
-                                    <div wire:key="dataset-categories-{{ $category['id'] }}"
-                                         class="flex-shrink-0 bg-blue-500/80 px-2 py-1 rounded text-sm text-blue-200 whitespace-nowrap">
+                                    <div class="flex-shrink-0 bg-blue-600 bg-opacity-80  px-3 py-1.5 rounded-full text-sm font-medium text-white whitespace-nowrap">
                                         {{ $category['name'] }}
                                     </div>
                                 @endforeach
                                 @forelse($dataset['metadataValues'] as $metadata)
-                                    <div wire:key="dataset-metadata-{{ $metadata['id'] }}"
-                                        class="flex-shrink-0 bg-slate-700/50 px-2 py-1 rounded text-sm text-gray-300 whitespace-nowrap">
+                                    <div class="flex-shrink-0 bg-slate-700  px-3 py-1.5 rounded-full text-sm text-gray-200 whitespace-nowrap ">
                                         {{ $metadata['value'] }}
                                     </div>
                                 @empty
@@ -98,6 +108,7 @@
                     </div>
                 </div>
             </div>
+            </label>
         @empty
             <p class="text-gray-400">No datasets found</p>
         @endforelse

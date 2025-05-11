@@ -13,6 +13,7 @@ class MetadataValueSeeder extends Seeder
         // Fetch MetadataTypes
         $languageType = MetadataType::where('name', 'Language')->first();
         $centuryType = MetadataType::where('name', 'Century')->first();
+        $imageGranularityType = MetadataType::where('name', 'Image Granularity')->first();
 
         if (!$languageType || !$centuryType) {
             throw new \Exception('One or more MetadataTypes not found.');
@@ -31,6 +32,8 @@ class MetadataValueSeeder extends Seeder
             ['metadata_type_id' => $centuryType->id, 'value' => '17th Century'],
             ['metadata_type_id' => $centuryType->id, 'value' => '18th Century'],
             ['metadata_type_id' => $centuryType->id, 'value' => '19th Century'],
+            ['metadata_type_id' => $imageGranularityType->id, 'value' => 'Whole (Original)'],
+            ['metadata_type_id' => $imageGranularityType->id, 'value' => 'Sub-region (Crop)'],
         ];
 
         foreach ($values as $value) {

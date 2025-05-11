@@ -29,37 +29,32 @@
                 {{-- Values --}}
                 <div class="space-y-2" x-show="!skip" x-transition>
                     @forelse($data['values'] as $value)
-                        <div wire:key="metadata-value-{{$value['id']}}"
-                             class="group flex items-center justify-between p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200"
-                             x-data="{ selected: $wire.selectedMetadataValues[{{ $value['id'] }}] }"
-                             x-effect="selected = $wire.selectedMetadataValues[{{ $value['id'] }}]">
+                        <label class="flex items-center cursor-pointer space-x-2 w-full">
+                            <div wire:key="metadata-value-{{$value['id']}}"
+                                 class="w-full group flex items-center justify-between p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200"
+                                 x-data="{ selected: $wire.selectedMetadataValues[{{ $value['id'] }}] }"
+                                 x-effect="selected = $wire.selectedMetadataValues[{{ $value['id'] }}]">
 
-                            <span class="text-sm font-medium text-gray-200">{{ $value['value'] }}</span>
+                                <span class="text-sm font-medium text-gray-200">{{ $value['value'] }}</span>
+                                    <div class="relative h-5 w-5">
+                                        <input type="checkbox"
+                                               wire:model.live="selectedMetadataValues.{{ $value['id'] }}"
+                                               class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border border-gray-500 checked:bg-green-500/10 checked:border-green-600" />
 
-                            <label class="cursor-pointer flex items-center">
-                                <input
-                                    type="checkbox"
-                                    wire:model.live="selectedMetadataValues.{{ $value['id'] }}"
-                                    class="relative sr-only peer"
-                                >
-                                <div class="w-5 h-5 flex items-center justify-center rounded border-2 border-gray-500
-                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
-                                    hover:bg-gray-500/20 transition-all duration-200">
-                                </div>
-                                <svg
-                                    class="absolute w-5 h-5 text-green-500 opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M5 13l4 4L19 7">
-                                    </path>
-                                </svg>
-                            </label>
-                        </div>
+                                        <!-- Fade-in SVG -->
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             class="absolute h-3.5 w-3.5 text-green-500 left-1/2 top-1/2 opacity-0 transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out peer-checked:opacity-100"
+                                             viewBox="0 0 24 24"
+                                             fill="none"
+                                             stroke="currentColor"
+                                             stroke-width="3"
+                                             stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <polyline points="4 12 10 18 20 6" />
+                                        </svg>
+                                    </div>
+                            </div>
+                        </label>
                     @empty
                         <p class="text-gray-400 text-center py-4">No values available for {{$data['type']['name']}}</p>
                     @endforelse

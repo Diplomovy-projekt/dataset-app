@@ -20,6 +20,10 @@ class MetadataTypeSeeder extends Seeder
             [
                 'name' => 'Century',
                 'description' => 'Indicates the time period the documents were written.',
+            ],
+            [
+            'name' => 'Image Granularity',
+            'description' => 'Indicates if the image is a full page or a fragment.',
             ]
         ];
 
