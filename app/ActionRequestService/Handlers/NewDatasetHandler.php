@@ -34,10 +34,14 @@ class NewDatasetHandler extends BaseHandler
         $this->datasetActions->deleteDataset($payload['dataset_unique_name']);
     }
 
-    public function reviewChanges(Model $request): mixed
+    public function getReviewUrl(Model $request): string
     {
         $uniqueName = $request->dataset()->first()->unique_name;
-        return Redirect::route('dataset.review.new', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+
+        return route('dataset.review.new', [
+            'uniqueName' => $uniqueName,
+            'requestId' => $request->id,
+        ]);
     }
 
     public function adminResponse(Model $request): mixed

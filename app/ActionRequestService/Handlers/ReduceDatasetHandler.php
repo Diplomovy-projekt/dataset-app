@@ -30,9 +30,11 @@ class ReduceDatasetHandler extends BaseHandler
         // Nothing needs to be done here.
     }
 
-    public function reviewChanges(Model $request): mixed
+    public function getReviewUrl(Model $request): string
     {
-        return Redirect::route('dataset.review.reduce', ['requestId' => $request->id]);
+        return route('dataset.review.reduce', [
+            'requestId' => $request->id,
+        ]);
     }
 
     public function adminResponse(Model $request): mixed

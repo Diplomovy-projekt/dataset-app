@@ -30,10 +30,14 @@ class DeleteDatasetHandler extends BaseHandler
         // Nothing needs to be done here.
     }
 
-    public function reviewChanges(Model $request): mixed
+    public function getReviewUrl(Model $request): string
     {
         $uniqueName = $request->dataset()->first()->unique_name;
-        return Redirect::route('dataset.review.delete', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+
+        return route('dataset.review.delete', [
+            'uniqueName' => $uniqueName,
+            'requestId' => $request->id,
+        ]);
     }
 
     public function adminResponse(Model $request): mixed

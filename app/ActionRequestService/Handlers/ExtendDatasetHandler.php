@@ -129,11 +129,15 @@ class ExtendDatasetHandler extends BaseHandler
         $this->datasetActions->deleteDataset($payload['child_unique_name']);
     }
 
-    public function reviewChanges(Model $request): mixed
+    public function getReviewUrl(Model $request): string
     {
         $payload = $request->payload;
         $uniqueName = $payload['child_unique_name'];
-        return Redirect::route('dataset.review.extend', ['uniqueName' => $uniqueName, 'requestId' => $request->id]);
+
+        return route('dataset.review.extend', [
+            'uniqueName' => $uniqueName,
+            'requestId' => $request->id,
+        ]);
     }
 
     public function adminResponse(Model $request): mixed

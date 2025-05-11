@@ -54,10 +54,13 @@ class EditDatasetHandler extends BaseHandler
         // Nothing needs to be done here.
     }
 
-    public function reviewChanges(Model $request): mixed
+    public function getReviewUrl(Model $request): string
     {
-        return Redirect::route('dataset.review.edit', ['requestId' => $request->id]);
+        return route('dataset.review.edit', [
+            'requestId' => $request->id,
+        ]);
     }
+
     public function adminResponse(Model $request): mixed
     {
         $currentRoute = URL::livewireCurrent(true);

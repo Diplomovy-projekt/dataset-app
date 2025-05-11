@@ -4,6 +4,7 @@ namespace App\ActionRequestService\Handlers;
 
 use App\DatasetActions\DatasetActions;
 use App\Models\ActionRequest;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -68,14 +69,6 @@ abstract class BaseHandler
      */
     abstract protected function validationRules(): array;
 
-    /**
-     * Abstract method for reviewing changes.
-     *
-     * @param Model $request The request model to review.
-     * @return mixed The result of the review.
-     */
-    abstract public function reviewChanges(Model $request): mixed;
-
     // Response methods
     /**
      * Abstract method for the admin's response to the request.
@@ -126,5 +119,10 @@ abstract class BaseHandler
 
         // Otherwise, redirect to the admin dataset route
         return ['route' => $adminRoute];
+    }
+
+    public function reviewChanges(Model $request): mixed
+    {
+        return Redirect::to($this->getReviewUrl($request));
     }
 }

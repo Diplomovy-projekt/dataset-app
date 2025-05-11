@@ -113,4 +113,11 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Custom configuration
+    |--------------------------------------------------------------------------
+    | admin email address
+    */
+    'admin_email' => env('MAIL_ADMIN', 'admin@hcportal.eu')
 ];

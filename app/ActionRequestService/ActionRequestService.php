@@ -4,10 +4,13 @@ namespace App\ActionRequestService;
 
 use App\ActionRequestService\Factory\ActionRequestFactory;
 use App\Jobs\RecalculateDatasetStats;
+use App\Mail\NewRequestMail;
+use App\Mail\UserInvitationMail;
 use App\Models\ActionRequest;
 use App\Models\Dataset;
 use App\Utils\Util;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ActionRequestService
 {
@@ -56,6 +59,7 @@ class ActionRequestService
             if ($user->isAdmin()) {
                 return $handler->adminResponse($request);
             } else {
+                Mail::to(config('mail.admin_email'))->send(new NewRequestMail($request, $this->getReviewUrl($request)));
                 return $handler->userResponse($request);
             }
         } catch (\Exception $e) {
@@ -106,6 +110,11 @@ class ActionRequestService
         return $handler->reviewChanges($request);
     }
 
+    public function getReviewUrl(ActionRequest $request): string
+    {
+        $handler = $this->getHandler($request);
+        return $handler->getReviewUrl($request);
+    }
 
     private function getHandler(ActionRequest $request)
     {
