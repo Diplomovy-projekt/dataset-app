@@ -9,7 +9,7 @@ Aplikácia je dostupná na dvoch samostatných inštanciách:
   - Heslo: `password`
 
 - **Produkčná verzia (bez prístupu do administrácie):**  
-  [`https://builder.hcportal.eu/`](https://builder.dev-dataset.online/](https://builder.hcportal.eu/))  
+  [`https://builder.hcportal.eu/`](https://builder.hcportal.eu/)  
 # Príručka na lokálne spustenie
 V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukcií nižšie.
 ## Požiadavky
