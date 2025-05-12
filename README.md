@@ -1,11 +1,15 @@
-# Aplikácia na verejnom hostovaní
+## Aplikácia na verejnom hostovaní
 
-Aplikácia je dostupná na adrese:  
-`https://builder.dev-dataset.online/`
+Aplikácia je dostupná na dvoch samostatných inštanciách:
 
-**Prihlasovacie údaje:**
-- Email: `test@example.com`
-- Heslo: `password`
+- **Vývojová verzia (s prístupom do administrácie):**  
+  [`https://builder.dev-dataset.online/`](https://builder.dev-dataset.online/)  
+  **Prihlasovacie údaje:**  
+  - E‑mail: `test@example.com`  
+  - Heslo: `password`
+
+- **Produkčná verzia (bez prístupu do administrácie):**  
+  [`https://builder.hcportal.eu/`](https://builder.hcportal.eu/)  
 # Príručka na lokálne spustenie
 V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukcií nižšie.
 ## Požiadavky
