@@ -39,7 +39,7 @@ Všetky príkazy nižšie je nutné vykonať v koreňovom adresári projektu.
     ```
 4. Nainštalujte závislosti:
     ```bash
-    composer install --optimize-autoloader --no-dev
+    composer install --optimize-autoloader
     ```
 6. Vygenerujte aplikačný kľúč:
     ```bash
