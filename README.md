@@ -19,13 +19,6 @@ V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukci�
 - MySQL 8  
 - Composer
 
-## Inštalácia na Windows (Laragon)
-Táto časť je nepovinná. V prípade, že máte potrebné požiadavky spomenuté vyššie, môžte preskočiť na krok `Nastavenie projektu`
-1. Stiahnite a nainštalujte Laragon:  
-   [Laragon 8.1.0](https://github.com/leokhoa/laragon/releases/download/8.1.0/laragon-wamp.exe)
-
-2. Skontrolujte PHP 8.3 a MySQL 8 v nastaveniach Laragonu.
-3. Spustie Laragon a naštartujte služby cez `Start All`
 ## Nastavenie projektu
 Všetky príkazy nižšie je nutné vykonať v koreňovom adresári projektu.  
 1. Skopírujte projekt do ľubovoľného priečinka.  
@@ -45,7 +38,7 @@ Všetky príkazy nižšie je nutné vykonať v koreňovom adresári projektu.
     ```bash
     php artisan key:generate
     ```
-7. Upraviť .env (príklad):
+7. Upraviť .env:
 Názov databázy sa musí zhodovat s hodnotou v `DB_DATABASE`
     ```bash
     DB_DATABASE=nazov_db
