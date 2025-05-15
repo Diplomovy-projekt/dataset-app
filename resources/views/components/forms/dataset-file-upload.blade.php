@@ -19,24 +19,23 @@
             <p class="text-gray-500 text-xs mb-2">
                 The dataset display name will be derived from the file name.
             </p>
-            <div class="flex">
-                <label for="dataset-upload" class="p-1 bg-blue-500 hover:bg-blue-600 text-gray-100 px-4 py-2 rounded-l-md cursor-pointer text-sm font-medium transition-colors">
+            <div x-data="{ fileName: 'No file chosen' }" class="flex">
+                <label for="dataset-upload"
+                       class="p-1 bg-blue-500 hover:bg-blue-600 text-gray-100 px-4 py-2 rounded-l-md cursor-pointer text-sm font-medium transition-colors">
                     CHOOSE FILE
                 </label>
-                <div class=" bg-[#1F2937] text-[#6B7280] px-4 py-2 rounded-r-md flex-grow text-sm" id="file-name">
-                    No file chosen
-                </div>
+                <div class="bg-[#1F2937] text-[#6B7280] px-4 py-2 rounded-r-md flex-grow text-sm" x-text="fileName"></div>
+
+                <input
+                    type="file"
+                    id="dataset-upload"
+                    name="myFile"
+                    accept=".zip"
+                    class="hidden"
+                    @change="fileName = $event.target.files[0] ? $event.target.files[0].name : 'No file chosen'"
+                >
             </div>
 
-            <input
-                type="file"
-                id="dataset-upload"
-                name="myFile"
-                accept=".zip"
-                class="hidden"
-                x-data
-                @change="document.getElementById('file-name').textContent = $event.target.files[0] ? $event.target.files[0].name : 'No file chosen'"
-            >
 
             <p class="text-gray-500 text-xs mt-1.5">
                 @if($this->mode == 'new')
@@ -81,7 +80,7 @@
             </div>
 
             <!-- Radio Group -->
-            <div class="space-y-2">
+            {{--<div class="space-y-2">
                 <label class="block text-gray-400 font-medium text-sm">
                     @if($this->mode == 'new')
                         Select used annotation technique
@@ -110,8 +109,49 @@
                 @error('selectedTechnique')
                 <span class="w-full mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
                 @enderror
+            </div>--}}
+        <div x-data="{ selected: @entangle('selectedTechnique') }" class="space-y-2">
+            <label class="block text-gray-400 font-medium text-sm">
+                @if($this->mode == 'new')
+                    Select used annotation technique
+                @else
+                    Annotation technique has to be same as the existing dataset
+                @endif
+            </label>
+
+            <div class="divide-x divide-gray-600 rounded-lg overflow-hidden border border-gray-700 bg-gray-800 inline-flex">
+                @php $isNew = $this->mode === 'new'; @endphp
+
+                @foreach($this->techniques as $technique)
+                    <label class="relative">
+                        <input
+                            type="radio"
+                            name="technique"
+                            :value="'{{ $technique['key'] }}'"
+                            x-model="selected"
+                            class="sr-only"
+                            @unless($isNew) disabled @endunless
+                        >
+                        <div
+                            :class="selected === '{{ $technique['key'] }}'
+                            ? 'bg-blue-500 text-gray-100'
+                            : 'text-gray-300' {{ $isNew ? " + ' hover:bg-gray-600 cursor-pointer'" : '' }}"
+                                        class="px-4 py-2 flex items-center justify-center transition-colors"
+                        >
+                            {{ $technique['value'] }}
+                        </div>
+                    </label>
+                @endforeach
+
+
             </div>
+
+            @error('selectedTechnique')
+            <span class="w-full mx-auto text-red-500 text-sm mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
+
+    </div>
 </div>
 
 @script
