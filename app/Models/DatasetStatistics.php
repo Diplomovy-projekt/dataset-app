@@ -20,23 +20,16 @@ class DatasetStatistics extends Model
 
     public static function recalculateAllStatistics()
     {
-        $annotationTechniques = Dataset::approved()->distinct('annotation_technique')
+        // Get all existing techniques in the database
+        $existingTechniques = self::pluck('annotation_technique')->toArray();
+
+        // Get currently active techniques from approved datasets
+        $activeTechniques = Dataset::approved()->distinct('annotation_technique')
             ->pluck('annotation_technique')
             ->toArray();
 
-        if (empty($annotationTechniques)) {
-            self::query()->update([
-                'dataset_count' => 0,
-                'image_count' => 0,
-                'annotation_count' => 0,
-                'class_count' => 0,
-                'last_updated_at' => now(),
-            ]);
-
-            return;
-        }
-
-        foreach ($annotationTechniques as $technique) {
+        // Calculate statistics for active techniques
+        foreach ($activeTechniques as $technique) {
             $stats = self::firstOrCreate(['annotation_technique' => $technique]);
 
             $datasetCount = Dataset::approved()->where('annotation_technique', $technique)->count();
@@ -59,6 +52,20 @@ class DatasetStatistics extends Model
             $stats->class_count = $classCount;
             $stats->last_updated_at = now();
             $stats->save();
+        }
+
+        // For techniques that no longer have datasets, set counts to zero
+        $inactiveTechniques = array_diff($existingTechniques, $activeTechniques);
+        foreach ($inactiveTechniques as $technique) {
+            $stats = self::where('annotation_technique', $technique)->first();
+            if ($stats) {
+                $stats->dataset_count = 0;
+                $stats->image_count = 0;
+                $stats->annotation_count = 0;
+                $stats->class_count = 0;
+                $stats->last_updated_at = now();
+                $stats->save();
+            }
         }
     }
 }
