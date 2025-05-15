@@ -24,6 +24,10 @@ class MetadataTypeSeeder extends Seeder
             [
             'name' => 'Image Granularity',
             'description' => 'Indicates if the image is a full page or a fragment.',
+            ],
+            [
+            'name' => 'Dataset Partition',
+            'description' => 'Indicates the dataset partitioning.',
             ]
         ];
 
