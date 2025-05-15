@@ -13,13 +13,14 @@ Aplikácia je dostupná na dvoch samostatných inštanciách:
 # Príručka na lokálne spustenie
 V prípade, že chcete projekt rozbehať lokálne, postupujte podľa inštrukcií nižšie.
 ## Požiadavky
-
 - PHP 8.3
     - odkomentovať/povoliť `extension=zip` v súbore php.ini   
-- MySQL 8  
+- MySQL 8
+    - vytvoriť prázdnu databázu
 - Composer
 
 ## Nastavenie projektu
+V tejto časti predpokladáme už nainštalované vyššie spomenuté závislosti (php 8.3, mysql s vytvorenou databázou a composer)  
 Všetky príkazy nižšie je nutné vykonať v koreňovom adresári projektu.  
 1. Skopírujte projekt do ľubovoľného priečinka.  
 2. Otvorte terminál a prejdite do priečinka:
