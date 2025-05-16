@@ -11,14 +11,16 @@
                     <div class="bg-blue-500/10 p-2 rounded-lg">
                         <x-icon name="o-folder" class="w-5 h-5 text-blue-400" />
                     </div>
-                    @if ($request['dataset'])
+                    @if ($request['dataset'] && $request['type'] !== 'new')
                         <a href="{{ route('dataset.show', ['uniqueName' => $request['dataset']['unique_name']])}}"
                            wire:navigate
                            class="text-gray-200">
                             {{ $request['dataset']['display_name'] }}
                         </a>
+                    @elseif($request['dataset'] && $request['type'] === 'new')
+                        <span class="text-gray-500" title="Dataset is not approved yet. You can't display it">{{ $request['dataset']['display_name'] }}</span>
                     @else
-                        <span class="text-gray-500">Dataset not available</span> <!-- Fallback text -->
+                        <span class="text-gray-500" title="Dataset has been deleted">Dataset not available</span>
                     @endif
                 </div>
             </x-tables.table-cell>
@@ -58,7 +60,7 @@
 
             {{-- Requested At --}}
             <x-tables.table-cell>
-                <span class="text-gray-200">{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y') }}</span>
+                <span class="text-gray-200  break-keep whitespace-nowrap">{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y, H:i') }}</span>
             </x-tables.table-cell>
 
             {{-- Action buttons --}}

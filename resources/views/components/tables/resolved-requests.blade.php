@@ -96,8 +96,9 @@
 
             {{-- Requested At --}}
             <x-tables.table-cell>
-                <span class="text-gray-200 break-keep whitespace-nowrap">{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y') }}</span>
+                <span class="text-gray-200 break-keep whitespace-nowrap">{{ \Carbon\Carbon::parse($request['created_at'])->format('M d, Y, H:i') }}</span>
             </x-tables.table-cell>
+            {{-- Requested At --}}
         </x-tables.table-row>
     @endforeach
 </x-tables.wrapper>

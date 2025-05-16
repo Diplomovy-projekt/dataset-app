@@ -5,11 +5,11 @@
     {{--Stats Grid--}}
     <div class="flex flex-col sm:flex-row justify-between gap-3">
         @foreach([
-            ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount],
-            ['icon' => 'o-squares-2x2', 'color' => 'purple', 'title' => 'Total Datasets', 'value' => $this->datasetCount],
-            ['icon' => 'o-server', 'color' => 'yellow', 'title' => 'Dataset Storage', 'value' => "$totalStorage GB", 'extra' => 'Total space used']
+            ['icon' => 'o-users', 'color' => 'blue', 'title' => 'Active Users', 'value' => $this->userCount, 'popupTitle' => ''],
+            ['icon' => 'o-squares-2x2', 'color' => 'purple', 'title' => 'Total Datasets', 'value' => $this->datasetCount,'popupTitle' => ''],
+            ['icon' => 'o-server', 'color' => 'yellow', 'title' => 'Dataset Storage', 'value' => "$totalStorage GB", 'extra' => 'Total space used','popupTitle' => 'Includes all datasets in public and private folders (private folder includes non approved datasets)']
         ] as $stat)
-            <div class="bg-slate-800 rounded-lg p-4 flex items-center gap-4 flex-1">
+            <div class="bg-slate-800 rounded-lg p-4 flex items-center gap-4 flex-1" title="{{ $stat['popupTitle'] ?? '' }}">
                 <div class="bg-{{ $stat['color'] }}-500/10 p-3 rounded-lg">
                     <x-icon name="{{ $stat['icon'] }}" class="w-6 h-6 text-{{ $stat['color'] }}-400" />
                 </div>

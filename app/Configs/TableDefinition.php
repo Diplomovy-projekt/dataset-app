@@ -51,7 +51,7 @@ class TableDefinition
                 ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-16'],
             ],
             'sortColumn' => 'created_at',
-            'sortDirection' => 'asc',
+            'sortDirection' => 'desc',
         ],
         'resolved-requests' => [
             'id' => 'resolved-requests',
@@ -64,8 +64,8 @@ class TableDefinition
                 ['label' => 'Comment', 'field' => 'comment', 'sortable' => true, 'width' => 'w-16'],
                 ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
             ],
-            'sortColumn' => 'display_name',
-            'sortDirection' => 'asc',
+            'sortColumn' => 'created_at',
+            'sortDirection' => 'desc',
         ],
         // ADMIN USERS MANAGEMENT
         'user-overview' => [
@@ -114,7 +114,7 @@ class TableDefinition
                 ['label' => 'Actions', 'field' => 'actions', 'sortable' => false, 'width' => 'w-16'],
             ],
             'sortColumn' => 'created_at',
-            'sortDirection' => 'asc',
+            'sortDirection' => 'desc',
         ],
         'my-requests-resolved' => [
             'id' => 'my-requests-resolved',
@@ -127,7 +127,7 @@ class TableDefinition
                 ['label' => 'Requested At', 'field' => 'created_at', 'sortable' => true, 'width' => 'w-16'],
             ],
             'sortColumn' => 'created_at',
-            'sortDirection' => 'asc',
+            'sortDirection' => 'desc',
         ],
     ];
 }
