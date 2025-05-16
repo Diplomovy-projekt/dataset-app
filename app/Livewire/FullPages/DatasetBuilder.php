@@ -223,12 +223,13 @@ class DatasetBuilder extends Component
             'numClasses' => 0,
         ];
 
-        $allStats = DatasetStatistics::selectRaw(
-            'SUM(dataset_count) as numDatasets,
-         SUM(image_count) as numImages,
-         SUM(annotation_count) as numAnnotations,
-         SUM(class_count) as numClasses'
-        )->first();
+        $allStats = DatasetStatistics::where('annotation_technique', 'all')
+            ->selectRaw('
+            SUM(dataset_count) as numDatasets,
+            SUM(image_count) as numImages,
+            SUM(annotation_count) as numAnnotations,
+            SUM(class_count) as numClasses
+        ')->first();
 
         $this->allDatasetsStats = $allStats ? [
             'numDatasets' => $allStats->numDatasets ?? 0,

@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -16,9 +18,14 @@ class RegisterTest extends TestCase
 
     public function test_component_renders()
     {
-        $invitation = Invitation::factory()->create([
-            'token' => 'valid-token',
+        $invite = Invitation::create([
             'email' => 'test@example.com',
+            'role' => 'user',
+            'invited_by' => 'Admin',
+            'token' => 'valid-token',
+            'used' => false,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
         Livewire::test('forms.register', ['token' => 'valid-token'])
@@ -28,10 +35,14 @@ class RegisterTest extends TestCase
 
     public function test_successful_registration()
     {
-        // Create the invitation
-        $invitation = Invitation::factory()->create([
-            'token' => 'valid-token',
+        $invite = Invitation::create([
             'email' => 'test@example.com',
+            'role' => 'user',
+            'invited_by' => 'Admin',
+            'token' => 'valid-token',
+            'used' => false,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
         // Test the registration flow via Livewire
@@ -64,9 +75,14 @@ class RegisterTest extends TestCase
 
     public function test_registration_with_invalid_input()
     {
-        $invitation = Invitation::factory()->create([
-            'token' => 'valid-token',
+        $invite = Invitation::create([
             'email' => 'test@example.com',
+            'role' => 'user',
+            'invited_by' => 'Admin',
+            'token' => 'valid-token',
+            'used' => false,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
         Livewire::test('forms.register', ['token' => 'valid-token'])

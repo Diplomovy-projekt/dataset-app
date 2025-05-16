@@ -38,12 +38,23 @@ Route::get('/register/{token}', Register::class)->name('register');
 ///                     MISC ROUTES
 ////////////////////////////////////////////////////////////////////////////////
 Route::get('/', function () {
-    $statistics = DatasetStatistics::selectRaw(
-        'SUM(dataset_count) as numDatasets,
-         SUM(image_count) as numImages,
-         SUM(annotation_count) as numAnnotations,
-         SUM(class_count) as numClasses'
-    )->first();
+    $statistics = DatasetStatistics::where('annotation_technique', 'all')
+        ->selectRaw('
+            SUM(dataset_count) as numDatasets,
+            SUM(image_count) as numImages,
+            SUM(annotation_count) as numAnnotations,
+            SUM(class_count) as numClasses
+        ')
+        ->first();
+
+    if(!$statistics) {
+        $statistics = [
+            'numDatasets' => 0,
+            'numImages' => 0,
+            'numAnnotations' => 0,
+            'numClasses' => 0
+        ];
+    }
     return view('welcome', ['statistics' => $statistics]);
 })->name('welcome');
 Route::get('/zip-format-info', function(){

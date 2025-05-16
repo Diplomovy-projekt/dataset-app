@@ -294,10 +294,10 @@ abstract class TestCase extends BaseTestCase
         $sourceDir = app_path('../tests/Data/' . $requestData['unique_name']);
         $destinationDir = storage_path("framework/testing/disks/storage/app/{$visibility}/datasets/" . $requestData['unique_name']);
         File::copyDirectory($sourceDir, $destinationDir);
-        /*$this->assertDirectoryExists(storage_path("framework/testing/disks/storage/app/{$visibility}/datasets/" . $requestData['unique_name']));
+        $this->assertDirectoryExists(storage_path("framework/testing/disks/storage/app/{$visibility}/datasets/" . $requestData['unique_name']));
         $this->assertDatabaseHas('datasets', [
             'unique_name' => $requestData['unique_name'],
-        ]);*/
+        ]);
 
     }
 

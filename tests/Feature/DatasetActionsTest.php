@@ -23,7 +23,7 @@ class DatasetActionsTest extends TestCase
 
     public function test_update_statistics(): void
     {
-        $dataset = Dataset::first();
+        $dataset = Dataset::where('unique_name', 'valid_bbox')->first();
         $dataset->update([
             'is_approved' => 1,
         ]);
@@ -37,9 +37,9 @@ class DatasetActionsTest extends TestCase
                 type: 'success',
                 message: 'Statistics recalculated successfully');
 
-        $totalImageCount = DatasetStatistics::all()->sum('image_count');
-        $totalAnnotationCount = DatasetStatistics::all()->sum('annotation_count');
-        $totalClassesCount = DatasetStatistics::all()->sum('class_count');
+        $totalImageCount = DatasetStatistics::where('annotation_technique', 'all')->sum('image_count');
+        $totalAnnotationCount = DatasetStatistics::where('annotation_technique', 'all')->sum('annotation_count');
+        $totalClassesCount = DatasetStatistics::where('annotation_technique', 'all')->sum('class_count');
         $this->assertEquals($imageCount, $totalImageCount);
         $this->assertEquals($annotationCount, $totalAnnotationCount);
         $this->assertEquals($classesCount, $totalClassesCount);
@@ -47,7 +47,7 @@ class DatasetActionsTest extends TestCase
     public function test_moving_dataset_between_folders(): void
     {
         // Arrange: Get the first dataset and ensure it is public
-        $dataset = Dataset::first();
+        $dataset = Dataset::where('unique_name', 'valid_bbox')->first();
 
         $datasetUniqueName = $dataset->unique_name;
         $publicPath = 'app/public/datasets/' . $datasetUniqueName;

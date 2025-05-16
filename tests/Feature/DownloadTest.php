@@ -23,7 +23,6 @@ class DownloadTest extends TestCase
 
     #[PreserveGlobalState(false)] #[RunInSeparateProcess] public function test_download_zip_dataset()
     {
-        $this->withoutOutputBuffering();
         // Disable output buffering during the test
         while (ob_get_level()) {
             ob_end_clean();

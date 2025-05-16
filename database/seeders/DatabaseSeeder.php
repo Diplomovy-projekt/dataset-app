@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
         ]);
 
-        if (App::environment() !== 'prod') {
+        if (App::environment() == 'local') {
             $this->call([
                 InvitationSeeder::class,
                 ActionRequestSeeder::class,

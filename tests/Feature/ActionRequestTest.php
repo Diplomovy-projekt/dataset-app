@@ -56,7 +56,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Fetch the action request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
 
         // Resolve the action request as approved
         $actionRequest->resolveRequest($request, 'approve', 'Auto-approved by system');
@@ -114,7 +114,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Fetch the first action request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
 
         // Resolve the action request as approved
         $actionRequest->resolveRequest($request, 'approve');
@@ -174,7 +174,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Resolve the request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $parentDataset->id)->first();
         $actionRequest->resolveRequest($request, 'approve');
 
         // Assert that the child dataset was deleted
@@ -228,7 +228,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Resolve the request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
         $actionRequest->resolveRequest($request, 'approve');
 
         // Assert that the image is deleted from the database
@@ -274,7 +274,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Resolve the request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
         $actionRequest->resolveRequest($request, 'approve');
 
         // Assert that the dataset's folder is deleted from storage
@@ -319,7 +319,7 @@ class ActionRequestTest extends TestCase
         $this->actingAs($admin);
 
         // Resolve the request
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
         $actionRequest->resolveRequest($request, 'reject', 'Auto-rejected by system');
 
         // Assert that the dataset was not added (missing in the database)
@@ -377,7 +377,7 @@ class ActionRequestTest extends TestCase
         // Act as admin to resolve the request
         $admin = \App\Models\User::where('role', 'admin')->first();
         $this->actingAs($admin);
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
         $actionRequest->resolveRequest($request, 'reject', 'Auto-rejected by system');
 
         // Fetch the dataset after rejection dynamically
@@ -428,7 +428,7 @@ class ActionRequestTest extends TestCase
         // Get the admin user to resolve the request
         $admin = \App\Models\User::where('role', 'admin')->first();
         $this->actingAs($admin);
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $mainDataset->id)->first();
 
         // Before rejecting, get the image count of both datasets dynamically
         $initialMainImageCount = $mainDataset->images->count();
@@ -481,7 +481,7 @@ class ActionRequestTest extends TestCase
         // Get the admin user and process the action request
         $admin = \App\Models\User::where('role', 'admin')->first();
         $this->actingAs($admin);
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
 
         // Reject the delete request
         $actionRequest->resolveRequest($request, 'reject', 'Auto-rejected by system');
@@ -528,7 +528,7 @@ class ActionRequestTest extends TestCase
         // Get the admin user and process the action request
         $admin = \App\Models\User::where('role', 'admin')->first();
         $this->actingAs($admin);
-        $request = ActionRequest::first();
+        $request = ActionRequest::where('dataset_id', $dataset->id)->first();
 
         // Reject the reduce request
         $actionRequest->resolveRequest($request, 'reject', 'Auto-rejected by system');
