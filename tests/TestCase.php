@@ -77,9 +77,9 @@ abstract class TestCase extends BaseTestCase
                 ]
             ],
             'classes' => [
-                ['name' => 'me'],
-                ['name' => 'skaly'],
-                ['name' => 'voda']
+                ['name' => 'first'],
+                ['name' => 'second'],
+                ['name' => 'third']
             ]
         ];
 
@@ -208,9 +208,9 @@ abstract class TestCase extends BaseTestCase
                 ]
             ],
             'classes' => [
-                ['name' => 'me'],
-                ['name' => 'skaly'],
-                ['name' => 'voda']
+                ['name' => 'first'],
+                ['name' => 'second'],
+                ['name' => 'third']
             ]
         ];
 
